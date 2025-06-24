@@ -7,12 +7,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#2563EB", 
-        secondary: "#fff", // Example secondary color
+        primary: "#EF5DA8", 
+        primaryLight: "rgba(239, 93, 168, 0.9)",
+        secondary: 'rgba(174, 175, 247, 0.6)',
         gray: {
           400: "#9CA3AF", 
         },
-        green: '#16a34a',
+        green: {
+          500: '#16a34a',
+          600: '#15803d',
+          700: '#166534',
+
+        },
         buttonPink: {
           500: '#EF5DA8',
         },
@@ -45,8 +51,8 @@ export default {
       borderRadius: {
         '4xl': '2rem', // Example custom border radius
       },
-      boxShadow: {
-        'custom': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', // Example custom shadow
+      dropShadow: {
+        'custom': '0 0 4px rgba(0, 0, 0, 0.25)', // Example custom shadow
       },
       screens: {
         '3xl': '1600px', // Example custom screen size
