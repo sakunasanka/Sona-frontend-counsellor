@@ -28,7 +28,7 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
           
           <button className="w-8 h-8 rounded-full overflow-hidden hover:ring-2 hover:ring-pink-200 transition-all">
             <img 
-              src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face" 
+              src="public/assets/images/profile-photo.png" 
               alt="Profile" 
               className="w-full h-full object-cover"
             />
