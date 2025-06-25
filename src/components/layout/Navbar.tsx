@@ -22,8 +22,8 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
         {/* Right side - Notification and Profile */}
         <div className="flex items-center space-x-3">
           <button className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
-            <Bell size={20} className="text-gray-600" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+            <Bell size={22} className="text-gray-600" />
+            <div className="absolute -top-0 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
           </button>
           
           <button className="w-8 h-8 rounded-full overflow-hidden hover:ring-2 hover:ring-pink-200 transition-all">
