@@ -13,7 +13,6 @@ interface Blog {
   category: string;
   tags: string[];
   likes: number;
-  comments: number;
   views: number;
   isLiked: boolean;
   isPublished: boolean;
@@ -44,7 +43,6 @@ The difference between surviving and thriving isn't what happens to you—it's h
       category: "Personal Growth",
       tags: ["growth", "mindset", "life-lessons"],
       likes: 24,
-      comments: 8,
       views: 156,
       isLiked: false,
       isPublished: true
@@ -66,7 +64,6 @@ Happiness is not a destination—it's a decision. And that decision is always in
       category: "Mental Health",
       tags: ["happiness", "mindset", "wellbeing"],
       likes: 31,
-      comments: 12,
       views: 203,
       isLiked: true,
       isPublished: true
@@ -88,7 +85,6 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
       category: "Mindfulness",
       tags: ["mindfulness", "meditation", "presence"],
       likes: 18,
-      comments: 5,
       views: 89,
       isLiked: false,
       isPublished: false
@@ -199,10 +195,6 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
               >
                 <Heart className={`w-4 h-4 ${blog.isLiked ? 'fill-current' : ''}`} />
                 {blog.likes}
-              </button>
-              <button className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                <MessageCircle className="w-4 h-4" />
-                {blog.comments}
               </button>
               <button 
                 onClick={() => onShare(blog.id)}
