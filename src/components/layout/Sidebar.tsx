@@ -14,7 +14,7 @@
 // export default Sidebar;
 
 import React, { useState } from 'react';
-import { Menu, Bell, ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText } from 'lucide-react';
+import { Menu, Bell, ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, LogOut } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       
       {/* Sidebar */}
       <div className={`
-        fixed top-0 left-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ease-in-out
+        fixed top-0 left-0 h-full w-80 bg-[#FFE9EF] z-50 transform transition-transform duration-300 ease-in-out flex flex-col
         lg:translate-x-0 lg:static lg:z-auto
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
@@ -59,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Menu Items */}
-        <nav className="py-6 px-4">
+        <nav className="py-6 px-4 flex-1 flex flex-col">
           <ul className="space-y-2">
             {menuItems.map((item, index) => {
               const IconComponent = item.icon;
@@ -77,26 +77,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               );
             })}
           </ul>
-        </nav>
 
-        {/* Bottom Branding */}
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="relative">
-            {/* Decorative Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 rounded-2xl opacity-20"></div>
-            <div className="relative p-6 rounded-2xl">
-              <div className="flex items-center mb-2">
-                <img 
-                  src="public/assets/images/Sona-logo.png" 
-                  alt="SONA" 
-                  className="w-30 h-10 rounded-full mr-2" />
-              </div>
-              <p className="text-sm text-gray-600 font-medium">
-                Wellness Starts With A Conversation
-              </p>
-            </div>
+          <div className="flex-1"></div>
+
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <button
+              className="w-full flex items-center space-x-4 px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors group"
+              onClick={() => {
+                // Add your logout logic here
+                console.log('Logout clicked');
+                onClose();
+              }}
+            >
+              <LogOut size={20} className="text-gray-600 group-hover:text-red-600" />
+              <span className="font-medium">Log out</span>
+            </button>
           </div>
-        </div>
+        </nav>
       </div>
     </>
   );

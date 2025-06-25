@@ -13,7 +13,7 @@ interface TableProps<T> {
 const Table = <T extends Record<string, any>>({ columns, data }: TableProps<T>) => {    return (
         <div className="overflow-x-auto shadow-sm rounded-lg">
             <table className="min-w-full bg-bg text-text rounded-lg overflow-hidden">
-                <thead className="bg-gray-50">
+                <thead className="bg-[#FFE9EF]">
                     <tr>
                         {columns.map((col, idx) => (
                             <th

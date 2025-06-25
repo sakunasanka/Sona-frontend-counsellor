@@ -14,6 +14,7 @@ const Button: React.FC<ButtonProps> = ({
   const base = 'px-4 py-2 font-medium transition-colors duration-200';
 
   const variants = {
+
     primary: 'bg-primary text-black border border-primary-dark border-blue-700 hover:bg-primary-hover focus:ring-2 focus:ring-primary-ring rounded-xl cursor-pointer',
     secondary: 'bg-border text-text hover:bg-gray-200 rounded-xl cursor-pointer',
     danger: 'bg-red-500 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-300 rounded-xl cursor-pointer',
