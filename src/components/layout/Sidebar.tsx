@@ -25,7 +25,7 @@ interface SidebarProps {
 // Sidebar Component
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const menuItems = [
-    { icon: Home, label: 'Home', href: '#' },
+    { icon: Home, label: 'Home', href: '/counsellor-dashboard' },
     { icon: Calendar, label: 'Sessions', href: '#' },
     { icon: Users, label: 'Clients', href: '#' },
     { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks' },
