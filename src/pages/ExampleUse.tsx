@@ -56,7 +56,7 @@ const ExampleUse = () => {
 
             <div className="mt-6">
               <Button
-                variant="rounded"
+                variant="special"
                 onClick={handleSignIn}
                 disabled={!selectedRole}
                 className="w-full"
