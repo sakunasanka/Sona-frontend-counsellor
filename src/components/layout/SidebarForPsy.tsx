@@ -1,20 +1,7 @@
-// import React from 'react';
-
-// interface SidebarProps {
-//   children: React.ReactNode;
-//   className?: string;
-// }
-
-// const Sidebar: React.FC<SidebarProps> = ({ children, className = '' }) => (
-//   <aside className={`w-64 bg-white border-r border-border p-4 ${className}`}>
-//     {children}
-//   </aside>
-// );
-
-// export default Sidebar;
 
 import React, { useState } from 'react';
-import { Menu, Bell, ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, LogOut } from 'lucide-react';
+import { Menu, Bell, ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, LogOut, Camera, DollarSign, Contact, HelpingHandIcon, Pen } from 'lucide-react';
+import "react-icons/fa";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -22,14 +9,16 @@ interface SidebarProps {
 }
 
 // Sidebar Component
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+const SidebarForPsy : React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const menuItems = [
     { icon: Home, label: 'Home', href: '#' },
-    { icon: Calendar, label: 'Sessions', href: '#' },
-    { icon: Users, label: 'Clients', href: '#' },
-    { icon: ThumbsUp, label: 'Feedbacks', href: '#' },
+    { icon: Camera, label: 'Video Sessions', href: '#' },
+    { icon: Users, label: 'Patients', href: '#' },
+    { icon: Pen, label: 'Prescriptions', href: '#' },
+    { icon: DollarSign, label: 'Earnings', href: '#' },
     { icon: MessageCircle, label: 'Chats', href: '#' },
-    { icon: FileText, label: 'Blogs', href: '#' },
+    { icon: Contact, label: 'Contact Counsellors', href: '#' },
+    { icon: HelpingHandIcon, label: 'Get Help', href: '#' },
   ];
 
   return (
@@ -99,4 +88,4 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   );
 }
 
-export default Sidebar
+export default SidebarForPsy
