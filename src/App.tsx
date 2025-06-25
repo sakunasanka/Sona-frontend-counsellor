@@ -4,7 +4,7 @@ import SignUp from "./pages/Auth/SignUp";
 import SignIn from './pages/Auth/SignIn';
 import CounsellorDashboard from './pages/Counsellor/CounsellorDashboard';
 import PsychiatristDashboard from './pages/Psychiatrist/PsychiatristDashboard';
-import ExampleUse from './pages/exampleUse';
+import ExampleUse from './pages/ExampleUse';
 
 function App() {
 
