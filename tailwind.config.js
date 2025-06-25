@@ -14,10 +14,10 @@ export default {
           400: "#9CA3AF", 
         },
         green: {
+          400: '#DDF6D2',
           500: '#16a34a',
           600: '#15803d',
           700: '#166534',
-
         },
         buttonPink: {
           500: '#EF5DA8',
@@ -34,6 +34,9 @@ export default {
         pink: {
           100: '#FCDDEC',
           500: '#EF5DA8'
+        },
+        orange: {
+          100: '#FFB1A7'
         }
       },
       fontFamily: {
