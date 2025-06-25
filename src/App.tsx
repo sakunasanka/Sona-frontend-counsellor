@@ -5,6 +5,7 @@ import SignIn from './pages/Auth/SignIn';
 import CounsellorDashboard from './pages/Counsellor/CounsellorDashboard';
 import PsychiatristDashboard from './pages/Psychiatrist/PsychiatristDashboard';
 import ExampleUse from './pages/ExampleUse';
+import CounsellorFeedbacks from './pages/Counsellor/CounsellorFeedbacks';
 
 function App() {
 
@@ -17,6 +18,7 @@ function App() {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/counsellor-dashboard" element={<CounsellorDashboard />} />
         <Route path="/psychiatrist-dashboard" element={<PsychiatristDashboard />} />
+        <Route path="/counsellor-feedbacks" element={<CounsellorFeedbacks />} />
       </Routes>
     </Router>
   );

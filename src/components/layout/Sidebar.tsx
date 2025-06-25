@@ -14,6 +14,7 @@
 // export default Sidebar;
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Menu, Bell, ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, LogOut } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { icon: Home, label: 'Home', href: '#' },
     { icon: Calendar, label: 'Sessions', href: '#' },
     { icon: Users, label: 'Clients', href: '#' },
-    { icon: ThumbsUp, label: 'Feedbacks', href: '#' },
+    { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks' },
     { icon: MessageCircle, label: 'Chats', href: '#' },
     { icon: FileText, label: 'Blogs', href: '#' },
   ];
@@ -44,8 +45,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       
       {/* Sidebar */}
       <div className={`
-        fixed top-0 left-0 h-full w-70 bg-[#FFE9EF] z-50 transform transition-transform duration-300 ease-in-out flex flex-col
-        lg:translate-x-0 lg:static lg:z-auto
+        h-full w-80 bg-[#FFE9EF] flex flex-col
+        fixed top-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:relative lg:transform-none lg:z-auto
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Sidebar Header */}
