@@ -105,7 +105,7 @@ const PsychiatristDashboard = () => {
                     <div ref={sliderRef} className="keen-slider overflow-hidden">
                       {sessions.map((session, idx) => (
                         <div key={idx} className="keen-slider__slide">
-                          <Card className="bg-pink-300 p-4 h-full">
+                          <Card className="bg-pink-200 p-4 h-full">
                             <h3 className="text-lg font-semibold">{session.name}</h3>
                             <p className="text-sm">{session.date}</p>
                             <p className="text-xs text-gray-600 mt-2">
