@@ -1,4 +1,3 @@
-import React from 'react'
 import { Menu, Bell } from 'lucide-react';
 
 const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
