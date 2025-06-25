@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star } from 'lucide-react';
+import { Star, Heart, MessageCircle, Send, MoreHorizontal } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
 
 interface Feedback {
@@ -14,6 +14,8 @@ interface Feedback {
     name: string;
     message: string;
   };
+  likes?: number;
+  isLiked?: boolean;
 }
 
 interface StarRatingProps {
@@ -22,10 +24,12 @@ interface StarRatingProps {
 
 interface FeedbackCardProps {
   feedback: Feedback;
+  onReply: (feedbackId: number, message: string) => void;
+  onLike: (feedbackId: number) => void;
 }
 
 const CounsellorFeedbacks: React.FC = () => {
-    const feedbacks: Feedback[] = [
+    const [feedbacks, setFeedbacks] = useState<Feedback[]>([
     {
       id: 1,
       name: "Uzumaki Naruto",
@@ -41,7 +45,9 @@ Sometimes, little comforts like this help me keep going. 🍜`,
       reply: {
         name: "Dr Sarina",
         message: "Thanks Naruto! It means a lot"
-      }
+      },
+      likes: 12,
+      isLiked: false
     },
     {
       id: 2,
@@ -52,7 +58,9 @@ Sometimes, little comforts like this help me keep going. 🍜`,
       pic_src: "/assets/images/student-photo.png",
       content: `Today i visited my favourite ramen shop which is "Ichiraku Ramen" Like always i forgot to bought money 😅😅
 
-Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on credit—again 😭. I got my usual miso pork with extra toppings, and man, it hit the spot! 😋`
+Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on credit—again 😭. I got my usual miso pork with extra toppings, and man, it hit the spot! 😋`,
+      likes: 8,
+      isLiked: true
     },
     {
       id: 3,
@@ -63,9 +71,11 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
       pic_src: "/assets/images/student-photo.png",
       content: `Today i visited my favourite ramen shop which is "Ichiraku Ramen" Like always i forgot to bought money 😅😅
 
-Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on credit—again 😭. I got my usual miso pork with extra toppings, and man, it hit the spot! 😋`
+Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on credit—again 😭. I got my usual miso pork with extra toppings, and man, it hit the spot! 😋`,
+      likes: 3,
+      isLiked: false
     }
-  ];
+  ]);
 
   const StarRating: React.FC<StarRatingProps> = ({ rating }) => (
     <div className="flex gap-1">
@@ -78,64 +88,194 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
     </div>
   );
 
-  const FeedbackCard: React.FC<FeedbackCardProps> = ({ feedback }) => (
-    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-4">
-      <div className="flex items-start gap-3 mb-4">
-        <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center text-2xl flex-shrink-0">
-          <img src={feedback.pic_src} alt={feedback.name} className="w-full h-full object-cover rounded-full" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-gray-900 text-sm md:text-base">{feedback.name}</h3>
-            <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-xs font-medium">
-              {feedback.status}
-            </span>
-          </div>
-          <p className="text-gray-500 text-xs md:text-sm">{feedback.timeAgo}</p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <StarRating rating={feedback.rating} />
-          <button className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-1.5 rounded-full text-sm font-medium transition-colors">
-            Reply
-          </button>
-        </div>
-      </div>
-      
-      <div className="text-gray-700 text-sm md:text-base leading-relaxed whitespace-pre-line mb-4">
-        {feedback.content}
-      </div>
+  const FeedbackCard: React.FC<FeedbackCardProps> = ({ feedback, onReply, onLike }) => {
+    const [showReplyInput, setShowReplyInput] = useState(false);
+    const [replyText, setReplyText] = useState('');
 
-      {feedback.reply && (
-        <div className="bg-pink-50 rounded-xl p-3 md:p-4 border-l-4 border-pink-200">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-              <img 
-                src="/assets/images/profile-photo.png" 
-                alt={feedback.reply.name} 
-                className="w-full h-full object-cover"
-              />
+    const handleReplySubmit = () => {
+      if (replyText.trim()) {
+        onReply(feedback.id, replyText.trim());
+        setReplyText('');
+        setShowReplyInput(false);
+      }
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleReplySubmit();
+      }
+    };
+
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
+        {/* Main feedback content */}
+        <div className="p-4 md:p-6">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+              <img src={feedback.pic_src} alt={feedback.name} className="w-full h-full object-cover" />
             </div>
-            <span className="font-semibold text-gray-900 text-sm">{feedback.reply.name}</span>
-            <span className="bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full text-xs font-medium">
-              You
-            </span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-semibold text-gray-900 text-sm md:text-base">{feedback.name}</h3>
+                <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-xs font-medium">
+                  {feedback.status}
+                </span>
+              </div>
+              <p className="text-gray-500 text-xs md:text-sm">{feedback.timeAgo}</p>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <StarRating rating={feedback.rating} />
+              <button className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                <MoreHorizontal className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
           </div>
-          <p className="text-gray-700 text-sm">{feedback.reply.message}</p>
-        </div>
-      )}
-    </div>
-  );
+          
+          <div className="text-gray-700 text-sm md:text-base leading-relaxed whitespace-pre-line mb-4">
+            {feedback.content}
+          </div>
 
-    const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-  
-    const toggleSidebar = (): void => {
-      setSidebarOpen(!sidebarOpen);
-    };
-  
-    const closeSidebar = (): void => {
-      setSidebarOpen(false);
-    };
-  
+          {/* Action buttons */}
+          <div className="flex items-center gap-4 py-2 border-b border-gray-100">
+            <button 
+              onClick={() => onLike(feedback.id)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-gray-50 ${
+                feedback.isLiked ? 'text-red-500' : 'text-gray-600'
+              }`}
+            >
+              <Heart className={`w-4 h-4 ${feedback.isLiked ? 'fill-current' : ''}`} />
+              {feedback.likes || 0}
+            </button>
+            <button 
+              onClick={() => setShowReplyInput(!showReplyInput)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Reply
+            </button>
+          </div>
+        </div>
+
+        {/* Existing reply display */}
+        {feedback.reply && (
+          <div className="px-4 md:px-6 pb-4">
+            <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4 border-l-4 border-pink-200">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                  <img 
+                    src="/assets/images/profile-photo.png" 
+                    alt={feedback.reply.name} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-gray-900 text-sm">{feedback.reply.name}</span>
+                    <span className="bg-gradient-to-r from-pink-100 to-purple-100 text-pink-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                      Counsellor
+                    </span>
+                  </div>
+                  <p className="text-gray-700 text-sm leading-relaxed">{feedback.reply.message}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reply input */}
+        {showReplyInput && (
+          <div className="px-4 md:px-6 pb-4">
+            <div className="bg-gray-50 rounded-xl p-4 border-2 border-dashed border-gray-200">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                  <img 
+                    src="/assets/images/profile-photo.png" 
+                    alt="Your profile" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <textarea
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Write a thoughtful response..."
+                    className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 transition-colors"
+                    rows={3}
+                    autoFocus
+                  />
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">
+                        Press Enter to send, Shift+Enter for new line
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setShowReplyInput(false);
+                          setReplyText('');
+                        }}
+                        className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleReplySubmit}
+                        disabled={!replyText.trim()}
+                        className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:from-pink-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      >
+                        <Send className="w-4 h-4" />
+                        Send
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const handleReply = (feedbackId: number, message: string) => {
+    setFeedbacks(prev => prev.map(feedback => 
+      feedback.id === feedbackId 
+        ? { 
+            ...feedback, 
+            reply: { 
+              name: "Dr Sarina", 
+              message 
+            } 
+          }
+        : feedback
+    ));
+  };
+
+  const handleLike = (feedbackId: number) => {
+    setFeedbacks(prev => prev.map(feedback => 
+      feedback.id === feedbackId 
+        ? { 
+            ...feedback, 
+            isLiked: !feedback.isLiked,
+            likes: (feedback.likes || 0) + (feedback.isLiked ? -1 : 1)
+          }
+        : feedback
+    ));
+  };
+
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+
+  const toggleSidebar = (): void => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const closeSidebar = (): void => {
+    setSidebarOpen(false);
+  };
+
   return (
     <div className="flex flex-col h-screen">
         <NavBar onMenuClick={toggleSidebar} />
@@ -213,7 +353,12 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
                 {/* Feedback Cards */}
                 <div className="space-y-4 lg:space-y-6">
                     {feedbacks.map((feedback) => (
-                        <FeedbackCard key={feedback.id} feedback={feedback} />
+                        <FeedbackCard 
+                            key={feedback.id} 
+                            feedback={feedback} 
+                            onReply={handleReply}
+                            onLike={handleLike}
+                        />
                     ))}
                 </div>
 
