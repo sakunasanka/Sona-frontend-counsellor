@@ -4,6 +4,7 @@ interface CardProps {
   title?: string;
   className?: string;
   children: React.ReactNode;
+  variant?: 'default' | 'glass';
 }
 
 const Card: React.FC<CardProps> = ({ title, children, className = '' }) => (
