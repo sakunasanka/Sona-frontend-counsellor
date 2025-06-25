@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { icon: Users, label: 'Clients', href: '#' },
     { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks' },
     { icon: MessageCircle, label: 'Chats', href: '#' },
-    { icon: FileText, label: 'Blogs', href: '#' },
+    { icon: FileText, label: 'Blogs', href: '/counsellor-blogs' },
   ];
 
   return (
