@@ -51,9 +51,9 @@ const CounsellorSessions = () => {
             verified: true,
         },
         {
-            username: "JohnDoe99",
+            username: "Bavuma125",
             fullName: "Ronath Konara",
-            date: "2025-07-01T15:00",
+            date: "2025-06-25T19:00",
             identity: "Undisclosed",
             verified: true,
         },
@@ -168,7 +168,7 @@ const CounsellorSessions = () => {
                                                 Identity: {session.identity} ⚠️
                                             </p>
                                         </div>
-                                        <Button variant="special" className="mt-3 md:mt-0 self-start flex items-center">
+                                        <Button variant="special" className="mt-3 md:mt-0 self-start flex items-center" onClick={() => navigate("/counsellor-session-details")}>
                                             <Eye className="mr-2" size={16} />
                                             Explore Session
                                         </Button>
