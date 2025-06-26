@@ -50,13 +50,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-4 border-b lg:hidden">
+        <div className="flex items-center p-4 border-b lg:hidden">
           <button 
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-md transition-colors"
           >
             <ArrowLeft size={20} className="text-gray-600" />
           </button>
+          <img 
+            src="/assets/images/Sona-logo.png" 
+            alt="Sona Logo" 
+            className="h-8 w-auto ml-3"
+          />
         </div>
 
         {/* Menu Items */}
