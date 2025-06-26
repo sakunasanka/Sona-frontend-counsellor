@@ -13,9 +13,9 @@
 
 // export default Sidebar;
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, Bell, ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, LogOut } from 'lucide-react';
+
+import React from 'react';
+import { ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, LogOut } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -58,6 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <ArrowLeft size={20} className="text-gray-600" />
           </button>
           <img 
+
             src="/assets/images/Sona-logo.png" 
             alt="Sona Logo" 
             className="h-8 w-auto ml-3"
