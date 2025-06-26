@@ -1,4 +1,6 @@
+import React, { useState } from 'react';
 import { Menu, Bell, X } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 const initialNotifications = [
   {
@@ -43,6 +45,25 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
   const [showOnlyUnread, setShowOnlyUnread] = useState(false);
   const [sortOption, setSortOption] = useState('Newest');
   const [activeNotification, setActiveNotification] = useState<null | typeof notifications[0]>(null);
+
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showDropdown &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleString(undefined, {
@@ -106,14 +127,10 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
           <button onClick={onMenuClick} className="p-1 hover:bg-gray-100 rounded-md transition-colors lg:hidden">
             <Menu size={24} className="text-gray-700" />
           </button>
-<<<<<<< feature/SONA-19
           
           <div className="flex items-center">
             <img src="/assets/images/Sona-logo.png" alt="SONA" className="w-20" />
           </div>
-=======
-          <img src="public/assets/images/Sona-logo.png" alt="SONA" className="w-20" />
->>>>>>> dev
         </div>
 
         <div className="flex items-center space-x-3 relative">
@@ -128,9 +145,9 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
           </button>
 
           <div
-            className={`absolute right-10 top-12 w-80 bg-white rounded-xl border p-4 z-50 shadow-xl transform transition-all duration-300 ease-in-out ${
-              showDropdown ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
-            }`}
+            ref={dropdownRef}
+            className={`absolute right-10 top-12 w-80 bg-white rounded-xl border p-4 z-50 shadow-xl transform transition-all duration-300 ease-in-out ${showDropdown ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
+              }`}
           >
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-md font-semibold">Notifications</h4>
@@ -139,7 +156,6 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
               </button>
             </div>
 
-            
 
             <div className="flex items-center justify-between mb-4 text-sm">
               <label className="flex items-center space-x-2">
@@ -220,15 +236,11 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
           </div>
 
           <button className="w-8 h-8 rounded-full overflow-hidden hover:ring-2 hover:ring-pink-200 transition-all">
-<<<<<<< feature/SONA-19
             <img 
               src="/assets/images/profile-photo.png" 
               alt="Profile" 
               className="w-full h-full object-cover"
             />
-=======
-            <img src="public/assets/images/profile-photo.png" alt="Profile" className="w-full h-full object-cover" />
->>>>>>> dev
           </button>
         </div>
       </div>
