@@ -58,9 +58,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <ArrowLeft size={20} className="text-gray-600" />
           </button>
           <img 
-            src="/public/assets/images/Sona-logo.png" 
+
+            src="/assets/images/Sona-logo.png" 
             alt="Sona Logo" 
-            className="h-5 w-auto ml-3"
+            className="h-8 w-auto ml-3"
           />
         </div>
 

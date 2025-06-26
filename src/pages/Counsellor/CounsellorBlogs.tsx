@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle, Share2, Eye, MoreHorizontal, Calendar, Clock, Edit, Trash2, FileText, CheckCircle, PenTool } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
 
@@ -27,6 +28,7 @@ interface BlogCardProps {
 }
 
 const CounsellorBlogs: React.FC = () => {
+  const navigate = useNavigate();
   const [blogs, setBlogs] = useState<Blog[]>([
     {
       id: 1,
@@ -238,6 +240,10 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
     console.log('Share blog:', blogId);
   };
 
+  const handleCreateNewBlog = () => {
+    navigate('/counsellor/create-blog');
+  };
+
   const toggleSidebar = (): void => {
     setSidebarOpen(!sidebarOpen);
   };
@@ -275,7 +281,10 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
           {/* Page Header */}
           <div className="flex items-center justify-between gap-4 mb-6 lg:mb-8">
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Your Blogs</h1>
-            <button className="bg-primary from-pink-500 to-purple-500 hover:bg-primaryLight text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-medium transition-all shadow-sm flex items-center gap-2 flex-shrink-0">
+            <button 
+              onClick={handleCreateNewBlog}
+              className="bg-primary from-pink-500 to-purple-500 hover:bg-primaryLight text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-medium transition-all shadow-sm flex items-center gap-2 flex-shrink-0"
+            >
               <PenTool className="w-4 lg:w-5 h-4 lg:h-5" />
               <span className="hidden sm:inline">New Blog</span>
             </button>
@@ -390,7 +399,10 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
                   : "Start sharing your thoughts and insights with your audience."
                 }
               </p>
-              <button className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 mx-auto">
+              <button 
+                onClick={handleCreateNewBlog}
+                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 mx-auto"
+              >
                 <PenTool className="w-5 h-5" />
                 Write your first post
               </button>
