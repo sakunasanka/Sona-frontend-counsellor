@@ -26,13 +26,13 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const menuItems = [
     { icon: Home, label: 'Home', href: '/counsellor-dashboard' },
-    { icon: Calendar, label: 'Sessions', href: '#' },
+    { icon: Calendar, label: 'Sessions', href: '/counsellor-sessions' }, 
     { icon: Users, label: 'Clients', href: '#' },
     { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks' },
     { icon: MessageCircle, label: 'Chats', href: '#' },
     { icon: FileText, label: 'Blogs', href: '/counsellor-blogs' },
   ];
-
+  
   return (
     <>
       {/* Mobile Overlay */}
