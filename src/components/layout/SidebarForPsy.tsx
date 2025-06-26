@@ -1,21 +1,7 @@
-// import React from 'react';
 
-// interface SidebarProps {
-//   children: React.ReactNode;
-//   className?: string;
-// }
-
-// const Sidebar: React.FC<SidebarProps> = ({ children, className = '' }) => (
-//   <aside className={`w-64 bg-white border-r border-border p-4 ${className}`}>
-//     {children}
-//   </aside>
-// );
-
-// export default Sidebar;
-
-
-import React from 'react';
-import { ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { Menu, Bell, ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, LogOut, Camera, DollarSign, Contact, HelpingHandIcon, Pen } from 'lucide-react';
+import "react-icons/fa";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -23,14 +9,16 @@ interface SidebarProps {
 }
 
 // Sidebar Component
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+const SidebarForPsy : React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const menuItems = [
     { icon: Home, label: 'Home', href: '#' },
-    { icon: Calendar, label: 'Sessions', href: '#' },
-    { icon: Users, label: 'Clients', href: '#' },
-    { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks' },
+    { icon: Camera, label: 'Video Sessions', href: '#' },
+    { icon: Users, label: 'Patients', href: '#' },
+    { icon: Pen, label: 'Prescriptions', href: '#' },
+    { icon: DollarSign, label: 'Earnings', href: '#' },
     { icon: MessageCircle, label: 'Chats', href: '#' },
-    { icon: FileText, label: 'Blogs', href: '#' },
+    { icon: Contact, label: 'Contact Counsellors', href: '#' },
+    { icon: HelpingHandIcon, label: 'Get Help', href: '#' },
   ];
 
   return (
@@ -45,23 +33,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       
       {/* Sidebar */}
       <div className={`
-        h-full w-80 bg-[#FFE9EF] flex flex-col
-        fixed top-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:relative lg:transform-none lg:z-auto
+        fixed top-0 left-0 h-full w-70 bg-[#FFE9EF] z-50 transform transition-transform duration-300 ease-in-out flex flex-col
+        lg:translate-x-0 lg:static lg:z-auto
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Sidebar Header */}
-        <div className="flex items-center p-4 border-b lg:hidden">
+        <div className="flex items-center justify-between p-4 border-b lg:hidden">
           <button 
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-md transition-colors"
           >
             <ArrowLeft size={20} className="text-gray-600" />
           </button>
-          <img 
-            src="/public/assets/images/Sona-logo.png" 
-            alt="Sona Logo" 
-            className="h-5 w-auto ml-3"
-          />
         </div>
 
         {/* Menu Items */}
@@ -105,4 +88,4 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   );
 }
 
-export default Sidebar
+export default SidebarForPsy
