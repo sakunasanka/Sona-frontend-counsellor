@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { Menu, Bell, X } from 'lucide-react';
 
 const initialNotifications = [
@@ -36,6 +35,7 @@ const initialNotifications = [
     timestamp: "2025-06-26T03:00:00"
   }
 ];
+
 
 const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
   const [notifications, setNotifications] = useState(initialNotifications);
