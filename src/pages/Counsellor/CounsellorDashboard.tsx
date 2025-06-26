@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavBar, Sidebar } from "../../components/layout";
 import Container from "../../components/ui/Container";
@@ -51,7 +51,7 @@ const CounsellorDashboard = () => {
     },
   ];
 
-  const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
+  const [sliderRef] = useKeenSlider<HTMLDivElement>({
   slides: {
     perView: 3,
     spacing: 16,
@@ -74,13 +74,19 @@ const CounsellorDashboard = () => {
       <div className="flex flex-1 overflow-hidden">
              
       {/* Sidebar */}
-      <div className="w-64 bg-white border-r">
+      <div className="w-80 bg-white border-r hidden lg:block">
+          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar}/>
+      </div>
+
+      {/* Mobile Sidebar */}
+      <div className="lg:hidden">
           <Sidebar isOpen={sidebarOpen} onClose={closeSidebar}/>
       </div>
 
       {/* Main Content */}
-        <div className="flex-grow overflow-auto p-6">
-            <div className="min-h-screen min-w-screen bg-pink-100 rounded-xl relative overflow-hidden"
+        <div className="flex-1 overflow-auto lg:ml-0">
+            <div className="p-6">
+            <div className="min-h-[calc(100vh-8rem)] w-full bg-pink-100 rounded-xl relative overflow-hidden"
                 style={{
                   backgroundImage: `
                     url('../../../public/assets/images/bg-trans.jpg'), 
@@ -163,6 +169,7 @@ const CounsellorDashboard = () => {
                     </section>
                   </Container>
               
+            </div>
             </div>
         </div>
       </div>

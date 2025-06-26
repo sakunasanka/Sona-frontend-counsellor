@@ -13,9 +13,9 @@
 
 // export default Sidebar;
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, Bell, ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, LogOut } from 'lucide-react';
+
+import React from 'react';
+import { ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, LogOut } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -25,12 +25,12 @@ interface SidebarProps {
 // Sidebar Component
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const menuItems = [
-    { icon: Home, label: 'Home', href: '#' },
+    { icon: Home, label: 'Home', href: '/counsellor-dashboard' },
     { icon: Calendar, label: 'Sessions', href: '#' },
     { icon: Users, label: 'Clients', href: '#' },
     { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks' },
     { icon: MessageCircle, label: 'Chats', href: '#' },
-    { icon: FileText, label: 'Blogs', href: '#' },
+    { icon: FileText, label: 'Blogs', href: '/counsellor-blogs' },
   ];
 
   return (
@@ -50,13 +50,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-4 border-b lg:hidden">
+        <div className="flex items-center p-4 border-b lg:hidden">
           <button 
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-md transition-colors"
           >
             <ArrowLeft size={20} className="text-gray-600" />
           </button>
+          <img 
+
+            src="/assets/images/Sona-logo.png" 
+            alt="Sona Logo" 
+            className="h-8 w-auto ml-3"
+          />
         </div>
 
         {/* Menu Items */}
