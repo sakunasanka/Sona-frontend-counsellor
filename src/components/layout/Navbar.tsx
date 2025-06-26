@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Menu, Bell, X } from 'lucide-react';
 
 const initialNotifications = [
@@ -106,7 +107,10 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
           <button onClick={onMenuClick} className="p-1 hover:bg-gray-100 rounded-md transition-colors lg:hidden">
             <Menu size={24} className="text-gray-700" />
           </button>
-          <img src="public/assets/images/Sona-logo.png" alt="SONA" className="w-20" />
+          
+          <div className="flex items-center">
+            <img src="/assets/images/Sona-logo.png" alt="SONA" className="w-20" />
+          </div>
         </div>
 
         <div className="flex items-center space-x-3 relative">
@@ -213,7 +217,11 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
           </div>
 
           <button className="w-8 h-8 rounded-full overflow-hidden hover:ring-2 hover:ring-pink-200 transition-all">
-            <img src="public/assets/images/profile-photo.png" alt="Profile" className="w-full h-full object-cover" />
+            <img 
+              src="/assets/images/profile-photo.png" 
+              alt="Profile" 
+              className="w-full h-full object-cover"
+            />
           </button>
         </div>
       </div>

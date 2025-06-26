@@ -25,12 +25,12 @@ interface SidebarProps {
 // Sidebar Component
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const menuItems = [
-    { icon: Home, label: 'Home', href: '#' },
+    { icon: Home, label: 'Home', href: '/counsellor-dashboard' },
     { icon: Calendar, label: 'Sessions', href: '#' },
     { icon: Users, label: 'Clients', href: '#' },
     { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks' },
     { icon: MessageCircle, label: 'Chats', href: '#' },
-    { icon: FileText, label: 'Blogs', href: '#' },
+    { icon: FileText, label: 'Blogs', href: '/counsellor-blogs' },
   ];
 
   return (
@@ -58,9 +58,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <ArrowLeft size={20} className="text-gray-600" />
           </button>
           <img 
-            src="/public/assets/images/Sona-logo.png" 
+
+            src="/assets/images/Sona-logo.png" 
             alt="Sona Logo" 
-            className="h-5 w-auto ml-3"
+            className="h-8 w-auto ml-3"
           />
         </div>
 
