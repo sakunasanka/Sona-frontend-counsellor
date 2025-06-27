@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Dropdown, Card, Checkbox, CardContent, Container, Modal, Table, Input } from '../components/ui';
 import { NavBar, Sidebar } from '../components/layout';
@@ -36,13 +36,18 @@ const ExampleUse = () => {
 
       {/* Bottom section: Sidebar + Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-64 bg-white border-r">
+        {/* Sidebar - Let the Sidebar component handle its own positioning */}
+        <div className="hidden lg:block w-80 flex-shrink-0">
+          <Sidebar isOpen={true} onClose={closeSidebar}/>
+        </div>
+        
+        {/* Mobile Sidebar - Handled entirely by Sidebar component */}
+        <div className="lg:hidden">
           <Sidebar isOpen={sidebarOpen} onClose={closeSidebar}/>
         </div>
 
         {/* Main Content */}
-        <div className="flex-grow overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-4 lg:p-6">
           <Container>
             <h1 className="text-2xl font-bold mb-6">Counseling Portal</h1>
 
