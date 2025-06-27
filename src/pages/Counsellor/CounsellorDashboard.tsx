@@ -176,7 +176,7 @@ const CounsellorDashboard = () => {
                     <Card className="bg-rose-300 p-6">
                       <h3 className="text-lg font-bold mb-2">Write a Blog Post</h3>
                       <p className="mb-4">Share your experience with the community</p>
-                      <Button variant="special" onClick={() => navigate("/counsellor/create-blog")} className="flex items-center">
+                      <Button variant="special" onClick={handleCreateBlog} className="flex items-center">
                         <FaPenNib className="mr-2" /> Start Writing
                       </Button>
                     </Card>
