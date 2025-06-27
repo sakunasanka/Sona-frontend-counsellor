@@ -39,6 +39,16 @@ export default {
           100: '#FFB1A7'
         }
       },
+      keyframes: {
+        typewriter: {
+          '0%': { width: '0%' },
+          '100%': { width: '100%' },
+        },
+      },
+      animation: {
+        'spin-slow': 'spin 2s linear',
+        typewriter: 'typewriter 1.2s steps(20, end) forwards',
+      },
       fontFamily: {
         sans: ["Inter", "sans-serif"], // Example font family
         serif: ["Merriweather", "serif"], // Example font family

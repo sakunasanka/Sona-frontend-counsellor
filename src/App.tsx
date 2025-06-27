@@ -7,6 +7,7 @@ import PsychiatristDashboard from './pages/Psychiatrist/PsychiatristDashboard';
 import ExampleUse from './pages/ExampleUse';
 import CounsellorFeedbacks from './pages/Counsellor/CounsellorFeedbacks';
 import CounsellorSessions from './pages/Counsellor/CounsellorSessions';
+import CounsellorSessionDetails from './pages/Counsellor/CounsellorSessionDetails';
 import CounsellorBlogs from './pages/Counsellor/CounsellorBlogs';
 import CreateBlog from './pages/Counsellor/CreateBlog';
 import CounsellorChats from './pages/Counsellor/CounsellorChats';
@@ -25,6 +26,7 @@ function App() {
         <Route path="/counsellor-feedbacks" element={<CounsellorFeedbacks />} />
         <Route path="/counsellor-blogs" element={<CounsellorBlogs />} />
         <Route path="/counsellor-sessions" element={<CounsellorSessions />} />
+        <Route path="/counsellor-session-details" element={<CounsellorSessionDetails />} />
         <Route path="/counsellor/create-blog" element={<CreateBlog />} />
         <Route path="/counsellor/chats" element={<CounsellorChats />} />
       </Routes>

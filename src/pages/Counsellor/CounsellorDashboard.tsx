@@ -118,7 +118,8 @@ const CounsellorDashboard = () => {
                             </p>
                             <Button
                               variant="special"
-                              onClick={handleFeature} className="mt-6"
+                              onClick={() => navigate("/counsellor-sessions")}
+                              className="mt-6"
                             >
                               Explore Session
                             </Button>
@@ -145,7 +146,7 @@ const CounsellorDashboard = () => {
                     <section className="grid md:grid-cols-3 gap-6">
                       <Card className="bg-rose-300  p-6">
                         <h3 className="text-lg font-bold mb-2">Working Schedule</h3>
-                        <p className="mb-4">Set your availability on your terms!</p>
+                        <p className="mb-4">Work on demand & set your availability on your terms!</p>
                         <Button variant="special" onClick={handleFeature} className="flex items-center">
                           <FaCalendarAlt className="mr-2" /> Explore Calendar
                         </Button>
@@ -162,7 +163,7 @@ const CounsellorDashboard = () => {
                       <Card className="bg-rose-300  p-6">
                         <h3 className="text-lg font-bold mb-2">Write a Blog Post</h3>
                         <p className="mb-4">Share your experience with the community</p>
-                        <Button variant="special" onClick={handleFeature} className="flex items-center">
+                        <Button variant="special" onClick={() => navigate("/counsellor/create-blog")} className="flex items-center">
                           <FaPenNib className="mr-2" /> Start Writing
                         </Button>
                       </Card>
