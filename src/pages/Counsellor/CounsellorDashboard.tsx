@@ -16,6 +16,7 @@ const CounsellorDashboard = () => {
   const closeSidebar = () => setSidebarOpen(false);
 
   const handleFeature = () => navigate("/signin");
+  const handleCreateBlog = () => navigate("/counsellor/create-blog");
 
 
   const sessions = [
@@ -181,8 +182,7 @@ const CounsellorDashboard = () => {
                     </Card>
                   </section>
                 </div>
-                  </Container>
-              
+                  </Container>              
             </div>
             </div>
         </div>
