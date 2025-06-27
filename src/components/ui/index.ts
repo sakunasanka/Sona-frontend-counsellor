@@ -7,3 +7,4 @@ export { default as Container } from './Container';
 export { default as Dropdown } from './Dropdown';
 export { default as CardContent } from './CardContent';
 export { default as Checkbox } from './Checkbox';
+export { default as CustomSlider } from './CustomSlider';

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Menu, Bell, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { useNavigate } from "react-router-dom";
 
 const initialNotifications = [
   {
@@ -38,8 +39,10 @@ const initialNotifications = [
   }
 ];
 
-
 const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
+  const navigate = useNavigate();
+  const handleProfile = () => navigate("/counsellor-profile");
+  
   const [notifications, setNotifications] = useState(initialNotifications);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showOnlyUnread, setShowOnlyUnread] = useState(false);
@@ -235,7 +238,10 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
             </div>
           </div>
 
-          <button className="w-8 h-8 rounded-full overflow-hidden hover:ring-2 hover:ring-pink-200 transition-all">
+          <button
+            className="w-8 h-8 rounded-full overflow-hidden hover:ring-2 hover:ring-pink-200 transition-all"
+            onClick={() => handleProfile()}
+          >
             <img 
               src="/assets/images/profile-photo.png" 
               alt="Profile" 

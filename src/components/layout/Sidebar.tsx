@@ -20,7 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const menuItems = [
     { icon: Home, label: 'Home', href: '/counsellor-dashboard', id: 'home' },
-    { icon: Calendar, label: 'Sessions', href: '#', id: 'sessions' },
+    { icon: Calendar, label: 'Sessions', href: '/counsellor-sessions', id: 'sessions' },
     { icon: Users, label: 'Clients', href: '#', id: 'clients' },
     { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks', id: 'feedbacks' },
     { icon: MessageCircle, label: 'Chats', href: '/counsellor/chats', id: 'chats' },

@@ -40,8 +40,9 @@ const ChatList: React.FC<{
   chats: Chat[], 
   selectedChat: Chat | null, 
   onChatSelect: (chat: Chat) => void,
+  getLastMessage?: (chatId: number) => string,
   isMobile?: boolean 
-}> = ({ chats, selectedChat, onChatSelect, isMobile }) => {
+}> = ({ chats, selectedChat, onChatSelect, getLastMessage, isMobile }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredChats = chats.filter(chat =>
@@ -102,7 +103,9 @@ const ChatList: React.FC<{
                 <h3 className="font-semibold text-gray-900 truncate">{chat.name}</h3>
                 <span className="text-xs text-gray-500">{chat.time}</span>
               </div>
-              <p className="text-sm text-gray-600 truncate">{chat.lastMessage}</p>
+              <p className="text-sm text-gray-600 truncate">
+                {getLastMessage ? getLastMessage(chat.id) : chat.lastMessage}
+              </p>
             </div>
             
             {chat.unreadCount > 0 && (
@@ -305,7 +308,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
   };
 
   // Sample data
-  const [chats] = useState<Chat[]>([
+  const [chats, setChats] = useState<Chat[]>([
     {
       id: 1,
       name: 'Sarah Johnson',
@@ -373,8 +376,35 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
     }
   ]);
 
+  // Function to get the last message for a chat
+  const getLastMessage = (chatId: number): string => {
+    if (chatId === 1 && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      // Truncate message to fit in one line (about 50 characters)
+      return lastMessage.text.length > 50 
+        ? lastMessage.text.substring(0, 50) + '...'
+        : lastMessage.text;
+    }
+    
+    // For other chats, use the default message from sample data
+    const chat = chats.find(c => c.id === chatId);
+    return chat?.lastMessage || '';
+  };
+
   const handleChatSelect = (chat: Chat) => {
     setSelectedChat(chat);
+    
+    // Clear unread count when chat is opened
+    if (chat.unreadCount > 0) {
+      setChats(prevChats => 
+        prevChats.map(c => 
+          c.id === chat.id 
+            ? { ...c, unreadCount: 0 }
+            : c
+        )
+      );
+    }
+    
     if (window.innerWidth < 1024) {
       setCurrentView('chat');
     }
@@ -389,6 +419,18 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
       status: 'sent'
     };
     setMessages([...messages, newMessage]);
+    
+    // Update the last message in the chat list for the selected chat
+    if (selectedChat) {
+      const truncatedMessage = text.length > 50 ? text.substring(0, 50) + '...' : text;
+      setChats(prevChats => 
+        prevChats.map(c => 
+          c.id === selectedChat.id 
+            ? { ...c, lastMessage: truncatedMessage, time: 'now' }
+            : c
+        )
+      );
+    }
   };
 
   const handleBackToChats = () => {
@@ -431,6 +473,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
               chats={chats}
               selectedChat={selectedChat}
               onChatSelect={handleChatSelect}
+              getLastMessage={getLastMessage}
             />
             
             {/* Chat Area */}
@@ -448,6 +491,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
                 chats={chats}
                 selectedChat={selectedChat}
                 onChatSelect={handleChatSelect}
+                getLastMessage={getLastMessage}
                 isMobile={true}
               />
             ) : (
