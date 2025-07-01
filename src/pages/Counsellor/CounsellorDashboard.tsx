@@ -17,6 +17,7 @@ const CounsellorDashboard = () => {
 
   const handleFeature = () => navigate("/signin");
   const handleCreateBlog = () => navigate("/counsellor/create-blog");
+  const handleExploreCalendar = () => navigate("/counsellor-calendar");
 
 
   const sessions = [
@@ -161,7 +162,7 @@ const CounsellorDashboard = () => {
                       <h3 className="text-lg font-bold mb-2">Working Schedule</h3>
                       <p className="mb-4 flex-grow">Work on demand & set your availability on your terms!</p>
                       <div className="mt-auto">
-                        <Button variant="special" onClick={handleFeature} className="flex items-center">
+                        <Button variant="special" onClick={handleExploreCalendar} className="flex items-center">
                           <FaCalendarAlt className="mr-2" /> Explore Calendar
                         </Button>
                       </div>
