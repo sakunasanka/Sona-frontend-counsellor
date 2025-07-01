@@ -281,7 +281,7 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
         <NavBar onMenuClick={toggleSidebar} />
         <div className="flex flex-1 overflow-hidden">
             {/* Sidebar - Let the Sidebar component handle its own positioning */}
-            <div className="hidden lg:block w-80 flex-shrink-0">
+            <div className="w-80 bg-white border-r hidden lg:block">
                 <Sidebar isOpen={true} onClose={closeSidebar}/>
             </div>
             
