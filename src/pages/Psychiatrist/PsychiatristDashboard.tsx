@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavBar , SidebarForPsy } from "../../components/layout";  
 import Container from "../../components/ui/Container";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { FaCalendarAlt, FaCamera, FaMeetup, FaMoneyBillWave, FaPen, FaPenNib } from "react-icons/fa";
+import { FaCamera, FaMoneyBillWave, FaPen } from "react-icons/fa";
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
 
@@ -52,7 +52,7 @@ const PsychiatristDashboard = () => {
     },
   ];
 
-  const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
+  const [sliderRef] = useKeenSlider<HTMLDivElement>({
   slides: {
     perView: 3,
     spacing: 16,
