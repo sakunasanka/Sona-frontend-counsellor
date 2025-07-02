@@ -53,28 +53,71 @@ const CounsellorDashboard = () => {
     },
   ];
 
-  const [sliderRef] = useKeenSlider<HTMLDivElement>({
+  // Group sessions into chunks of 3
+  const groupedSessions = [];
+  for (let i = 0; i < sessions.length; i += 3) {
+    groupedSessions.push(sessions.slice(i, i + 3));
+  }
+
+  const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
     slides: {
-      perView: 3,
-      spacing: 24,
+      perView: 1,
+      spacing: 0,
     },
     loop: true,
     mode: "snap",
-    breakpoints: {
-      "(max-width: 768px)": {
-        slides: { perView: 1, spacing: 16 }
-      },
-      "(max-width: 1024px)": {
-        slides: { perView: 2, spacing: 16 }
-      },
-    },
+    drag: true,
+    rubberband: true,
     slideChanged(s) {
       setCurrentSlide(s.track.details.rel);
     },
-  });
+    defaultAnimation: {
+      duration: 1000,
+      easing: (t: number) => 1 - Math.pow(1 - t, 3), // ease-out-cubic for smoother animation
+    },
+  }, [
+    (slider) => {
+      let timeout: ReturnType<typeof setTimeout>;
+      let mouseOver = false;
+      
+      function clearNextTimeout() {
+        clearTimeout(timeout);
+      }
+      
+      function nextTimeout() {
+        clearTimeout(timeout);
+        if (mouseOver) return;
+        timeout = setTimeout(() => {
+          slider.next();
+        }, 7000);
+      }
+      
+      slider.on("created", () => {
+        slider.container.addEventListener("mouseover", () => {
+          mouseOver = true;
+          clearNextTimeout();
+        });
+        slider.container.addEventListener("mouseout", () => {
+          mouseOver = false;
+          nextTimeout();
+        });
+        nextTimeout();
+      });
+      
+      slider.on("dragStarted", clearNextTimeout);
+      slider.on("animationEnded", nextTimeout);
+      slider.on("updated", nextTimeout);
+    },
+  ]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
-  const totalSlides = Math.ceil(sessions.length / 3) + 1;
+  const totalSlides = groupedSessions.length;
+
+  const handleDotClick = (index: number) => {
+    if (instanceRef.current) {
+      instanceRef.current.moveToIdx(index);
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen">
@@ -118,40 +161,49 @@ const CounsellorDashboard = () => {
                 {/* Recent Sessions */}
                 <section className="mb-10">
                   <h2 className="text-xl font-semibold text-gray-800 mb-0.5 ">Recent Sessions</h2>
-                  <div className="py--4">
-                    <div ref={sliderRef} className="keen-slider">
-                      {sessions.map((session, idx) => (
-                        <div key={idx} className="keen-slider__slide pr-6 py-4 px-0.5">
-                          <Card className="bg-pink-100 p-6 h-full shadow-lg transition-all hover:scale-104 hover:translate-x-2 duration-300 origin-left">
-                            <h3 className="text-xl font-bold mb-3">{session.name}</h3>
-                            <p className="text-base mb-3">{session.date}</p>
-                            <p className="text-sm text-gray-600 mb-4">
-                              Identity: {session.identity} {session.verified ? "✅" : "⚠️"}
-                            </p>
-                            <Button
-                              variant="special"
-                              onClick={() => navigate("/counsellor-sessions")}
-                              className="mt-6 flex items-center"
-                            >
-                              Explore Session
-                            </Button>
-                          </Card>
+                  <div className="py-4">
+                    <div ref={sliderRef} className="keen-slider overflow-hidden">
+                      {groupedSessions.map((sessionGroup, groupIdx) => (
+                        <div key={groupIdx} className="keen-slider__slide will-change-transform">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-2">
+                            {sessionGroup.map((session, idx) => (
+                              <Card key={idx} className="bg-pink-100 p-6 h-full shadow-lg transition-all duration-300 ease-out hover:shadow-xl origin-center">
+                                <h3 className="text-xl font-bold mb-3 transition-colors duration-200">{session.name}</h3>
+                                <p className="text-base mb-3 transition-colors duration-200">{session.date}</p>
+                                <p className="text-sm text-gray-600 mb-4 transition-colors duration-200">
+                                  Identity: {session.identity} {session.verified ? "✅" : "⚠️"}
+                                </p>
+                                <Button
+                                  variant="special"
+                                  onClick={() => navigate("/counsellor-sessions")}
+                                  className="mt-6 flex items-center transition-all duration-200"
+                                >
+                                  Explore Session
+                                </Button>
+                              </Card>
+                            ))}
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Slider Dots */}
-                  <div className="flex justify-center mt-4 space-x-2">
-                    {Array.from({ length: totalSlides }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`w-3 h-3 rounded-full ${
-                          i === currentSlide ? 'bg-gray-800' : 'bg-gray-400'
-                        }`}
-                      ></div>
-                    ))}
-                  </div>
+                  {/* Slider Dots - Only show if there are multiple groups */}
+                  {totalSlides > 1 && (
+                    <div className="flex justify-center mt-6 space-x-3">
+                      {Array.from({ length: totalSlides }).map((_, i) => (
+                        <div
+                          key={i}
+                          onClick={() => handleDotClick(i)}
+                          className={`w-3 h-3 rounded-full transition-all duration-300 ease-out transform hover:scale-125 cursor-pointer ${
+                            i === currentSlide 
+                              ? 'bg-gray-800 scale-110 shadow-md' 
+                              : 'bg-gray-400 hover:bg-gray-600'
+                          }`}
+                        ></div>
+                      ))}
+                    </div>
+                  )}
                 </section>
 
                 {/* Functional Cards */}
