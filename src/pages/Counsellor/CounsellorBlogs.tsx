@@ -229,7 +229,7 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
   };
 
   const handleEdit = (blogId: number) => {
-    console.log('Edit blog:', blogId);
+    navigate(`/counsellor/edit-blog/${blogId}`);
   };
 
   const handleDelete = (blogId: number) => {
