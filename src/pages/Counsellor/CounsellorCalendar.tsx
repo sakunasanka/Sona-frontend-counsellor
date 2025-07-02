@@ -39,6 +39,13 @@ const CounsellorCalendar: React.FC = () => {
   const [showTimeSlots, setShowTimeSlots] = useState(false);
   const [showUnavailable, setShowUnavailable] = useState(false);
   const [showUnavailableDetails, setShowUnavailableDetails] = useState(false);
+  const [showHistoricalDetails, setShowHistoricalDetails] = useState(false);
+  const [selectedHistoricalDate, setSelectedHistoricalDate] = useState<{
+    date: Date;
+    sessions: Session[];
+    unavailableSlots: any[];
+    unavailableDetails?: UnavailableDate;
+  } | null>(null);
   const [selectedUnavailableDate, setSelectedUnavailableDate] = useState<UnavailableDate | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unavailabilityType, setUnavailabilityType] = useState('full-day');
@@ -48,6 +55,7 @@ const CounsellorCalendar: React.FC = () => {
 
   // Sample data
   const [sessions] = useState<Session[]>([
+    // Today's sessions (July 3, 2025)
     {
       id: '1',
       clientName: 'Sarah Johnson',
@@ -63,14 +71,6 @@ const CounsellorCalendar: React.FC = () => {
       time: '14:30',
       duration: 45,
       status: 'confirmed'
-    },
-    {
-      id: '3',
-      clientName: 'Emma Wilson',
-      date: '2025-07-05',
-      time: '11:00',
-      duration: 60,
-      status: 'pending'
     },
     {
       id: '4',
@@ -103,6 +103,207 @@ const CounsellorCalendar: React.FC = () => {
       time: '20:00',
       duration: 45,
       status: 'pending'
+    },
+    {
+      id: '8',
+      clientName: 'Maria Garcia',
+      date: '2025-07-03',
+      time: '11:30',
+      duration: 60,
+      status: 'confirmed'
+    },
+    {
+      id: '9',
+      clientName: 'David Thompson',
+      date: '2025-07-03',
+      time: '13:00',
+      duration: 45,
+      status: 'pending'
+    },
+    {
+      id: '10',
+      clientName: 'Jennifer Lee',
+      date: '2025-07-03',
+      time: '15:00',
+      duration: 60,
+      status: 'confirmed'
+    },
+    {
+      id: '11',
+      clientName: 'Robert Miller',
+      date: '2025-07-03',
+      time: '17:00',
+      duration: 45,
+      status: 'pending'
+    },
+    {
+      id: '12',
+      clientName: 'Lisa Anderson',
+      date: '2025-07-03',
+      time: '19:00',
+      duration: 30,
+      status: 'confirmed'
+    },
+    
+    // Other days' sessions
+    {
+      id: '3',
+      clientName: 'Emma Wilson',
+      date: '2025-07-05',
+      time: '11:00',
+      duration: 60,
+      status: 'pending'
+    },
+    {
+      id: '13',
+      clientName: 'Tom Williams',
+      date: '2025-07-05',
+      time: '14:00',
+      duration: 45,
+      status: 'confirmed'
+    },
+    {
+      id: '14',
+      clientName: 'Susan Davis',
+      date: '2025-07-06',
+      time: '10:30',
+      duration: 60,
+      status: 'confirmed'
+    },
+    {
+      id: '15',
+      clientName: 'Kevin Brown',
+      date: '2025-07-06',
+      time: '15:30',
+      duration: 45,
+      status: 'pending'
+    },
+    {
+      id: '16',
+      clientName: 'Nancy Clark',
+      date: '2025-07-07',
+      time: '18:00',
+      duration: 60,
+      status: 'confirmed'
+    },
+    {
+      id: '17',
+      clientName: 'Paul Martinez',
+      date: '2025-07-08',
+      time: '09:30',
+      duration: 45,
+      status: 'pending'
+    },
+    {
+      id: '18',
+      clientName: 'Rachel Green',
+      date: '2025-07-08',
+      time: '16:30',
+      duration: 60,
+      status: 'confirmed'
+    },
+    {
+      id: '19',
+      clientName: 'Steven Hall',
+      date: '2025-07-09',
+      time: '11:00',
+      duration: 45,
+      status: 'confirmed'
+    },
+    {
+      id: '20',
+      clientName: 'Monica White',
+      date: '2025-07-09',
+      time: '14:30',
+      duration: 60,
+      status: 'pending'
+    },
+    {
+      id: '21',
+      clientName: 'James Taylor',
+      date: '2025-07-11',
+      time: '10:00',
+      duration: 45,
+      status: 'confirmed'
+    },
+    {
+      id: '22',
+      clientName: 'Laura Lopez',
+      date: '2025-07-11',
+      time: '17:00',
+      duration: 60,
+      status: 'pending'
+    },
+    {
+      id: '23',
+      clientName: 'Daniel King',
+      date: '2025-07-12',
+      time: '13:00',
+      duration: 45,
+      status: 'confirmed'
+    }
+  ]);
+
+  // Historical data (sessions and unavailability before today)
+  const [historicalSessions] = useState<Session[]>([
+    {
+      id: 'h1',
+      clientName: 'David Johnson',
+      date: '2025-07-01',
+      time: '10:00',
+      duration: 60,
+      status: 'completed'
+    },
+    {
+      id: 'h2',
+      clientName: 'Lisa Chen',
+      date: '2025-07-01',
+      time: '14:00',
+      duration: 45,
+      status: 'completed'
+    },
+    {
+      id: 'h3',
+      clientName: 'Mark Wilson',
+      date: '2025-07-02',
+      time: '09:00',
+      duration: 60,
+      status: 'completed'
+    },
+    {
+      id: 'h4',
+      clientName: 'Sarah Davis',
+      date: '2025-07-02',
+      time: '11:00',
+      duration: 45,
+      status: 'completed'
+    },
+    {
+      id: 'h5',
+      clientName: 'Tom Brown',
+      date: '2025-06-30',
+      time: '16:00',
+      duration: 30,
+      status: 'completed'
+    }
+  ]);
+
+  const [historicalUnavailableDates] = useState<UnavailableDate[]>([
+    {
+      id: 'hu1',
+      date: '2025-06-29',
+      reason: 'Medical appointment',
+      isFullDay: true
+    },
+    {
+      id: 'hu2',
+      date: '2025-07-01',
+      reason: 'Training session',
+      isFullDay: false,
+      timeRange: {
+        start: '13:00',
+        end: '15:00'
+      }
     }
   ]);
 
@@ -121,6 +322,42 @@ const CounsellorCalendar: React.FC = () => {
       timeRange: {
         start: '09:00',
         end: '17:00'
+      }
+    },
+    {
+      id: '3',
+      date: '2025-07-08',
+      reason: 'Training session',
+      isFullDay: false,
+      timeRange: {
+        start: '14:00',
+        end: '16:00'
+      }
+    },
+    {
+      id: '4',
+      date: '2025-07-10',
+      reason: 'Medical appointment',
+      isFullDay: false,
+      timeRange: {
+        start: '10:00',
+        end: '12:00'
+      }
+    },
+    {
+      id: '5',
+      date: '2025-07-15',
+      reason: 'Vacation',
+      isFullDay: true
+    },
+    {
+      id: '6',
+      date: '2025-07-20',
+      reason: 'Team building',
+      isFullDay: false,
+      timeRange: {
+        start: '13:00',
+        end: '18:00'
       }
     }
   ]);
@@ -168,6 +405,7 @@ const CounsellorCalendar: React.FC = () => {
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDay = firstDay.getDay();
+    const today = new Date();
 
     const days = [];
 
@@ -180,8 +418,18 @@ const CounsellorCalendar: React.FC = () => {
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDay = new Date(year, month, day);
       const dateString = currentDay.toISOString().split('T')[0];
-      const daysSessions = sessions.filter(session => session.date === dateString);
-      const unavailableEntry = unavailableDates.find(unavailable => unavailable.date === dateString);
+      const todayString = today.toISOString().split('T')[0];
+      const isPastDay = dateString < todayString;
+      
+      // Get data based on whether it's a past day or not
+      const daysSessions = isPastDay 
+        ? historicalSessions.filter(session => session.date === dateString)
+        : sessions.filter(session => session.date === dateString);
+      
+      const unavailableEntry = isPastDay
+        ? historicalUnavailableDates.find(unavailable => unavailable.date === dateString)
+        : unavailableDates.find(unavailable => unavailable.date === dateString);
+        
       const isFullDayUnavailable = unavailableEntry?.isFullDay || false;
       
       // Create unavailable slots for partial unavailability
@@ -198,7 +446,8 @@ const CounsellorCalendar: React.FC = () => {
         date: currentDay,
         sessions: daysSessions,
         unavailableSlots: unavailableSlots,
-        isToday: currentDay.toDateString() === new Date().toDateString(),
+        isToday: dateString === todayString,
+        isPastDay: isPastDay,
         isUnavailable: isFullDayUnavailable,
         unavailableDetails: unavailableEntry
       });
@@ -220,8 +469,37 @@ const CounsellorCalendar: React.FC = () => {
   };
 
   const handleDateClick = (date: Date) => {
-    // Check if the date is full day unavailable
     const dateString = date.toISOString().split('T')[0];
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+    const isPastDay = dateString < todayString;
+    
+    if (isPastDay) {
+      // Handle historical date click - show read-only historical details
+      const historicalSessionsForDate = historicalSessions.filter(session => session.date === dateString);
+      const historicalUnavailableForDate = historicalUnavailableDates.find(unavailable => unavailable.date === dateString);
+      
+      // Create unavailable slots for historical partial unavailability
+      const historicalUnavailableSlots = [];
+      if (historicalUnavailableForDate && !historicalUnavailableForDate.isFullDay && historicalUnavailableForDate.timeRange) {
+        historicalUnavailableSlots.push({
+          id: `unavailable-${historicalUnavailableForDate.id}`,
+          time: `${historicalUnavailableForDate.timeRange.start}-${historicalUnavailableForDate.timeRange.end}`,
+          status: 'unavailable'
+        });
+      }
+      
+      setSelectedHistoricalDate({
+        date: date,
+        sessions: historicalSessionsForDate,
+        unavailableSlots: historicalUnavailableSlots,
+        unavailableDetails: historicalUnavailableForDate
+      });
+      setShowHistoricalDetails(true);
+      return;
+    }
+    
+    // Handle current/future date click
     const unavailableDate = unavailableDates.find(unavailable => unavailable.date === dateString && unavailable.isFullDay);
     
     if (unavailableDate) {
@@ -397,6 +675,8 @@ const CounsellorCalendar: React.FC = () => {
                     className={`aspect-square border-b border-r border-gray-100 p-1 transition-colors flex flex-col relative cursor-pointer ${
                       day?.isToday ? 'bg-blue-50' : ''
                     } ${
+                      day?.isPastDay ? 'bg-gray-25 opacity-90' : ''
+                    } ${
                       day?.isUnavailable ? 
                         'bg-red-100 border-red-300 hover:bg-red-150' : 
                         day?.sessions.length === 0 && day?.unavailableSlots.length === 0 && day ? 
@@ -416,6 +696,7 @@ const CounsellorCalendar: React.FC = () => {
                         } ${
                           day.isToday ? 'text-blue-600' : 
                           day.isUnavailable ? 'text-red-700' : 
+                          day.isPastDay ? 'text-gray-600' :
                           'text-gray-900'
                         } flex-shrink-0 flex items-center justify-between relative z-10`}>
                           <span className={day.isUnavailable ? 'line-through' : ''}>{day.date.getDate()}</span>
@@ -432,7 +713,7 @@ const CounsellorCalendar: React.FC = () => {
                             </div>
                           ) : (
                             <>
-                              {/* Render regular sessions */}
+                              {/* Render sessions */}
                               {day.sessions.slice(0, (day.sessions.length + day.unavailableSlots.length) > 4 ? Math.max(1, 3 - day.unavailableSlots.length) : 4).map(session => (
                                 <div 
                                   key={session.id}
@@ -440,14 +721,18 @@ const CounsellorCalendar: React.FC = () => {
                                     (day.sessions.length + day.unavailableSlots.length) > 3 
                                       ? 'text-xs px-0.5 py-0.5 rounded-sm border' 
                                       : 'text-xs px-1 py-0.5 rounded-sm border'
-                                  } ${getStatusColor(session.status)} flex items-center gap-1 truncate ${
-                                    session.status === 'pending' ? 'border-l-2 border-l-orange-400' : ''
+                                  } ${
+                                    day.isPastDay && session.status === 'completed'
+                                      ? 'text-green-600 bg-green-100 border-green-200'
+                                      : getStatusColor(session.status)
+                                  } flex items-center gap-1 truncate ${
+                                    session.status === 'pending' && !day.isPastDay ? 'border-l-2 border-l-orange-400' : ''
                                   }`}
                                 >
                                   <span className="truncate text-xs font-medium">
                                     {session.time}
                                   </span>
-                                  {session.status === 'pending' && (
+                                  {session.status === 'pending' && !day.isPastDay && (
                                     <div className="flex gap-1 ml-auto">
                                       <button
                                         onClick={(e) => {
@@ -516,7 +801,10 @@ const CounsellorCalendar: React.FC = () => {
                 Today's Schedule
               </h3>
               <div className="space-y-3">
-                {sessions.filter(session => session.date === new Date().toISOString().split('T')[0]).map(session => (
+                {sessions
+                  .filter(session => session.date === new Date().toISOString().split('T')[0])
+                  .sort((a, b) => a.time.localeCompare(b.time))
+                  .map(session => (
                   <div key={session.id} className={`flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 ${
                     session.status === 'confirmed' ? 'border-l-green-400' : 
                     session.status === 'pending' ? 'border-l-orange-400' : 'border-l-blue-400'
@@ -575,7 +863,7 @@ const CounsellorCalendar: React.FC = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Pending Requests</span>
-                  <span className="font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded-full text-xs">4</span>
+                  <span className="font-semibold text-orange-600">4</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Available Hours</span>
@@ -873,6 +1161,126 @@ const CounsellorCalendar: React.FC = () => {
                     Mark as Available
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Historical Details Modal */}
+        {showHistoricalDetails && selectedHistoricalDate && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => {
+              setShowHistoricalDetails(false);
+              setSelectedHistoricalDate(null);
+            }}
+          >
+            <div 
+              className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-screen overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 border-b border-gray-100">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {selectedHistoricalDate.date.toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </h3>
+                  <button 
+                    onClick={() => {
+                      setShowHistoricalDetails(false);
+                      setSelectedHistoricalDate(null);
+                    }}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-6">
+                {/* Historical Sessions */}
+                {selectedHistoricalDate.sessions.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-medium text-gray-900 mb-3">Completed Sessions</h4>
+                    <div className="space-y-2">
+                      {selectedHistoricalDate.sessions.map(session => (
+                        <div 
+                          key={session.id}
+                          className="p-3 rounded-lg bg-green-50 border border-green-200"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-gray-900">{session.clientName}</p>
+                              <p className="text-sm text-gray-600">{session.time} • {session.duration} minutes</p>
+                            </div>
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
+                              Completed
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Historical Unavailability */}
+                {selectedHistoricalDate.unavailableDetails && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-medium text-gray-900 mb-3">Unavailability</h4>
+                    <div className="p-4 rounded-lg bg-red-50 border border-red-200">
+                      <div className="flex items-start gap-3">
+                        <CalendarX className="w-5 h-5 text-red-600 mt-0.5" />
+                        <div className="flex-1">
+                          <h5 className="font-medium text-red-900 mb-1">
+                            {selectedHistoricalDate.unavailableDetails.isFullDay ? 'Full Day Unavailable' : 'Partial Day Unavailable'}
+                          </h5>
+                          {selectedHistoricalDate.unavailableDetails.reason && (
+                            <p className="text-sm text-red-700 mb-2">
+                              <strong>Reason:</strong> {selectedHistoricalDate.unavailableDetails.reason}
+                            </p>
+                          )}
+                          {!selectedHistoricalDate.unavailableDetails.isFullDay && selectedHistoricalDate.unavailableDetails.timeRange && (
+                            <p className="text-sm text-red-700">
+                              <strong>Time:</strong> {selectedHistoricalDate.unavailableDetails.timeRange.start} - {selectedHistoricalDate.unavailableDetails.timeRange.end}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Historical Unavailable Slots */}
+                {selectedHistoricalDate.unavailableSlots.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-medium text-gray-900 mb-3">Unavailable Time Slots</h4>
+                    <div className="space-y-2">
+                      {selectedHistoricalDate.unavailableSlots.map(slot => (
+                        <div 
+                          key={slot.id}
+                          className="p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-3"
+                        >
+                          <CalendarX className="w-4 h-4 text-red-600" />
+                          <span className="font-medium text-red-900">{slot.time}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Empty state */}
+                {selectedHistoricalDate.sessions.length === 0 && 
+                 !selectedHistoricalDate.unavailableDetails && 
+                 selectedHistoricalDate.unavailableSlots.length === 0 && (
+                  <div className="text-center py-8">
+                    <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-500">No sessions or unavailability recorded for this day</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
