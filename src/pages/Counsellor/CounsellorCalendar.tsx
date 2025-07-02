@@ -48,6 +48,7 @@ const CounsellorCalendar: React.FC = () => {
   const [showTimeSlots, setShowTimeSlots] = useState(false);
   const [showUnavailable, setShowUnavailable] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unavailabilityType, setUnavailabilityType] = useState('full-day');
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -557,7 +558,7 @@ const CounsellorCalendar: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Client Name</label>
                   <input 
                     type="text" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                     placeholder="Enter client name"
                   />
                 </div>
@@ -566,7 +567,7 @@ const CounsellorCalendar: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
                   <input 
                     type="date" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
                 
@@ -574,13 +575,13 @@ const CounsellorCalendar: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
                   <input 
                     type="time" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Session Type</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     <option value="video">Video Call</option>
                     <option value="phone">Phone Call</option>
                   </select>
@@ -588,7 +589,7 @@ const CounsellorCalendar: React.FC = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     <option value="30">30 minutes</option>
                     <option value="45">45 minutes</option>
                     <option value="60">60 minutes</option>
@@ -616,7 +617,10 @@ const CounsellorCalendar: React.FC = () => {
         {showUnavailable && (
           <div 
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowUnavailable(false)}
+            onClick={() => {
+              setShowUnavailable(false);
+              setUnavailabilityType('full-day');
+            }}
           >
             <div 
               className="bg-white rounded-2xl shadow-xl max-w-md w-full"
@@ -626,7 +630,10 @@ const CounsellorCalendar: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-semibold text-gray-900">Mark Unavailable</h3>
                   <button 
-                    onClick={() => setShowUnavailable(false)}
+                    onClick={() => {
+                      setShowUnavailable(false);
+                      setUnavailabilityType('full-day');
+                    }}
                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     <X className="w-5 h-5 text-gray-500" />
@@ -639,48 +646,70 @@ const CounsellorCalendar: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
                   <input 
                     type="date" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Availability Type</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                  <select 
+                    value={unavailabilityType}
+                    onChange={(e) => setUnavailabilityType(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                  >
                     <option value="full-day">Full Day Unavailable</option>
                     <option value="partial">Partial Day Unavailable</option>
                   </select>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Start Time (if partial)</label>
-                  <input 
-                    type="time" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    disabled
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">End Time (if partial)</label>
-                  <input 
-                    type="time" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    disabled
-                  />
+                {/* Time Range Fields with Smooth Animation */}
+                <div 
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                    unavailabilityType === 'partial' 
+                      ? 'max-h-48 opacity-100' 
+                      : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="space-y-4 pt-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Start Time
+                      </label>
+                      <input 
+                        type="time" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                        placeholder="Select start time"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        End Time
+                      </label>
+                      <input 
+                        type="time" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                        placeholder="Select end time"
+                      />
+                    </div>
+                  </div>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Reason (optional)</label>
                   <textarea 
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none transition-all"
                     placeholder="Enter reason for unavailability..."
                   />
                 </div>
                 
                 <div className="flex gap-3 pt-4">
                   <button 
-                    onClick={() => setShowUnavailable(false)}
+                    onClick={() => {
+                      setShowUnavailable(false);
+                      setUnavailabilityType('full-day');
+                    }}
                     className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     Cancel
