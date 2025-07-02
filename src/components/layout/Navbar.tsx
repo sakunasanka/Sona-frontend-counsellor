@@ -143,7 +143,7 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
           >
             <Bell size={22} className="text-gray-600" />
             {notifications.some(n => !n.read) && (
-              <div className="absolute -top-0.5 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping" />
+              <div className="absolute -top-0.5 -right-1 w-2 h-2 bg-red-500 rounded-full" />
             )}
           </button>
 

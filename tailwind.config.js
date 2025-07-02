@@ -55,7 +55,9 @@ export default {
         alegreya: ['Alegreya'],
         alegreyaBold: ['Alegreya-Bold'],
         alegrayaSCB: ['AlegreyaSCB'],
-        alegreyaSC: ['AlegreyaSC']
+        alegreyaSC: ['AlegreyaSC'],
+        poppins: ['Poppins', 'sans-serif'],
+        poppinsBold: ['Poppins', 'sans-serif']
       },
       spacing: {
         '128': '32rem', // Example custom spacing
