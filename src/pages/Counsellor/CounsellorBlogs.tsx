@@ -318,6 +318,7 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
     .filter(blog => {
       if (activeFilter === 'published') return blog.isPublished;
       if (activeFilter === 'drafts') return !blog.isPublished;
+      if (activeFilter === 'pinned') return blog.isPinned;
       return true;
     })
     .sort((a, b) => {
@@ -420,6 +421,16 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
               All Posts
             </button>
             <button 
+              onClick={() => setActiveFilter('pinned')}
+              className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeFilter === 'pinned' 
+                  ? 'bg-white text-gray-900 shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Pinned
+            </button>
+            <button 
               onClick={() => setActiveFilter('published')}
               className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeFilter === 'published' 
@@ -466,6 +477,8 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
               <p className="text-gray-600 mb-6">
                 {activeFilter === 'drafts' 
                   ? "You don't have any draft posts yet." 
+                  : activeFilter === 'pinned'
+                  ? "You don't have any pinned posts yet. Pin important posts to highlight them."
                   : "Start sharing your thoughts and insights with your audience."
                 }
               </p>
