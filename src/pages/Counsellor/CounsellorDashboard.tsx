@@ -16,6 +16,7 @@ const CounsellorDashboard = () => {
   const closeSidebar = () => setSidebarOpen(false);
 
   const handleFeature = () => navigate("/signin");
+  const handleCreateBlog = () => navigate("/counsellor/create-blog");
 
 
   const sessions = [
@@ -156,33 +157,38 @@ const CounsellorDashboard = () => {
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold text-gray-800 mb-4 px-0.5">Browse Features</h2>
                   <section className="grid md:grid-cols-3 gap-6 px-0.5">
-                    <Card className="bg-rose-300 p-6">
+                    <Card className="bg-rose-300 p-6 flex flex-col h-full">
                       <h3 className="text-lg font-bold mb-2">Working Schedule</h3>
-                      <p className="mb-4">Work on demand & set your availability on your terms!</p>
-                      <Button variant="special" onClick={handleFeature} className="flex items-center">
-                        <FaCalendarAlt className="mr-2" /> Explore Calendar
-                      </Button>
+                      <p className="mb-4 flex-grow">Work on demand & set your availability on your terms!</p>
+                      <div className="mt-auto">
+                        <Button variant="special" onClick={handleFeature} className="flex items-center">
+                          <FaCalendarAlt className="mr-2" /> Explore Calendar
+                        </Button>
+                      </div>
                     </Card>
 
-                    <Card className="bg-rose-300 p-6">
+                    <Card className="bg-rose-300 p-6 flex flex-col h-full">
                       <h3 className="text-lg font-bold mb-2">Earnings</h3>
-                      <p className="mb-4">Check your earnings on your humane efforts</p>
-                      <Button variant="special" onClick={handleFeature} className="flex items-center">
-                        <FaMoneyBillWave className="mr-2" /> Explore Earnings
-                      </Button>
+                      <p className="mb-4 flex-grow">Check your earnings on your humane efforts</p>
+                      <div className="mt-auto">
+                        <Button variant="special" onClick={handleFeature} className="flex items-center">
+                          <FaMoneyBillWave className="mr-2" /> Explore Earnings
+                        </Button>
+                      </div>
                     </Card>
 
-                    <Card className="bg-rose-300 p-6">
+                    <Card className="bg-rose-300 p-6 flex flex-col h-full">
                       <h3 className="text-lg font-bold mb-2">Write a Blog Post</h3>
-                      <p className="mb-4">Share your experience with the community</p>
-                      <Button variant="special" onClick={() => navigate("/counsellor/create-blog")} className="flex items-center">
-                        <FaPenNib className="mr-2" /> Start Writing
-                      </Button>
+                      <p className="mb-4 flex-grow">Share your experience with the community</p>
+                      <div className="mt-auto">
+                        <Button variant="special" onClick={handleCreateBlog} className="flex items-center">
+                          <FaPenNib className="mr-2" /> Start Writing
+                        </Button>
+                      </div>
                     </Card>
                   </section>
                 </div>
-                  </Container>
-              
+                  </Container>              
             </div>
             </div>
         </div>
