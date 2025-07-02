@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Share2, Eye, MoreHorizontal, Calendar, Clock, Edit, Trash2, FileText, CheckCircle, PenTool } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Eye, MoreHorizontal, Calendar, Edit, Trash2, FileText, CheckCircle, PenTool, Pin } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
 
 interface Blog {
@@ -17,6 +17,7 @@ interface Blog {
   views: number;
   isLiked: boolean;
   isPublished: boolean;
+  isPinned: boolean;
 }
 
 interface BlogCardProps {
@@ -25,6 +26,7 @@ interface BlogCardProps {
   onEdit: (blogId: number) => void;
   onDelete: (blogId: number) => void;
   onShare: (blogId: number) => void;
+  onPin: (blogId: number) => void;
 }
 
 const CounsellorBlogs: React.FC = () => {
@@ -47,7 +49,8 @@ The difference between surviving and thriving isn't what happens to you—it's h
       likes: 24,
       views: 156,
       isLiked: false,
-      isPublished: true
+      isPublished: true,
+      isPinned: true
     },
     {
       id: 2,
@@ -68,7 +71,8 @@ Happiness is not a destination—it's a decision. And that decision is always in
       likes: 31,
       views: 203,
       isLiked: true,
-      isPublished: true
+      isPublished: true,
+      isPinned: false
     },
     {
       id: 3,
@@ -89,15 +93,17 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
       likes: 18,
       views: 89,
       isLiked: false,
-      isPublished: false
+      isPublished: false,
+      isPinned: false
     }
   ]);
 
   const [activeFilter, setActiveFilter] = useState('all');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
-  const BlogCard: React.FC<BlogCardProps> = ({ blog, onLike, onEdit, onDelete, onShare }) => {
+  const BlogCard: React.FC<BlogCardProps> = ({ blog, onLike, onEdit, onDelete, onShare, onPin }) => {
     const [showFullContent, setShowFullContent] = useState(false);
+    const [showMoreMenu, setShowMoreMenu] = useState(false);
 
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 lg:mb-6 overflow-hidden">
@@ -109,6 +115,12 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
                 {!blog.isPublished && (
                   <span className="bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full text-xs font-medium">
                     Draft
+                  </span>
+                )}
+                {blog.isPinned && (
+                  <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1">
+                    <Pin className="w-3 h-3" />
+                    Pinned
                   </span>
                 )}
               </div>
@@ -126,9 +138,51 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
               >
                 <Edit className="w-4 h-4 text-gray-400" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <MoreHorizontal className="w-4 h-4 text-gray-400" />
-              </button>
+              
+              {/* More Actions Dropdown */}
+              <div className="relative">
+                <button 
+                  onClick={() => setShowMoreMenu(!showMoreMenu)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <MoreHorizontal className="w-4 h-4 text-gray-400" />
+                </button>
+                
+                {showMoreMenu && (
+                  <>
+                    {/* Backdrop */}
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setShowMoreMenu(false)}
+                    />
+                    
+                    {/* Dropdown Menu */}
+                    <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                      <button
+                        onClick={() => {
+                          onPin(blog.id);
+                          setShowMoreMenu(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                      >
+                        <Pin className="w-4 h-4" />
+                        {blog.isPinned ? 'Unpin' : 'Pin'}
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          onDelete(blog.id);
+                          setShowMoreMenu(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -232,6 +286,14 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
     navigate(`/counsellor/edit-blog/${blogId}`);
   };
 
+  const handlePin = (blogId: number) => {
+    setBlogs(prevBlogs => prevBlogs.map(blog => 
+      blog.id === blogId 
+        ? { ...blog, isPinned: !blog.isPinned }
+        : blog
+    ));
+  };
+
   const handleDelete = (blogId: number) => {
     console.log('Delete blog:', blogId);
   };
@@ -252,11 +314,18 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
     setSidebarOpen(false);
   };
 
-  const filteredBlogs = blogs.filter(blog => {
-    if (activeFilter === 'published') return blog.isPublished;
-    if (activeFilter === 'drafts') return !blog.isPublished;
-    return true;
-  });
+  const filteredBlogs = blogs
+    .filter(blog => {
+      if (activeFilter === 'published') return blog.isPublished;
+      if (activeFilter === 'drafts') return !blog.isPublished;
+      return true;
+    })
+    .sort((a, b) => {
+      // Sort pinned blogs first
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return 0;
+    });
 
   const totalViews = blogs.reduce((sum, blog) => sum + blog.views, 0);
   const totalLikes = blogs.reduce((sum, blog) => sum + blog.likes, 0);
@@ -382,6 +451,7 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onShare={handleShare}
+                onPin={handlePin}
               />
             ))}
           </div>
