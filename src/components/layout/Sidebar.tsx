@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, LogOut } from 'lucide-react';
 
 interface SidebarProps {
@@ -18,6 +19,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   activeItem = '',
   onExpandBeforeNavigation
 }) => {
+  const navigate = useNavigate();
+  
   const menuItems = [
     { icon: Home, label: 'Home', href: '/counsellor-dashboard', id: 'home' },
     { icon: Calendar, label: 'Sessions', href: '/counsellor-sessions', id: 'sessions' },
@@ -145,6 +148,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               title={isMinimized ? 'Log out' : undefined}
               onClick={() => {
                 console.log('Logout clicked');
+                navigate('/signin');
                 onClose();
               }}
             >

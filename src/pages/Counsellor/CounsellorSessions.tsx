@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Container from "../../components/ui/Container";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
@@ -11,7 +11,6 @@ const CounsellorSessions = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
     const closeSidebar = () => setSidebarOpen(false);
-    const handleFeature = () => navigate("/signin");
 
     const [searchTerm, setSearchTerm] = useState("");
     const [sortBy, setSortBy] = useState("Newest");
