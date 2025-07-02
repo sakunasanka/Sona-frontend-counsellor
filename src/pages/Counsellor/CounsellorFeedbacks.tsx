@@ -74,6 +74,39 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
 Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on credit—again 😭. I got my usual miso pork with extra toppings, and man, it hit the spot! 😋`,
       likes: 3,
       isLiked: false
+    },
+    {
+      id: 4,
+      name: "Sarah Johnson",
+      status: "Student",
+      timeAgo: "1 hour ago",
+      rating: 5,
+      pic_src: "/assets/images/student-photo.png",
+      content: `Excellent counseling session! Dr. Sarina really helped me work through my anxiety and gave me practical tools to manage stress. Highly recommend!`,
+      likes: 15,
+      isLiked: false
+    },
+    {
+      id: 5,
+      name: "Mike Chen",
+      status: "User",
+      timeAgo: "5 hours ago",
+      rating: 5,
+      pic_src: "/assets/images/student-photo.png",
+      content: `Amazing experience! The counselor was very understanding and provided great insights. Feel much better after our session.`,
+      likes: 9,
+      isLiked: true
+    },
+    {
+      id: 6,
+      name: "Emma Wilson",
+      status: "Student", 
+      timeAgo: "1 day ago",
+      rating: 4,
+      pic_src: "/assets/images/student-photo.png",
+      content: `Good session overall. The counselor was professional and helpful. Would like to schedule follow-up sessions.`,
+      likes: 6,
+      isLiked: false
     }
   ]);
 
@@ -267,6 +300,7 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
   };
 
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const [activeFilter, setActiveFilter] = useState('all');
 
   const toggleSidebar = (): void => {
     setSidebarOpen(!sidebarOpen);
@@ -276,12 +310,37 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
     setSidebarOpen(false);
   };
 
+  // Calculate stats
+  const averageRating = feedbacks.length > 0 
+    ? (feedbacks.reduce((sum, feedback) => sum + feedback.rating, 0) / feedbacks.length).toFixed(1)
+    : '0.0';
+  const totalReviews = feedbacks.length;
+  const pendingReplies = feedbacks.filter(feedback => !feedback.reply).length;
+
+  // Filter feedbacks based on active filter
+  const filteredFeedbacks = feedbacks.filter(feedback => {
+    if (activeFilter === 'five-stars') return feedback.rating === 5;
+    if (activeFilter === 'pending-reply') return !feedback.reply;
+    if (activeFilter === 'recent') {
+      // Consider recent as feedbacks from the last 24 hours
+      const now = new Date();
+      const feedbackTime = new Date();
+      if (feedback.timeAgo.includes('hours')) {
+        const hours = parseInt(feedback.timeAgo.match(/\d+/)?.[0] || '0');
+        feedbackTime.setHours(now.getHours() - hours);
+        return (now.getTime() - feedbackTime.getTime()) < 24 * 60 * 60 * 1000;
+      }
+      return false;
+    }
+    return true; // 'all' filter
+  });
+
   return (
     <div className="flex flex-col h-screen">
         <NavBar onMenuClick={toggleSidebar} />
         <div className="flex flex-1 overflow-hidden">
             {/* Sidebar - Let the Sidebar component handle its own positioning */}
-            <div className="hidden lg:block w-80 flex-shrink-0">
+            <div className="w-80 bg-white border-r hidden lg:block">
                 <Sidebar isOpen={true} onClose={closeSidebar}/>
             </div>
             
@@ -305,7 +364,7 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
                                 <Star className="w-6 h-6 text-blue-600" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-gray-900">4.8</p>
+                                <p className="text-2xl font-bold text-gray-900">{averageRating}</p>
                                 <p className="text-gray-600 text-sm">Average Rating</p>
                             </div>
                         </div>
@@ -316,7 +375,7 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
                                 <span className="text-green-600 font-bold text-lg">📝</span>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-gray-900">127</p>
+                                <p className="text-2xl font-bold text-gray-900">{totalReviews}</p>
                                 <p className="text-gray-600 text-sm">Total Reviews</p>
                             </div>
                         </div>
@@ -327,32 +386,60 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
                                 <span className="text-orange-600 font-bold text-lg">⏱️</span>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-gray-900">12</p>
+                                <p className="text-2xl font-bold text-gray-900">{pendingReplies}</p>
                                 <p className="text-gray-600 text-sm">Pending Replies</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Filter Tabs - Desktop Only */}
-                <div className="hidden lg:flex items-center gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
-                    <button className="bg-white text-gray-900 px-4 py-2 rounded-md text-sm font-medium shadow-sm">
+                {/* Filter Tabs - All Devices */}
+                <div className="flex items-center gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit overflow-x-auto">
+                    <button 
+                        onClick={() => setActiveFilter('all')}
+                        className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+                            activeFilter === 'all' 
+                                ? 'bg-white text-gray-900 shadow-sm' 
+                                : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                    >
                         All Feedbacks
                     </button>
-                    <button className="text-gray-600 px-4 py-2 rounded-md text-sm font-medium hover:text-gray-900 transition-colors">
+                    <button 
+                        onClick={() => setActiveFilter('five-stars')}
+                        className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+                            activeFilter === 'five-stars' 
+                                ? 'bg-white text-gray-900 shadow-sm' 
+                                : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                    >
                         5 Stars
                     </button>
-                    <button className="text-gray-600 px-4 py-2 rounded-md text-sm font-medium hover:text-gray-900 transition-colors">
+                    <button 
+                        onClick={() => setActiveFilter('pending-reply')}
+                        className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+                            activeFilter === 'pending-reply' 
+                                ? 'bg-white text-gray-900 shadow-sm' 
+                                : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                    >
                         Pending Reply
                     </button>
-                    <button className="text-gray-600 px-4 py-2 rounded-md text-sm font-medium hover:text-gray-900 transition-colors">
+                    <button 
+                        onClick={() => setActiveFilter('recent')}
+                        className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+                            activeFilter === 'recent' 
+                                ? 'bg-white text-gray-900 shadow-sm' 
+                                : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                    >
                         Recent
                     </button>
                 </div>
 
                 {/* Feedback Cards */}
                 <div className="space-y-4 lg:space-y-6">
-                    {feedbacks.map((feedback) => (
+                    {filteredFeedbacks.map((feedback) => (
                         <FeedbackCard 
                             key={feedback.id} 
                             feedback={feedback} 
@@ -362,12 +449,30 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
                     ))}
                 </div>
 
+                {/* Empty State */}
+                {filteredFeedbacks.length === 0 && (
+                    <div className="text-center py-12">
+                        <div className="text-gray-400 mb-4">
+                            <MessageCircle className="w-16 h-16 mx-auto" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No feedbacks found</h3>
+                        <p className="text-gray-600 mb-6">
+                            {activeFilter === 'five-stars' && "No 5-star feedbacks yet."}
+                            {activeFilter === 'pending-reply' && "No pending replies at the moment."}
+                            {activeFilter === 'recent' && "No recent feedbacks found."}
+                            {activeFilter === 'all' && "No feedbacks available yet."}
+                        </p>
+                    </div>
+                )}
+
                 {/* Load More Button */}
-                <div className="text-center mt-8">
-                    <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">
-                        Load More Feedbacks
-                    </button>
-                </div>
+                {filteredFeedbacks.length > 0 && (
+                    <div className="text-center mt-8">
+                        <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                            Load More Feedbacks
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     </div>
