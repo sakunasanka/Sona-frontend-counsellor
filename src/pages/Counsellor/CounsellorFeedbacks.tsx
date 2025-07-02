@@ -141,7 +141,7 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
             <button 
               onClick={() => onLike(feedback.id)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-gray-50 ${
-                feedback.isLiked ? 'text-red-500' : 'text-gray-600'
+                feedback.isLiked ? 'text-primary' : 'text-gray-600'
               }`}
             >
               <Heart className={`w-4 h-4 ${feedback.isLiked ? 'fill-current' : ''}`} />
@@ -281,7 +281,7 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
         <NavBar onMenuClick={toggleSidebar} />
         <div className="flex flex-1 overflow-hidden">
             {/* Sidebar - Let the Sidebar component handle its own positioning */}
-            <div className="hidden lg:block w-80 flex-shrink-0">
+            <div className="w-80 bg-white border-r hidden lg:block">
                 <Sidebar isOpen={true} onClose={closeSidebar}/>
             </div>
             

@@ -14,10 +14,10 @@ export default {
           400: "#9CA3AF", 
         },
         green: {
+          400: '#DDF6D2',
           500: '#16a34a',
           600: '#15803d',
           700: '#166534',
-
         },
         buttonPink: {
           500: '#EF5DA8',
@@ -34,7 +34,20 @@ export default {
         pink: {
           100: '#FCDDEC',
           500: '#EF5DA8'
+        },
+        orange: {
+          100: '#FFB1A7'
         }
+      },
+      keyframes: {
+        typewriter: {
+          '0%': { width: '0%' },
+          '100%': { width: '100%' },
+        },
+      },
+      animation: {
+        'spin-slow': 'spin 2s linear',
+        typewriter: 'typewriter 1.2s steps(20, end) forwards',
       },
       fontFamily: {
         sans: ["Inter", "sans-serif"], // Example font family
@@ -42,7 +55,9 @@ export default {
         alegreya: ['Alegreya'],
         alegreyaBold: ['Alegreya-Bold'],
         alegrayaSCB: ['AlegreyaSCB'],
-        alegreyaSC: ['AlegreyaSC']
+        alegreyaSC: ['AlegreyaSC'],
+        poppins: ['Poppins', 'sans-serif'],
+        poppinsBold: ['Poppins', 'sans-serif']
       },
       spacing: {
         '128': '32rem', // Example custom spacing
