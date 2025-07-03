@@ -477,21 +477,9 @@ const ClientDetails: React.FC = () => {
           {currentClient.concerns.map((concern, idx) => (
             <div 
               key={idx} 
-              className={`${idx === 0 
-                ? 'bg-pink-100 text-primary' 
-                : idx === 1 
-                ? 'bg-[#E8E8FD] text-buttonBlue-500'
-                : idx === 2
-                ? 'bg-green-400 text-green-700'
-                : 'bg-orange-100 text-buttonOrange-500'
-              } px-3 py-2 rounded-lg flex items-center group`}
+              className="bg-gray-100 text-gray-800 px-3 py-2 rounded-lg flex items-center group"
             >
-              <span className={`w-2 h-2 ${
-                idx === 0 ? 'bg-primary' : 
-                idx === 1 ? 'bg-buttonBlue-500' : 
-                idx === 2 ? 'bg-buttonGreen-500' : 
-                'bg-buttonOrange-500'
-              } rounded-full mr-2`}></span>
+              <span className="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
               <span>{concern}</span>
               <button 
                 onClick={() => handleRemoveConcern(idx)}
