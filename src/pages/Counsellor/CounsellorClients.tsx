@@ -29,7 +29,7 @@ interface ClientCardProps {
 
 const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 hover:border-[rgb(174,175,247)] hover:border-opacity-50 transition-all hover:shadow-md overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-[rgb(174,175,247)] hover:border-opacity-50 transition-all hover:shadow-md overflow-hidden">
       <div className="flex flex-col md:flex-row">
         {/* Left Section - Client info */}
         <div className="flex p-4 flex-1">
@@ -391,18 +391,14 @@ const CounsellorClients: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto lg:ml-0">
-          <div className="h-full bg-gray-50">
-            <div className="h-full max-w-7xl mx-auto p-2 lg:pl-1 lg:pr-4 lg:py-4">
+        <div className="flex-1 overflow-auto p-4 lg:p-6">
               {/* Header */}
-              <div className="flex items-center justify-between mb-3 lg:mb-4">
-                <div>
-                  <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">My Clients</h1>
-                </div>
+              <div className="mb-6 lg:mb-8">
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">My Clients</h1>
               </div>
 
               {/* Search & Filters */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-4">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
                 <div className="p-4">
                   <div className="relative w-full">
                     <input
@@ -671,7 +667,7 @@ const CounsellorClients: React.FC = () => {
               </div>
 
               {/* Client Count */}
-              <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
+              <div className="flex flex-wrap items-center justify-between mb-6 gap-2">
                 <div className="flex items-center gap-2 text-gray-600">
                   <Users className="w-5 h-5" />
                   <span className="text-sm">{filteredClients.length} {filteredClients.length === 1 ? 'client' : 'clients'} found</span>
@@ -692,7 +688,7 @@ const CounsellorClients: React.FC = () => {
 
               {/* Client Cards */}
               {filteredClients.length > 0 ? (
-                <div className="flex flex-col space-y-4">
+                <div className="space-y-4 lg:space-y-6">
                   {filteredClients.map(client => (
                     <ClientCard 
                       key={client.id} 
@@ -702,7 +698,7 @@ const CounsellorClients: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
                   <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No clients found</h3>
                   <p className="text-gray-600 mb-4">
@@ -721,8 +717,6 @@ const CounsellorClients: React.FC = () => {
                   )}
                 </div>
               )}
-            </div>
-          </div>
         </div>
       </div>
     </div>
