@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavBar, Sidebar } from '../../components/layout';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { 
   Calendar, 
   Clock, 
@@ -43,7 +43,8 @@ interface ClientDetailsParams {
 
 const ClientDetails: React.FC = () => {
   const { clientId } = useParams<keyof ClientDetailsParams>() as ClientDetailsParams;
-  const navigate = useNavigate();
+  const quickNoteRef = React.useRef<HTMLTextAreaElement>(null);
+  const recentNotesRef = React.useRef<HTMLDivElement>(null);
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'sessions' | 'details'>('overview');
@@ -73,7 +74,7 @@ const ClientDetails: React.FC = () => {
     }
   ]);
   
-  const [sessions, setSessions] = useState<Session[]>([
+  const [sessions] = useState<Session[]>([
     {
       id: 1,
       date: "June 28, 2025 • 10:00 AM",
@@ -199,7 +200,6 @@ const ClientDetails: React.FC = () => {
 
   // Use client based on the route param
   const [currentClient, setCurrentClient] = useState<Client>(clients[0]);
-  
   // In a real app, we would fetch the client data based on the clientId
   useEffect(() => {
     // For demo purposes, we're just picking from the mock data based on ID
@@ -224,6 +224,17 @@ const ClientDetails: React.FC = () => {
       setNewNote('');
       setIsPrivateNote(false);
     }
+  };
+  
+  const handleRemoveConcern = (index: number) => {
+    const updatedConcerns = [...currentClient.concerns];
+    updatedConcerns.splice(index, 1);
+    
+    // In a real app, you would update this on the backend as well
+    setCurrentClient({
+      ...currentClient,
+      concerns: updatedConcerns
+    });
   };
 
   const renderOverviewTab = () => (
@@ -308,19 +319,40 @@ const ClientDetails: React.FC = () => {
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <button className="flex flex-col items-center justify-center bg-indigo-50 hover:bg-indigo-100 p-4 rounded-lg transition-colors">
+          <button 
+            className="flex flex-col items-center justify-center bg-indigo-50 hover:bg-indigo-100 p-4 rounded-lg transition-colors"
+            onClick={() => window.location.href = '/counsellor/chats'}
+          >
             <MessageCircle className="w-6 h-6 text-indigo-500 mb-2" />
             <span className="text-sm text-gray-800">Message</span>
           </button>
-          <button className="flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 p-4 rounded-lg transition-colors">
+          <button 
+            className="flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 p-4 rounded-lg transition-colors"
+            onClick={() => setActiveTab('sessions')}
+          >
             <Calendar className="w-6 h-6 text-green-500 mb-2" />
             <span className="text-sm text-gray-800">Schedule</span>
           </button>
-          <button className="flex flex-col items-center justify-center bg-purple-50 hover:bg-purple-100 p-4 rounded-lg transition-colors">
+          <button 
+            className="flex flex-col items-center justify-center bg-purple-50 hover:bg-purple-100 p-4 rounded-lg transition-colors"
+            onClick={() => {
+              if (recentNotesRef.current) {
+                recentNotesRef.current.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => {
+                  if (quickNoteRef.current) {
+                    quickNoteRef.current.focus();
+                  }
+                }, 500); // Small delay to ensure scroll completes before focus
+              }
+            }}
+          >
             <FileText className="w-6 h-6 text-purple-500 mb-2" />
             <span className="text-sm text-gray-800">Add Note</span>
           </button>
-          <button className="flex flex-col items-center justify-center bg-amber-50 hover:bg-amber-100 p-4 rounded-lg transition-colors">
+          <button 
+            className="flex flex-col items-center justify-center bg-amber-50 hover:bg-amber-100 p-4 rounded-lg transition-colors"
+            onClick={() => setActiveTab('details')}
+          >
             <FileSymlink className="w-6 h-6 text-amber-500 mb-2" />
             <span className="text-sm text-gray-800">Resources</span>
           </button>
@@ -328,7 +360,7 @@ const ClientDetails: React.FC = () => {
       </div>
 
       {/* Recent Notes */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+      <div ref={recentNotesRef} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Recent Notes</h3>
           <button 
@@ -361,8 +393,9 @@ const ClientDetails: React.FC = () => {
         
         <div className="mt-4">
           <textarea
+            ref={quickNoteRef}
             placeholder="Add a quick note..."
-            className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(174,175,247)] text-sm"
+            className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
             rows={2}
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
@@ -373,7 +406,7 @@ const ClientDetails: React.FC = () => {
               <input
                 type="checkbox"
                 id="privateQuickNote"
-                className="h-4 w-4 text-[rgb(174,175,247)] border-gray-300 rounded focus:ring-[rgb(174,175,247)]"
+                className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
                 checked={isPrivateNote}
                 onChange={() => setIsPrivateNote(!isPrivateNote)}
               />
@@ -383,7 +416,7 @@ const ClientDetails: React.FC = () => {
             </div>
             
             <button
-              className="px-4 py-2 bg-[rgb(174,175,247)] hover:bg-opacity-90 text-white rounded-md text-sm font-medium flex items-center"
+              className="px-4 py-2 bg-primary hover:bg-opacity-90 text-white rounded-md text-sm font-medium flex items-center"
               onClick={handleAddNote}
               disabled={!newNote.trim()}
             >
@@ -450,7 +483,7 @@ const ClientDetails: React.FC = () => {
                     <button className="flex-1 py-1.5 px-3 bg-white hover:bg-gray-100 text-gray-800 text-sm font-medium rounded-md border border-gray-300 transition-colors flex items-center justify-center">
                       Reschedule
                     </button>
-                    <button className="flex-1 py-1.5 px-3 bg-[rgb(174,175,247)] hover:bg-opacity-90 text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center">
+                    <button className="flex-1 py-1.5 px-3 bg-primary hover:bg-opacity-90 text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center">
                       Send Reminder
                     </button>
                   </div>
@@ -461,7 +494,7 @@ const ClientDetails: React.FC = () => {
           <div className="text-center py-8">
             <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">No upcoming sessions scheduled</p>
-            <button className="mt-4 px-4 py-2 bg-[rgb(174,175,247)] hover:bg-opacity-90 text-white rounded-md text-sm font-medium">
+            <button className="mt-4 px-4 py-2 bg-primary hover:bg-opacity-90 text-white rounded-md text-sm font-medium">
               Schedule a Session
             </button>
           </div>
@@ -476,10 +509,16 @@ const ClientDetails: React.FC = () => {
           {currentClient.concerns.map((concern, idx) => (
             <div 
               key={idx} 
-              className="bg-gray-100 text-gray-800 px-3 py-2 rounded-lg flex items-center"
+              className="bg-gray-100 text-gray-800 px-3 py-2 rounded-lg flex items-center group"
             >
               <span className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
               <span>{concern}</span>
+              <button 
+                onClick={() => handleRemoveConcern(idx)}
+                className="ml-2 w-5 h-5 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </div>
           ))}
           
@@ -499,7 +538,7 @@ const ClientDetails: React.FC = () => {
       <div className="mb-6">
         <textarea
           placeholder="Add a new note about this client..."
-          className="w-full p-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(174,175,247)] text-sm"
+          className="w-full p-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
           rows={4}
           value={newNote}
           onChange={(e) => setNewNote(e.target.value)}
@@ -510,7 +549,7 @@ const ClientDetails: React.FC = () => {
             <input
               type="checkbox"
               id="privateNote"
-              className="h-4 w-4 text-[rgb(174,175,247)] border-gray-300 rounded focus:ring-[rgb(174,175,247)]"
+              className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
               checked={isPrivateNote}
               onChange={() => setIsPrivateNote(!isPrivateNote)}
             />
@@ -521,7 +560,7 @@ const ClientDetails: React.FC = () => {
           </div>
           
           <button
-            className="px-4 py-2 bg-[rgb(174,175,247)] hover:bg-opacity-90 text-white rounded-md text-sm font-medium flex items-center"
+            className="px-4 py-2 bg-primary hover:bg-opacity-90 text-white rounded-md text-sm font-medium flex items-center"
             onClick={handleAddNote}
             disabled={!newNote.trim()}
           >
@@ -569,7 +608,7 @@ const ClientDetails: React.FC = () => {
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">All Sessions</h3>
-          <button className="px-4 py-2 bg-[rgb(174,175,247)] hover:bg-opacity-90 text-white rounded-md text-sm font-medium flex items-center">
+          <button className="px-4 py-2 bg-primary hover:bg-opacity-90 text-white rounded-md text-sm font-medium flex items-center">
             <Calendar className="w-4 h-4 mr-2" />
             Schedule New Session
           </button>
@@ -682,7 +721,7 @@ const ClientDetails: React.FC = () => {
         <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
         
         {currentClient.anonymous ? (
-          <div className="bg-[rgb(174,175,247)] bg-opacity-10 rounded-lg p-4 mb-6">
+          <div className="bg-primary bg-opacity-5 rounded-lg p-4 mb-6">
             <div className="flex items-start">
               <Shield className="w-5 h-5 text-indigo-600 mr-2 flex-shrink-0 mt-0.5" />
               <div>
@@ -704,7 +743,7 @@ const ClientDetails: React.FC = () => {
               ) : (
                 <p className="text-gray-900">
                   <span className="italic">{currentClient.nickname}</span>
-                  <span className="ml-2 text-xs bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800 px-2 py-0.5 rounded-full">
+                  <span className="ml-2 text-xs bg-primary bg-opacity-10 text-primary px-2 py-0.5 rounded-full">
                     Nickname
                   </span>
                 </p>
@@ -843,7 +882,7 @@ const ClientDetails: React.FC = () => {
             <span className="text-sm font-medium text-gray-900">Improving</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div className="bg-[rgb(174,175,247)] h-2.5 rounded-full" style={{ width: '65%' }}></div>
+            <div className="bg-primary h-2.5 rounded-full" style={{ width: '65%' }}></div>
           </div>
         </div>
         
@@ -925,26 +964,15 @@ const ClientDetails: React.FC = () => {
 
         {/* Main Content */}
         <div className="flex-1 overflow-auto p-4 lg:p-6">
-          {/* Back button and client name */}
-          <div className="mb-6 flex items-center">
-            <button 
-              className="flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
-              onClick={() => navigate('/counsellor-clients')}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5 mr-1">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Clients
-            </button>
-          </div>
+          {/* Main content starts here */}
           
           {/* Client Profile Header */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div className="flex flex-col md:flex-row md:items-center">
               <div className="flex items-center">
-                <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 ${currentClient.anonymous ? 'bg-[rgb(174,175,247)] bg-opacity-10 flex items-center justify-center' : 'border-2 border-gray-100'}`}>
+                <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 ${currentClient.anonymous ? 'bg-primary bg-opacity-10 flex items-center justify-center' : 'border-2 border-gray-100'}`}>
                   {currentClient.anonymous ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-[rgb(174,175,247)]">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-primary">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   ) : (
@@ -964,14 +992,14 @@ const ClientDetails: React.FC = () => {
                       }
                     </h1>
                     {currentClient.anonymous && (
-                      <span className="px-2 py-0.5 rounded-full bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800 text-xs font-medium">
+                      <span className="px-2 py-0.5 rounded-full bg-primary bg-opacity-10 text-primary text-xs font-medium">
                         Anonymous
                       </span>
                     )}
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                      currentClient.status === 'active' ? 'bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800' : 
-                      currentClient.status === 'new' ? 'bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800' : 
-                      'bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800'
+                      currentClient.status === 'active' ? 'bg-primary bg-opacity-10 text-primary' : 
+                      currentClient.status === 'new' ? 'bg-primary bg-opacity-10 text-primary' : 
+                      'bg-primary bg-opacity-10 text-primary'
                     }`}>
                       {currentClient.status === 'active' ? 'Active' : 
                       currentClient.status === 'new' ? 'New Client' : 
@@ -984,7 +1012,7 @@ const ClientDetails: React.FC = () => {
                     )}
                     {currentClient.student && (
                       <div className="flex items-center gap-1">
-                        <span className="inline-flex items-center px-2 py-0.5 bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-500 text-xs rounded-full">
+                        <span className="inline-flex items-center px-2 py-0.5 bg-primary bg-opacity-10 text-primary text-xs rounded-full">
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 mr-1">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
                           </svg>
@@ -998,41 +1026,31 @@ const ClientDetails: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="mt-4 md:mt-0 md:ml-auto flex flex-wrap gap-2">
-                <button className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md text-sm font-medium flex items-center">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Schedule Session
-                </button>
-                <button className="px-4 py-2 bg-[rgb(174,175,247)] hover:bg-opacity-90 text-white rounded-md text-sm font-medium flex items-center">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Message Client
-                </button>
-              </div>
             </div>
 
             {/* Tab navigation */}
             <div className="mt-6 border-b border-gray-200">
               <nav className="flex space-x-6 overflow-x-auto pb-2">
                 <button 
-                  className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'overview' ? 'border-b-2 border-[rgb(174,175,247)] text-[rgb(174,175,247)]' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'overview' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
                   onClick={() => setActiveTab('overview')}
                 >
                   Overview
                 </button>
                 <button 
-                  className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'notes' ? 'border-b-2 border-[rgb(174,175,247)] text-[rgb(174,175,247)]' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'notes' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
                   onClick={() => setActiveTab('notes')}
                 >
                   Notes
                 </button>
                 <button 
-                  className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'sessions' ? 'border-b-2 border-[rgb(174,175,247)] text-[rgb(174,175,247)]' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'sessions' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
                   onClick={() => setActiveTab('sessions')}
                 >
                   Sessions
                 </button>
                 <button 
-                  className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'details' ? 'border-b-2 border-[rgb(174,175,247)] text-[rgb(174,175,247)]' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'details' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
                   onClick={() => setActiveTab('details')}
                 >
                   Client Details
