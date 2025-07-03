@@ -55,9 +55,7 @@ const ClientDetails: React.FC = () => {
   // Session modals state
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [editSessionData, setEditSessionData] = useState<Partial<Session>>({});
   const [cancelReason, setCancelReason] = useState('');
   
   const [notes, setNotes] = useState<Note[]>([
@@ -253,59 +251,9 @@ const ClientDetails: React.FC = () => {
     setIsDetailsModalOpen(true);
   };
 
-  const handleEditSession = (session: Session) => {
-    // Parse date string to create a Date object
-    // Expected format: "June 28, 2025 • 10:00 AM"
-    let dateObject;
-    try {
-      const dateParts = session.date.split('•');
-      if (dateParts.length === 2) {
-        const dateStr = dateParts[0].trim();
-        const timeStr = dateParts[1].trim();
-        dateObject = new Date(`${dateStr} ${timeStr}`);
-      } else {
-        dateObject = new Date();
-      }
-    } catch (error) {
-      console.error("Error parsing date:", error);
-      dateObject = new Date();
-    }
-
-    setSelectedSession(session);
-    setEditSessionData({
-      date: session.date,
-      dateObject: dateObject,
-      duration: session.duration,
-      concerns: [...session.concerns],
-      notes: session.notes || ""
-    });
-    setIsEditModalOpen(true);
-  };
-
   const handleCancelSession = (session: Session) => {
     setSelectedSession(session);
     setIsCancelModalOpen(true);
-  };
-
-  const saveSessionEdit = () => {
-    if (selectedSession && editSessionData) {
-      // In a real app, you would make an API call here
-      const updatedSessions = sessions.map(s => 
-        s.id === selectedSession.id 
-          ? { ...s, ...editSessionData } 
-          : s
-      );
-      // This would be replaced with an API call and state update
-      console.log("Session updated:", updatedSessions);
-      
-      // Show success message (in a real app)
-      alert("Session updated successfully!");
-      
-      // Close modal
-      setIsEditModalOpen(false);
-      setSelectedSession(null);
-      setEditSessionData({});
-    }
   };
 
   const confirmCancelSession = () => {
@@ -529,13 +477,25 @@ const ClientDetails: React.FC = () => {
           {currentClient.concerns.map((concern, idx) => (
             <div 
               key={idx} 
-              className="bg-gray-100 text-gray-800 px-3 py-2 rounded-lg flex items-center group"
+              className={`${idx === 0 
+                ? 'bg-pink-100 text-primary' 
+                : idx === 1 
+                ? 'bg-[#E8E8FD] text-buttonBlue-500'
+                : idx === 2
+                ? 'bg-green-400 text-green-700'
+                : 'bg-orange-100 text-buttonOrange-500'
+              } px-3 py-2 rounded-lg flex items-center group`}
             >
-              <span className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
+              <span className={`w-2 h-2 ${
+                idx === 0 ? 'bg-primary' : 
+                idx === 1 ? 'bg-buttonBlue-500' : 
+                idx === 2 ? 'bg-buttonGreen-500' : 
+                'bg-buttonOrange-500'
+              } rounded-full mr-2`}></span>
               <span>{concern}</span>
               <button 
                 onClick={() => handleRemoveConcern(idx)}
-                className="ml-2 w-5 h-5 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="ml-2 w-5 h-5 rounded-full bg-white bg-opacity-50 text-gray-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -734,28 +694,16 @@ const ClientDetails: React.FC = () => {
                         Details
                       </button>
                       {session.status === 'upcoming' && (
-                        <>
-                          <button 
-                            className="px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded flex items-center transition-colors"
-                            onClick={() => handleEditSession(session)}
-                            aria-label="Edit session"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                            </svg>
-                            Edit
-                          </button>
-                          <button 
-                            className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded flex items-center transition-colors"
-                            onClick={() => handleCancelSession(session)}
-                            aria-label="Cancel session"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
-                            Cancel
-                          </button>
-                        </>
+                        <button 
+                          className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded flex items-center transition-colors"
+                          onClick={() => handleCancelSession(session)}
+                          aria-label="Cancel session"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                          Cancel
+                        </button>
                       )}
                     </div>
                   </td>
@@ -769,231 +717,250 @@ const ClientDetails: React.FC = () => {
   );
 
   const renderDetailsTab = () => (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* Personal Information */}
-      <div className="md:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
-        
-        {currentClient.anonymous ? (
-          <div className="bg-primary bg-opacity-5 rounded-lg p-4 mb-6">
-            <div className="flex items-start">
-              <Shield className="w-5 h-5 text-indigo-600 mr-2 flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-indigo-800">Anonymous Profile</h4>
-                <p className="text-sm text-gray-600 mt-1">
-                  This client has opted for anonymity. Personal details are hidden to protect their privacy.
-                </p>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Personal Information */}
+        <div className="md:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
+          
+          {currentClient.anonymous ? (
+            <div className="bg-primary bg-opacity-5 rounded-lg p-4 mb-6">
+              <div className="flex items-start">
+                <Shield className="w-5 h-5 text-indigo-600 mr-2 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-indigo-800">Anonymous Profile</h4>
+                  <p className="text-sm text-gray-600 mt-1">
+                    This client has opted for anonymity. Personal details are hidden to protect their privacy.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        ) : null}
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <div className="mb-4">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Full Name</label>
-              {!currentClient.anonymous ? (
-                <p className="text-gray-900">{currentClient.name}</p>
-              ) : (
-                <p className="text-gray-900">
-                  <span className="italic">{currentClient.nickname}</span>
-                  <span className="ml-2 text-xs bg-primary bg-opacity-10 text-primary px-2 py-0.5 rounded-full">
-                    Nickname
-                  </span>
-                </p>
+          ) : null}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-gray-500 mb-1">Full Name</label>
+                {!currentClient.anonymous ? (
+                  <p className="text-gray-900">{currentClient.name}</p>
+                ) : (
+                  <p className="text-gray-900">
+                    <span className="italic">{currentClient.nickname}</span>
+                    <span className="ml-2 text-xs bg-primary bg-opacity-10 text-primary px-2 py-0.5 rounded-full">
+                      Nickname
+                    </span>
+                  </p>
+                )}
+              </div>
+              
+              {!currentClient.anonymous && (
+                <>
+                  <div className="mb-4">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Age</label>
+                    <p className="text-gray-900">{currentClient.age} years</p>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Gender</label>
+                    <p className="text-gray-900">{currentClient.gender}</p>
+                  </div>
+                </>
               )}
+              
+              {currentClient.student && (
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Institution</label>
+                  <p className="text-gray-900 flex items-center">
+                    <span>{currentClient.institution}</span>
+                    <span className="ml-2 inline-flex items-center px-2 py-0.5 bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-500 text-xs rounded-full">
+                      Student
+                    </span>
+                  </p>
+                </div>
+              )}
+              
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-gray-500 mb-1">Client Since</label>
+                <p className="text-gray-900">{currentClient.joinDate}</p>
+              </div>
             </div>
             
-            {!currentClient.anonymous && (
-              <>
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Age</label>
-                  <p className="text-gray-900">{currentClient.age} years</p>
-                </div>
-                
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Gender</label>
-                  <p className="text-gray-900">{currentClient.gender}</p>
-                </div>
-              </>
-            )}
-            
-            {currentClient.student && (
-              <div className="mb-4">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Institution</label>
-                <p className="text-gray-900 flex items-center">
-                  <span>{currentClient.institution}</span>
-                  <span className="ml-2 inline-flex items-center px-2 py-0.5 bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-500 text-xs rounded-full">
-                    Student
-                  </span>
-                </p>
-              </div>
-            )}
-            
-            {!currentClient.anonymous && currentClient.student && currentClient.program && (
-              <div className="mb-4">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Program</label>
-                <p className="text-gray-900">{currentClient.program} ({currentClient.year})</p>
-              </div>
-            )}
-            
-            <div className="mb-4">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Client Since</label>
-              <p className="text-gray-900">{currentClient.joinDate}</p>
+            <div>
+              {!currentClient.anonymous && (
+                <>
+                  <div className="mb-4">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      <div className="flex items-center">
+                        <Mail className="w-3.5 h-3.5 mr-1 text-gray-400" />
+                        Email Address
+                      </div>
+                    </label>
+                    <p className="text-gray-900">{currentClient.email}</p>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      <div className="flex items-center">
+                        <Phone className="w-3.5 h-3.5 mr-1 text-gray-400" />
+                        Phone Number
+                      </div>
+                    </label>
+                    <p className="text-gray-900">{currentClient.phone}</p>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      <div className="flex items-center">
+                        <MapPin className="w-3.5 h-3.5 mr-1 text-gray-400" />
+                        Address
+                      </div>
+                    </label>
+                    <p className="text-gray-900">{currentClient.address}</p>
+                  </div>
+                  
+                  {currentClient.emergencyContact && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Emergency Contact</label>
+                      <p className="text-gray-900">{currentClient.emergencyContact.name}</p>
+                      <p className="text-gray-600 text-sm">{currentClient.emergencyContact.relationship}</p>
+                      <p className="text-gray-600 text-sm">{currentClient.emergencyContact.phone}</p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
           
-          <div>
-            {!currentClient.anonymous && (
-              <>
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">
-                    <div className="flex items-center">
-                      <Mail className="w-3.5 h-3.5 mr-1 text-gray-400" />
-                      Email Address
-                    </div>
-                  </label>
-                  <p className="text-gray-900">{currentClient.email}</p>
-                </div>
-                
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">
-                    <div className="flex items-center">
-                      <Phone className="w-3.5 h-3.5 mr-1 text-gray-400" />
-                      Phone Number
-                    </div>
-                  </label>
-                  <p className="text-gray-900">{currentClient.phone}</p>
-                </div>
-                
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">
-                    <div className="flex items-center">
-                      <MapPin className="w-3.5 h-3.5 mr-1 text-gray-400" />
-                      Address
-                    </div>
-                  </label>
-                  <p className="text-gray-900">{currentClient.address}</p>
-                </div>
-                
-                {currentClient.referredBy && (
-                  <div className="mb-4">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Referred By</label>
-                    <p className="text-gray-900">{currentClient.referredBy}</p>
-                  </div>
-                )}
-                
-                {currentClient.emergencyContact && (
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Emergency Contact</label>
-                    <p className="text-gray-900">{currentClient.emergencyContact.name}</p>
-                    <p className="text-gray-600 text-sm">{currentClient.emergencyContact.relationship}</p>
-                    <p className="text-gray-600 text-sm">{currentClient.emergencyContact.phone}</p>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+          {currentClient.anonymous && (
+            <div className="border-t border-gray-100 pt-4 mt-4">
+              <div className="flex items-center text-sm text-gray-600">
+                <Flag className="w-4 h-4 mr-2 text-amber-500" />
+                <p>For ethical and privacy reasons, contact information and personal details are not visible for anonymous clients.</p>
+              </div>
+            </div>
+          )}
         </div>
         
-        {currentClient.anonymous && (
-          <div className="border-t border-gray-100 pt-4 mt-4">
-            <div className="flex items-center text-sm text-gray-600">
-              <Flag className="w-4 h-4 mr-2 text-amber-500" />
-              <p>For ethical and privacy reasons, contact information and personal details are not visible for anonymous clients.</p>
+        {/* Session Progress */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <h3 className="text-lg font-semibold mb-4">Therapy Progress</h3>
+          
+          <div className="mb-6">
+            <div className="flex justify-between mb-1">
+              <span className="text-sm text-gray-600">Session Attendance</span>
+              <span className="text-sm font-medium text-gray-900">100%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="bg-green-500 h-2.5 rounded-full" style={{ width: '100%' }}></div>
             </div>
           </div>
-        )}
+          
+          <div className="mb-6">
+            <div className="flex justify-between mb-1">
+              <span className="text-sm text-gray-600">Reported Mood</span>
+              <span className="text-sm font-medium text-gray-900">Improving</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="bg-primary h-2.5 rounded-full" style={{ width: '65%' }}></div>
+            </div>
+          </div>
+          
+          <div className="mt-8">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Session Ratings</h4>
+            <div className="flex items-center mb-2">
+              <span className="text-xs text-gray-500 w-8">5★</span>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '60%' }}></div>
+              </div>
+              <span className="text-xs text-gray-500 w-8 text-right">60%</span>
+            </div>
+            <div className="flex items-center mb-2">
+              <span className="text-xs text-gray-500 w-8">4★</span>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '30%' }}></div>
+              </div>
+              <span className="text-xs text-gray-500 w-8 text-right">30%</span>
+            </div>
+            <div className="flex items-center mb-2">
+              <span className="text-xs text-gray-500 w-8">3★</span>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '10%' }}></div>
+              </div>
+              <span className="text-xs text-gray-500 w-8 text-right">10%</span>
+            </div>
+            <div className="flex items-center mb-2">
+              <span className="text-xs text-gray-500 w-8">2★</span>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '0%' }}></div>
+              </div>
+              <span className="text-xs text-gray-500 w-8 text-right">0%</span>
+            </div>
+            <div className="flex items-center mb-2">
+              <span className="text-xs text-gray-500 w-8">1★</span>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '0%' }}></div>
+              </div>
+              <span className="text-xs text-gray-500 w-8 text-right">0%</span>
+            </div>
+          </div>
+        </div>
       </div>
-      
-      {/* Session Progress */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <h3 className="text-lg font-semibold mb-4">Therapy Progress</h3>
+
+      {/* Detailed Analytics Section - Full Width */}
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mt-6">
+        <h3 className="text-lg font-semibold mb-4 flex items-center">
+          <BarChart2 className="w-5 h-5 mr-2 text-primary" />
+          Detailed Analytics
+        </h3>
         
-        <div className="mb-6">
-          <div className="flex justify-between mb-1">
-            <span className="text-sm text-gray-600">Session Attendance</span>
-            <span className="text-sm font-medium text-gray-900">100%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div className="bg-green-500 h-2.5 rounded-full" style={{ width: '100%' }}></div>
-          </div>
-        </div>
-        
-        <div className="mb-6">
-          <div className="flex justify-between mb-1">
-            <span className="text-sm text-gray-600">Homework Completion</span>
-            <span className="text-sm font-medium text-gray-900">75%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: '75%' }}></div>
-          </div>
-        </div>
-        
-        <div className="mb-6">
-          <div className="flex justify-between mb-1">
-            <span className="text-sm text-gray-600">Reported Mood</span>
-            <span className="text-sm font-medium text-gray-900">Improving</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div className="bg-primary h-2.5 rounded-full" style={{ width: '65%' }}></div>
-          </div>
-        </div>
-        
-        <div className="mb-6">
-          <div className="flex justify-between mb-1">
-            <span className="text-sm text-gray-600">Overall Progress</span>
-            <span className="text-sm font-medium text-gray-900">Good</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div className="bg-indigo-500 h-2.5 rounded-full" style={{ width: '70%' }}></div>
-          </div>
-        </div>
-        
-        <div className="mt-8">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Session Ratings</h4>
-          <div className="flex items-center mb-2">
-            <span className="text-xs text-gray-500 w-8">5★</span>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '60%' }}></div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Session Timeline */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Session Timeline</h4>
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+              <div className="h-36 flex items-end justify-between space-x-1">
+                {[70, 45, 80, 65, 90, 75, 85].map((height, idx) => (
+                  <div 
+                    key={idx} 
+                    className="bg-buttonBlue-500 opacity-80 hover:opacity-100 rounded-t w-full transition-all"
+                    style={{ height: `${height}%` }}
+                  ></div>
+                ))}
+              </div>
+              <div className="flex justify-between mt-3 text-xs text-gray-500">
+                <span>Jan</span>
+                <span>Feb</span>
+                <span>Mar</span>
+                <span>Apr</span>
+                <span>May</span>
+                <span>Jun</span>
+                <span>Jul</span>
+              </div>
             </div>
-            <span className="text-xs text-gray-500 w-8 text-right">60%</span>
           </div>
-          <div className="flex items-center mb-2">
-            <span className="text-xs text-gray-500 w-8">4★</span>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '30%' }}></div>
+          
+          {/* Primary Concerns Distribution */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Primary Concerns Distribution</h4>
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="bg-primary h-4 rounded-full" style={{ width: '40%' }}></div>
+                <span className="text-sm text-gray-700">Anxiety (40%)</span>
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="bg-buttonBlue-500 h-4 rounded-full" style={{ width: '30%' }}></div>
+                <span className="text-sm text-gray-700">Stress (30%)</span>
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="bg-buttonGreen-500 h-4 rounded-full" style={{ width: '20%' }}></div>
+                <span className="text-sm text-gray-700">Sleep Issues (20%)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="bg-buttonOrange-500 h-4 rounded-full" style={{ width: '10%' }}></div>
+                <span className="text-sm text-gray-700">Other (10%)</span>
+              </div>
             </div>
-            <span className="text-xs text-gray-500 w-8 text-right">30%</span>
           </div>
-          <div className="flex items-center mb-2">
-            <span className="text-xs text-gray-500 w-8">3★</span>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '10%' }}></div>
-            </div>
-            <span className="text-xs text-gray-500 w-8 text-right">10%</span>
-          </div>
-          <div className="flex items-center mb-2">
-            <span className="text-xs text-gray-500 w-8">2★</span>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '0%' }}></div>
-            </div>
-            <span className="text-xs text-gray-500 w-8 text-right">0%</span>
-          </div>
-          <div className="flex items-center mb-2">
-            <span className="text-xs text-gray-500 w-8">1★</span>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '0%' }}></div>
-            </div>
-            <span className="text-xs text-gray-500 w-8 text-right">0%</span>
-          </div>
-        </div>
-        
-        <div className="mt-6 pt-6 border-t border-gray-100">
-          <button className="w-full flex items-center justify-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md text-sm font-medium">
-            <BarChart2 className="w-4 h-4 mr-2" />
-            View Detailed Analytics
-          </button>
         </div>
       </div>
     </div>
@@ -1159,8 +1126,8 @@ const ClientDetails: React.FC = () => {
                             ${selectedSession.status === 'completed' ? 'bg-green-600' : 
                               selectedSession.status === 'upcoming' ? 'bg-blue-600' :
                               'bg-red-600'}`}
-                          ></span>
-                          {selectedSession.status.charAt(0).toUpperCase() + selectedSession.status.slice(1)}
+                        ></span>
+                        {selectedSession.status.charAt(0).toUpperCase() + selectedSession.status.slice(1)}
                         </span>
                       </div>
                     </div>
@@ -1214,113 +1181,7 @@ const ClientDetails: React.FC = () => {
             </div>
           )}
 
-          {/* Edit Session Modal */}
-          {isEditModalOpen && selectedSession && (
-            <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-6">
-              <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="p-8">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-semibold text-gray-900">Edit Session</h3>
-                    <button 
-                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                      onClick={() => setIsEditModalOpen(false)}
-                    >
-                      <X className="w-5 h-5 text-gray-500" />
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">Date & Time</label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs text-gray-500 mb-1">Date</label>
-                          <input
-                            type="date"
-                            value={(editSessionData.dateObject || new Date()).toISOString().split('T')[0]}
-                            onChange={(e) => {
-                              const currentDate = editSessionData.dateObject || new Date();
-                              const newDate = new Date(e.target.value);
-                              newDate.setHours(currentDate.getHours(), currentDate.getMinutes());
-                              
-                              setEditSessionData({
-                                ...editSessionData,
-                                dateObject: newDate,
-                                date: newDate.toLocaleDateString('en-US', { 
-                                  month: 'long', 
-                                  day: 'numeric', 
-                                  year: 'numeric'
-                                }) + ' • ' + newDate.toLocaleTimeString('en-US', {
-                                  hour: 'numeric',
-                                  minute: '2-digit'
-                                })
-                              });
-                            }}
-                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-500 mb-1">Time</label>
-                          <input
-                            type="time"
-                            value={(editSessionData.dateObject || new Date()).toTimeString().slice(0, 5)}
-                            onChange={(e) => {
-                              const [hours, minutes] = e.target.value.split(':').map(Number);
-                              const currentDate = editSessionData.dateObject || new Date();
-                              currentDate.setHours(hours, minutes);
-                              
-                              setEditSessionData({
-                                ...editSessionData,
-                                dateObject: new Date(currentDate),
-                                date: currentDate.toLocaleDateString('en-US', { 
-                                  month: 'long', 
-                                  day: 'numeric', 
-                                  year: 'numeric'
-                                }) + ' • ' + currentDate.toLocaleTimeString('en-US', {
-                                  hour: 'numeric',
-                                  minute: '2-digit'
-                                })
-                              });
-                            }}
-                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
-                      <input
-                        type="number"
-                        value={editSessionData.duration || selectedSession.duration}
-                        onChange={(e) => setEditSessionData({...editSessionData, duration: parseInt(e.target.value)})}
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                      <textarea
-                        value={editSessionData.notes || selectedSession.notes || ""}
-                        onChange={(e) => setEditSessionData({...editSessionData, notes: e.target.value})}
-                        rows={4}
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
-                      ></textarea>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-8 pt-6 border-t border-gray-100 flex justify-end">
-                    <button
-                      className="px-6 py-3 bg-primary hover:bg-opacity-90 text-white rounded-md text-sm font-medium transition-colors"
-                      onClick={saveSessionEdit}
-                    >
-                      Save Changes
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Edit Session Modal removed */}
 
           {/* Cancel Session Modal */}
           {isCancelModalOpen && selectedSession && (
