@@ -4,9 +4,6 @@ import {
   Send,
   Smile,
   Paperclip,
-  Phone,
-  Video,
-  Info,
   Search,
   MoreVertical,
   MessageCircle
@@ -64,15 +61,25 @@ const ChatList: React.FC<{
         </div>
         
         {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <div className="relative w-full">
           <input
             type="text"
             placeholder="Search conversations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full border-none outline-none focus:ring-2 focus:ring-pink-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
           />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          {searchTerm && (
+            <button 
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              onClick={() => setSearchTerm('')}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -222,18 +229,6 @@ const ChatArea: React.FC<{
             </p>
           </div>
         </div>
-        
-        <div className="flex items-center space-x-2">
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <Phone size={20} className="text-gray-600" />
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <Video size={20} className="text-gray-600" />
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <Info size={20} className="text-gray-600" />
-          </button>
-        </div>
       </div>
 
       {/* Messages */}
@@ -260,16 +255,26 @@ const ChatArea: React.FC<{
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
-              className="w-full px-4 py-2 bg-gray-100 rounded-full border-none outline-none focus:ring-2 focus:ring-pink-500"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             />
-            <button className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full">
+            {newMessage && (
+              <button 
+                className="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                onClick={() => setNewMessage('')}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+            <button className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full">
               <Smile size={16} className="text-gray-600" />
             </button>
           </div>
           <button
             onClick={handleSend}
             disabled={!newMessage.trim()}
-            className="p-2 bg-pink-500 hover:bg-pink-600 disabled:bg-gray-300 text-white rounded-full transition-colors"
+            className="p-2 bg-primary hover:bg-opacity-90 disabled:bg-gray-300 text-white rounded-lg transition-colors"
           >
             <Send size={20} />
           </button>
