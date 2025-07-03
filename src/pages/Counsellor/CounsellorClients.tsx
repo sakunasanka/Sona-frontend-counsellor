@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavBar, Sidebar } from '../../components/layout';
-import { Search, Plus, Users, Calendar, MessageCircle, Filter, ChevronDown, Phone, Clock, Star } from 'lucide-react';
+import { Search, Users, Calendar, MessageCircle, Filter, ChevronDown, Phone, Clock } from 'lucide-react';
 
 interface Client {
   id: number;
@@ -15,9 +15,11 @@ interface Client {
   nextSession?: string;
   concerns: string[];
   status: 'active' | 'inactive' | 'new';
-  rating?: number;
   notes?: string;
   anonymous: boolean;
+  nickname?: string;
+  student?: boolean;
+  institution?: string;
 }
 
 interface ClientCardProps {
@@ -27,13 +29,13 @@ interface ClientCardProps {
 
 const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
   return (
-    <div className={`bg-white rounded-lg shadow-sm border ${client.anonymous ? 'border-indigo-100' : 'border-gray-100'} hover:border-blue-200 transition-all hover:shadow-md overflow-hidden`}>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 hover:border-[rgb(174,175,247)] hover:border-opacity-50 transition-all hover:shadow-md overflow-hidden">
       <div className="flex flex-col md:flex-row">
         {/* Left Section - Client info */}
         <div className="flex p-4 flex-1">
-          <div className={`w-16 h-16 rounded-full overflow-hidden flex-shrink-0 ${client.anonymous ? 'bg-indigo-100 border-2 border-indigo-200 flex items-center justify-center' : 'border-2 border-gray-100'}`}>
+          <div className={`w-16 h-16 rounded-full overflow-hidden flex-shrink-0 ${client.anonymous ? 'bg-[rgb(174,175,247)] bg-opacity-10 flex items-center justify-center' : 'border-2 border-gray-100'}`}>
             {client.anonymous ? (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-indigo-400">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-[rgb(174,175,247)]">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             ) : (
@@ -50,32 +52,38 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-gray-900 text-lg">
-                    {client.anonymous ? 'Anonymous Client' : client.name}
+                    {client.anonymous ? (client.nickname || 'Anonymous Client') : client.name}
                   </h3>
                   {client.anonymous && (
-                    <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-medium">
+                    <span className="px-2 py-0.5 rounded-full bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800 text-xs font-medium">
                       Anonymous
                     </span>
                   )}
                 </div>
                 <div className="text-sm text-gray-600 mt-1 flex items-center gap-4">
-                  {client.anonymous ? (
-                    <span>Anonymous Profile</span>
-                  ) : (
-                    <span>{client.age} yrs • {client.gender}</span>
-                  )}
-                  {client.rating && (
-                    <div className="flex items-center">
-                      <Star className="w-4 h-4 text-yellow-400 mr-1 fill-yellow-400" />
-                      <span>{client.rating}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {!client.anonymous && <span>{client.age} yrs • {client.gender}</span>}
+                    {client.student && (
+                      <div className="flex items-center gap-1">
+                        <span className="inline-flex items-center px-2 py-0.5 bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-500 text-xs rounded-full">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 mr-1">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+                          </svg>
+                          Student
+                        </span>
+                        {client.institution && (
+                          <span className="text-xs text-gray-500">• {client.institution}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                
                 </div>
               </div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium h-fit ${
-                client.status === 'active' ? 'bg-green-100 text-green-800' : 
-                client.status === 'new' ? 'bg-blue-100 text-blue-800' : 
-                'bg-gray-100 text-gray-800'
+                client.status === 'active' ? 'bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800' : 
+                client.status === 'new' ? 'bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800' : 
+                'bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800'
               }`}>
                 {client.status === 'active' ? 'Active' : 
                  client.status === 'new' ? 'New Client' : 
@@ -98,7 +106,7 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
                 </div>
               </div>
             ) : (
-              <div className="mt-2 text-sm text-indigo-600">
+              <div className="mt-2 text-sm text-gray-500">
                 <div className="flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1 flex-shrink-0">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
@@ -132,27 +140,27 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
         </div>
         
         {/* Right Section - Stats and actions */}
-        <div className={`border-t md:border-t-0 md:border-l border-gray-100 ${client.anonymous ? 'bg-indigo-50' : 'bg-gray-50'} md:w-64 lg:w-72 flex-shrink-0`}>
+        <div className="border-t md:border-t-0 md:border-l border-gray-100 bg-gray-50 md:w-64 lg:w-72 flex-shrink-0">
           <div className="p-4">
             <div className="flex flex-col space-y-2">
               <div className="flex items-center text-sm text-gray-600">
                 <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-                <span>Sessions: <span className="font-medium text-gray-900">{client.sessionCount}</span></span>
+                <span>Sessions: <span className="font-medium text-indigo-500">{client.sessionCount}</span></span>
               </div>
               <div className="flex items-center text-sm text-gray-600">
                 <Clock className="w-4 h-4 mr-2 text-gray-500" />
-                <span>Last session: <span className="font-medium text-gray-900">{client.lastSession}</span></span>
+                <span>Last session: <span className="font-medium text-indigo-500">{client.lastSession}</span></span>
               </div>
               {client.nextSession && (
-                <div className="flex items-center text-sm text-blue-600">
-                  <Calendar className="w-4 h-4 mr-2 text-blue-600" />
+                <div className="flex items-center text-sm text-indigo-500">
+                  <Calendar className="w-4 h-4 mr-2 text-indigo-500" />
                   <span className="font-medium">{client.nextSession}</span>
                 </div>
               )}
             </div>
             
             <div className="mt-4 flex flex-col space-y-2">
-              <button className="w-full py-1.5 px-3 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1">
+              <button className="w-full py-1.5 px-3 bg-primary hover:bg-primaryLight text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1">
                 <MessageCircle className="w-4 h-4" />
                 Message
               </button>
@@ -176,6 +184,7 @@ const CounsellorClients: React.FC = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'new' | 'inactive'>('all');
   const [anonymousFilter, setAnonymousFilter] = useState<'all' | 'anonymous' | 'identified'>('all');
+  const [studentFilter, setStudentFilter] = useState<'all' | 'student' | 'non-student'>('all');
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -200,9 +209,10 @@ const CounsellorClients: React.FC = () => {
       nextSession: "July 10, 10:00 AM",
       concerns: ["Anxiety", "Stress", "Academic Pressure"],
       status: 'active',
-      rating: 4.8,
       notes: "Making good progress with anxiety management techniques.",
-      anonymous: false
+      anonymous: false,
+      student: true,
+      institution: "Stanford University"
     },
     {
       id: 2,
@@ -216,8 +226,8 @@ const CounsellorClients: React.FC = () => {
       lastSession: "1 week ago",
       concerns: ["Depression", "Relationship Issues"],
       status: 'active',
-      rating: 4.5,
-      anonymous: false
+      anonymous: false,
+      student: false
     },
     {
       id: 3,
@@ -232,7 +242,10 @@ const CounsellorClients: React.FC = () => {
       nextSession: "July 7, 2:00 PM",
       concerns: ["Social Anxiety", "Self-esteem"],
       status: 'new',
-      anonymous: true
+      anonymous: true,
+      nickname: "Sunshine",
+      student: true,
+      institution: "Berkeley College"
     },
     {
       id: 4,
@@ -246,8 +259,8 @@ const CounsellorClients: React.FC = () => {
       lastSession: "3 weeks ago",
       concerns: ["Career Planning", "Work-life Balance"],
       status: 'inactive',
-      rating: 4.2,
-      anonymous: false
+      anonymous: false,
+      student: false
     },
     {
       id: 5,
@@ -262,8 +275,10 @@ const CounsellorClients: React.FC = () => {
       nextSession: "July 12, 3:30 PM",
       concerns: ["Family Issues", "Adjustment Disorder"],
       status: 'active',
-      rating: 4.9,
-      anonymous: true
+      anonymous: true,
+      nickname: "Lily",
+      student: true,
+      institution: "UCLA"
     },
     {
       id: 6,
@@ -277,7 +292,9 @@ const CounsellorClients: React.FC = () => {
       lastSession: "2 weeks ago",
       concerns: ["Exam Stress", "Sleep Problems"],
       status: 'new',
-      anonymous: false
+      anonymous: false,
+      student: true,
+      institution: "MIT"
     },
     {
       id: 7,
@@ -292,8 +309,9 @@ const CounsellorClients: React.FC = () => {
       nextSession: "July 15, 9:00 AM",
       concerns: ["Identity Issues", "Cultural Adjustment"],
       status: 'active',
-      rating: 4.7,
-      anonymous: true
+      anonymous: true,
+      nickname: "Starlight",
+      student: false
     },
     {
       id: 8,
@@ -307,18 +325,37 @@ const CounsellorClients: React.FC = () => {
       lastSession: "1 month ago",
       concerns: ["Loneliness", "Homesickness"],
       status: 'inactive',
-      rating: 4.3,
-      anonymous: false
+      anonymous: false,
+      student: false
+    },
+    {
+      id: 9,
+      name: "Alex Morgan",
+      profileImage: "/assets/images/student-photo.png",
+      age: 32,
+      gender: "Non-binary",
+      email: "alex.morgan@example.com",
+      phone: "+1 (555) 123-9876",
+      sessionCount: 4,
+      lastSession: "2 weeks ago",
+      concerns: ["Work Stress", "Anxiety"],
+      status: 'active',
+      anonymous: true,
+      nickname: "Phoenix",
+      student: false
     }
   ]);
 
-  // Filter clients based on search query, active filter and anonymous status
+  // Filter clients based on search query, active filter, anonymous status, and student status
   const filteredClients = clients.filter(client => {
     // Filter by search query
     const matchesSearch = client.anonymous 
-      ? "anonymous client".includes(searchQuery.toLowerCase())
+      ? (client.nickname?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+         "anonymous client".includes(searchQuery.toLowerCase()) ||
+         (client.institution && client.institution.toLowerCase().includes(searchQuery.toLowerCase())))
       : client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        client.email.toLowerCase().includes(searchQuery.toLowerCase());
+        client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (client.institution && client.institution.toLowerCase().includes(searchQuery.toLowerCase()));
     
     // Filter by status
     const matchesFilter = activeFilter === 'all' || client.status === activeFilter;
@@ -327,8 +364,13 @@ const CounsellorClients: React.FC = () => {
     const matchesAnonymousFilter = anonymousFilter === 'all' || 
       (anonymousFilter === 'anonymous' && client.anonymous) || 
       (anonymousFilter === 'identified' && !client.anonymous);
+      
+    // Filter by student status
+    const matchesStudentFilter = studentFilter === 'all' || 
+      (studentFilter === 'student' && client.student) || 
+      (studentFilter === 'non-student' && !client.student);
     
-    return matchesSearch && matchesFilter && matchesAnonymousFilter;
+    return matchesSearch && matchesFilter && matchesAnonymousFilter && matchesStudentFilter;
   });
 
   return (
@@ -357,14 +399,6 @@ const CounsellorClients: React.FC = () => {
                 <div>
                   <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">My Clients</h1>
                 </div>
-                <div className="flex items-center gap-3">
-                  <button 
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 lg:px-4 py-2 rounded-lg font-medium transition-all shadow-sm flex items-center gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span className="hidden sm:inline text-sm">Add Client</span>
-                  </button>
-                </div>
               </div>
 
               {/* Search & Filters */}
@@ -374,7 +408,7 @@ const CounsellorClients: React.FC = () => {
                     <input
                       type="text"
                       placeholder="Search clients by name, email, phone..."
-                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(174,175,247)] focus:border-[rgb(174,175,247)] transition-all"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -397,7 +431,7 @@ const CounsellorClients: React.FC = () => {
                     <span className="text-sm text-gray-700 mr-1">Status:</span>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        activeFilter === 'all' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        activeFilter === 'all' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setActiveFilter('all')}
                     >
@@ -405,7 +439,7 @@ const CounsellorClients: React.FC = () => {
                     </button>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        activeFilter === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        activeFilter === 'active' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setActiveFilter('active')}
                     >
@@ -413,7 +447,7 @@ const CounsellorClients: React.FC = () => {
                     </button>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        activeFilter === 'new' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        activeFilter === 'new' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setActiveFilter('new')}
                     >
@@ -421,7 +455,7 @@ const CounsellorClients: React.FC = () => {
                     </button>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        activeFilter === 'inactive' ? 'bg-gray-300 text-gray-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        activeFilter === 'inactive' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setActiveFilter('inactive')}
                     >
@@ -435,7 +469,7 @@ const CounsellorClients: React.FC = () => {
                     <span className="text-sm text-gray-700 mr-1">Privacy:</span>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        anonymousFilter === 'all' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        anonymousFilter === 'all' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setAnonymousFilter('all')}
                     >
@@ -443,7 +477,7 @@ const CounsellorClients: React.FC = () => {
                     </button>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        anonymousFilter === 'anonymous' ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        anonymousFilter === 'anonymous' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setAnonymousFilter('anonymous')}
                     >
@@ -451,11 +485,41 @@ const CounsellorClients: React.FC = () => {
                     </button>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        anonymousFilter === 'identified' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        anonymousFilter === 'identified' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setAnonymousFilter('identified')}
                     >
                       Identified
+                    </button>
+                  </div>
+                  
+                  <div className="h-4 border-r border-gray-300 mx-1"></div>
+                  
+                  <div className="flex items-center flex-wrap gap-2">
+                    <span className="text-sm text-gray-700 mr-1">Type:</span>
+                    <button 
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                        studentFilter === 'all' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                      onClick={() => setStudentFilter('all')}
+                    >
+                      All
+                    </button>
+                    <button 
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                        studentFilter === 'student' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                      onClick={() => setStudentFilter('student')}
+                    >
+                      Students
+                    </button>
+                    <button 
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                        studentFilter === 'non-student' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                      onClick={() => setStudentFilter('non-student')}
+                    >
+                      Non-Students
                     </button>
                   </div>
                   
@@ -484,7 +548,7 @@ const CounsellorClients: React.FC = () => {
                             type="radio" 
                             id="anonymous-all" 
                             name="anonymousFilter" 
-                            className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                            className="h-4 w-4 text-[rgb(174,175,247)] border-gray-300 focus:ring-[rgb(174,175,247)]"
                             checked={anonymousFilter === 'all'}
                             onChange={() => setAnonymousFilter('all')}
                           />
@@ -497,7 +561,7 @@ const CounsellorClients: React.FC = () => {
                             type="radio" 
                             id="anonymous-only" 
                             name="anonymousFilter" 
-                            className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                            className="h-4 w-4 text-[rgb(174,175,247)] border-gray-300 focus:ring-[rgb(174,175,247)]"
                             checked={anonymousFilter === 'anonymous'}
                             onChange={() => setAnonymousFilter('anonymous')}
                           />
@@ -510,7 +574,7 @@ const CounsellorClients: React.FC = () => {
                             type="radio" 
                             id="identified-only" 
                             name="anonymousFilter" 
-                            className="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500"
+                            className="h-4 w-4 text-green-600 border-gray-300 focus:ring-[rgb(174,175,247)]"
                             checked={anonymousFilter === 'identified'}
                             onChange={() => setAnonymousFilter('identified')}
                           />
@@ -520,11 +584,58 @@ const CounsellorClients: React.FC = () => {
                         </div>
                       </div>
                     </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Client Type
+                      </label>
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <input 
+                            type="radio" 
+                            id="student-all" 
+                            name="studentFilter" 
+                            className="h-4 w-4 text-[rgb(174,175,247)] border-gray-300 focus:ring-[rgb(174,175,247)]"
+                            checked={studentFilter === 'all'}
+                            onChange={() => setStudentFilter('all')}
+                          />
+                          <label htmlFor="student-all" className="ml-2 block text-sm text-gray-700">
+                            All Clients
+                          </label>
+                        </div>
+                        <div className="flex items-center">
+                          <input 
+                            type="radio" 
+                            id="student-only" 
+                            name="studentFilter" 
+                            className="h-4 w-4 text-[rgb(174,175,247)] border-gray-300 focus:ring-[rgb(174,175,247)]"
+                            checked={studentFilter === 'student'}
+                            onChange={() => setStudentFilter('student')}
+                          />
+                          <label htmlFor="student-only" className="ml-2 block text-sm text-gray-700">
+                            Students Only
+                          </label>
+                        </div>
+                        <div className="flex items-center">
+                          <input 
+                            type="radio" 
+                            id="non-student-only" 
+                            name="studentFilter" 
+                            className="h-4 w-4 text-gray-600 border-gray-300 focus:ring-[rgb(174,175,247)]"
+                            checked={studentFilter === 'non-student'}
+                            onChange={() => setStudentFilter('non-student')}
+                          />
+                          <label htmlFor="non-student-only" className="ml-2 block text-sm text-gray-700">
+                            Non-Students Only
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Session Count
                       </label>
-                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(174,175,247)]">
                         <option value="any">Any</option>
                         <option value="new">New (1-2 sessions)</option>
                         <option value="regular">Regular (3-10 sessions)</option>
@@ -535,7 +646,7 @@ const CounsellorClients: React.FC = () => {
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Primary Concern
                       </label>
-                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(174,175,247)]">
                         <option value="any">Any</option>
                         <option value="anxiety">Anxiety</option>
                         <option value="depression">Depression</option>
@@ -548,7 +659,7 @@ const CounsellorClients: React.FC = () => {
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Last Session
                       </label>
-                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(174,175,247)]">
                         <option value="any">Any time</option>
                         <option value="week">Within last week</option>
                         <option value="month">Within last month</option>
@@ -565,13 +676,13 @@ const CounsellorClients: React.FC = () => {
                   <Users className="w-5 h-5" />
                   <span className="text-sm">{filteredClients.length} {filteredClients.length === 1 ? 'client' : 'clients'} found</span>
                   <span className="text-xs text-gray-500">
-                    ({filteredClients.filter(c => c.anonymous).length} anonymous, {filteredClients.filter(c => !c.anonymous).length} identified)
+                    (<span className="text-indigo-500">{filteredClients.filter(c => c.anonymous).length}</span> anonymous, <span className="text-indigo-500">{filteredClients.filter(c => !c.anonymous).length}</span> identified, <span className="text-indigo-500">{filteredClients.filter(c => c.student).length}</span> students)
                   </span>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">Sort by:</span>
-                  <select className="text-sm border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <select className="text-sm border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[rgb(174,175,247)]">
                     <option value="name">Name (A-Z)</option>
                     <option value="recent">Recent Activity</option>
                     <option value="sessions">Session Count</option>
@@ -602,7 +713,7 @@ const CounsellorClients: React.FC = () => {
                   </p>
                   {searchQuery && (
                     <button 
-                      className="text-blue-600 hover:text-blue-800 font-medium"
+                      className="text-indigo-600 hover:text-indigo-800 font-medium"
                       onClick={() => setSearchQuery('')}
                     >
                       Clear search
