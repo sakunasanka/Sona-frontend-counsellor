@@ -1062,17 +1062,8 @@ const CounsellorCalendar: React.FC = () => {
                   />
                 </div>
                 
-                <div className="flex gap-3 pt-4">
-                  <button 
-                    onClick={() => {
-                      setShowUnavailable(false);
-                      setUnavailabilityType('full-day');
-                    }}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-medium transition-all">
+                <div className="pt-4">
+                  <button className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-medium transition-all">
                     Mark Unavailable
                   </button>
                 </div>
