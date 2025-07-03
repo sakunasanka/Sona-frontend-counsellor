@@ -30,6 +30,7 @@ interface Note {
 interface Session {
   id: number;
   date: string;
+  dateObject?: Date;  // For date/time picker
   status: 'completed' | 'upcoming' | 'cancelled';
   duration: number; // in minutes
   concerns: string[];
@@ -50,6 +51,15 @@ const ClientDetails: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'sessions' | 'details'>('overview');
   const [newNote, setNewNote] = useState('');
   const [isPrivateNote, setIsPrivateNote] = useState(false);
+  
+  // Session modals state
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [editSessionData, setEditSessionData] = useState<Partial<Session>>({});
+  const [cancelReason, setCancelReason] = useState('');
+  
   const [notes, setNotes] = useState<Note[]>([
     {
       id: 1,
@@ -237,6 +247,89 @@ const ClientDetails: React.FC = () => {
     });
   };
 
+  // Session handlers
+  const handleViewSessionDetails = (session: Session) => {
+    setSelectedSession(session);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleEditSession = (session: Session) => {
+    // Parse date string to create a Date object
+    // Expected format: "June 28, 2025 • 10:00 AM"
+    let dateObject;
+    try {
+      const dateParts = session.date.split('•');
+      if (dateParts.length === 2) {
+        const dateStr = dateParts[0].trim();
+        const timeStr = dateParts[1].trim();
+        dateObject = new Date(`${dateStr} ${timeStr}`);
+      } else {
+        dateObject = new Date();
+      }
+    } catch (error) {
+      console.error("Error parsing date:", error);
+      dateObject = new Date();
+    }
+
+    setSelectedSession(session);
+    setEditSessionData({
+      date: session.date,
+      dateObject: dateObject,
+      duration: session.duration,
+      concerns: [...session.concerns],
+      notes: session.notes || ""
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleCancelSession = (session: Session) => {
+    setSelectedSession(session);
+    setIsCancelModalOpen(true);
+  };
+
+  const saveSessionEdit = () => {
+    if (selectedSession && editSessionData) {
+      // In a real app, you would make an API call here
+      const updatedSessions = sessions.map(s => 
+        s.id === selectedSession.id 
+          ? { ...s, ...editSessionData } 
+          : s
+      );
+      // This would be replaced with an API call and state update
+      console.log("Session updated:", updatedSessions);
+      
+      // Show success message (in a real app)
+      alert("Session updated successfully!");
+      
+      // Close modal
+      setIsEditModalOpen(false);
+      setSelectedSession(null);
+      setEditSessionData({});
+    }
+  };
+
+  const confirmCancelSession = () => {
+    if (selectedSession) {
+      // In a real app, you would make an API call here
+      const updatedSession = { 
+        ...selectedSession, 
+        status: 'cancelled' as const,
+        cancellationReason: cancelReason
+      };
+      
+      // This would be replaced with an API call and state update
+      console.log("Session cancelled:", updatedSession);
+      
+      // Show confirmation message (in a real app)
+      alert("Session cancelled successfully!");
+      
+      // Close modal
+      setIsCancelModalOpen(false);
+      setSelectedSession(null);
+      setCancelReason('');
+    }
+  };
+  
   const renderOverviewTab = () => (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -321,17 +414,10 @@ const ClientDetails: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <button 
             className="flex flex-col items-center justify-center bg-indigo-50 hover:bg-indigo-100 p-4 rounded-lg transition-colors"
-            onClick={() => window.location.href = '/counsellor/chats'}
+            onClick={() => window.location.href = `/counsellor/chats?clientId=${clientId}`}
           >
             <MessageCircle className="w-6 h-6 text-indigo-500 mb-2" />
             <span className="text-sm text-gray-800">Message</span>
-          </button>
-          <button 
-            className="flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 p-4 rounded-lg transition-colors"
-            onClick={() => setActiveTab('sessions')}
-          >
-            <Calendar className="w-6 h-6 text-green-500 mb-2" />
-            <span className="text-sm text-gray-800">Schedule</span>
           </button>
           <button 
             className="flex flex-col items-center justify-center bg-purple-50 hover:bg-purple-100 p-4 rounded-lg transition-colors"
@@ -348,6 +434,13 @@ const ClientDetails: React.FC = () => {
           >
             <FileText className="w-6 h-6 text-purple-500 mb-2" />
             <span className="text-sm text-gray-800">Add Note</span>
+          </button>
+          <button 
+            className="flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 p-4 rounded-lg transition-colors"
+            onClick={() => setActiveTab('sessions')}
+          >
+            <Calendar className="w-6 h-6 text-green-500 mb-2" />
+            <span className="text-sm text-gray-800">Schedule</span>
           </button>
           <button 
             className="flex flex-col items-center justify-center bg-amber-50 hover:bg-amber-100 p-4 rounded-lg transition-colors"
@@ -416,89 +509,16 @@ const ClientDetails: React.FC = () => {
             </div>
             
             <button
-              className="px-4 py-2 bg-primary hover:bg-opacity-90 text-white rounded-md text-sm font-medium flex items-center"
+              className={`px-4 py-2 ${!newNote.trim() ? 'bg-gray-300 cursor-not-allowed opacity-50' : 'bg-primary hover:bg-opacity-90'} text-white rounded-md text-sm font-medium flex items-center transition-all`}
               onClick={handleAddNote}
               disabled={!newNote.trim()}
+              style={{pointerEvents: newNote.trim() ? 'auto' : 'none'}}
             >
               <PenLine className="w-4 h-4 mr-2" />
               Save Note
             </button>
           </div>
         </div>
-      </div>
-      
-      {/* Upcoming Sessions */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Upcoming Sessions</h3>
-          <button 
-            className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
-            onClick={() => setActiveTab('sessions')}
-          >
-            View All Sessions
-          </button>
-        </div>
-        
-        {sessions.filter(session => session.status === 'upcoming').length > 0 ? (
-          <div className="space-y-4">
-            {sessions
-              .filter(session => session.status === 'upcoming')
-              .map(session => (
-                <div key={session.id} className="border border-gray-100 rounded-lg p-4 bg-gradient-to-r from-indigo-50 to-indigo-100/30">
-                  <div className="flex justify-between">
-                    <div className="flex items-center">
-                      <Calendar className="w-5 h-5 text-indigo-500 mr-2" />
-                      <span className="font-medium">{session.date}</span>
-                    </div>
-                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                      Upcoming
-                    </span>
-                  </div>
-                  
-                  <div className="mt-3 flex items-center text-sm text-gray-500">
-                    <Clock className="w-4 h-4 mr-2" />
-                    <span>{session.duration} minutes</span>
-                  </div>
-                  
-                  {session.concerns && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {session.concerns.map((concern, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
-                        >
-                          {concern}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {session.notes && (
-                    <div className="mt-3 text-sm text-gray-600">
-                      <p>{session.notes}</p>
-                    </div>
-                  )}
-                  
-                  <div className="mt-3 flex gap-2">
-                    <button className="flex-1 py-1.5 px-3 bg-white hover:bg-gray-100 text-gray-800 text-sm font-medium rounded-md border border-gray-300 transition-colors flex items-center justify-center">
-                      Reschedule
-                    </button>
-                    <button className="flex-1 py-1.5 px-3 bg-primary hover:bg-opacity-90 text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center">
-                      Send Reminder
-                    </button>
-                  </div>
-                </div>
-              ))}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No upcoming sessions scheduled</p>
-            <button className="mt-4 px-4 py-2 bg-primary hover:bg-opacity-90 text-white rounded-md text-sm font-medium">
-              Schedule a Session
-            </button>
-          </div>
-        )}
       </div>
       
       {/* Primary Concerns */}
@@ -560,9 +580,10 @@ const ClientDetails: React.FC = () => {
           </div>
           
           <button
-            className="px-4 py-2 bg-primary hover:bg-opacity-90 text-white rounded-md text-sm font-medium flex items-center"
+            className={`px-4 py-2 ${!newNote.trim() ? 'bg-gray-300 cursor-not-allowed opacity-50' : 'bg-primary hover:bg-opacity-90'} text-white rounded-md text-sm font-medium flex items-center transition-all`}
             onClick={handleAddNote}
             disabled={!newNote.trim()}
+            style={{pointerEvents: newNote.trim() ? 'auto' : 'none'}}
           >
             <PenLine className="w-4 h-4 mr-2" />
             Save Note
@@ -608,9 +629,12 @@ const ClientDetails: React.FC = () => {
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">All Sessions</h3>
-          <button className="px-4 py-2 bg-primary hover:bg-opacity-90 text-white rounded-md text-sm font-medium flex items-center">
+          <button 
+            className="px-4 py-2 bg-primary hover:bg-opacity-90 text-white rounded-md text-sm font-medium flex items-center"
+            onClick={() => window.location.href = '/counsellor-calendar'}
+          >
             <Calendar className="w-4 h-4 mr-2" />
-            Schedule New Session
+            View Calendar
           </button>
         </div>
         
@@ -697,13 +721,43 @@ const ClientDetails: React.FC = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-indigo-600 hover:text-indigo-900 mr-3">Details</button>
-                    {session.status === 'upcoming' && (
-                      <>
-                        <button className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                        <button className="text-red-600 hover:text-red-900">Cancel</button>
-                      </>
-                    )}
+                    <div className="flex justify-end gap-2">
+                      <button 
+                        className="px-2 py-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded flex items-center transition-colors"
+                        onClick={() => handleViewSessionDetails(session)}
+                        aria-label="View session details"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                        </svg>
+                        Details
+                      </button>
+                      {session.status === 'upcoming' && (
+                        <>
+                          <button 
+                            className="px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded flex items-center transition-colors"
+                            onClick={() => handleEditSession(session)}
+                            aria-label="Edit session"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                            Edit
+                          </button>
+                          <button 
+                            className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded flex items-center transition-colors"
+                            onClick={() => handleCancelSession(session)}
+                            aria-label="Cancel session"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                            Cancel
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -1066,6 +1120,258 @@ const ClientDetails: React.FC = () => {
             {activeTab === 'sessions' && renderSessionsTab()}
             {activeTab === 'details' && renderDetailsTab()}
           </div>
+
+          {/* Session Details Modal */}
+          {isDetailsModalOpen && selectedSession && (
+            <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-6">
+              <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div className="p-8">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-semibold text-gray-900">Session Details</h3>
+                    <button 
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                      onClick={() => setIsDetailsModalOpen(false)}
+                    >
+                      <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Date & Time</h4>
+                      <p className="text-gray-900 font-medium">{selectedSession.date}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Duration</h4>
+                      <p className="text-gray-900">{selectedSession.duration} minutes</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Status</h4>
+                      <div className="mt-1">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                          ${selectedSession.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                            selectedSession.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
+                            'bg-red-100 text-red-800'}`}
+                        >
+                          <span className={`w-1.5 h-1.5 mr-1.5 rounded-full
+                            ${selectedSession.status === 'completed' ? 'bg-green-600' : 
+                              selectedSession.status === 'upcoming' ? 'bg-blue-600' :
+                              'bg-red-600'}`}
+                          ></span>
+                          {selectedSession.status.charAt(0).toUpperCase() + selectedSession.status.slice(1)}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Topics/Concerns</h4>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {selectedSession.concerns.map((concern, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center px-2.5 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full"
+                          >
+                            {concern}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {selectedSession.notes && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500">Session Notes</h4>
+                        <div className="mt-1 p-3 bg-gray-50 rounded-lg text-gray-700">
+                          {selectedSession.notes}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {selectedSession.rating && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500">Client Rating</h4>
+                        <div className="mt-1 flex">
+                          {[...Array(5)].map((_, i) => (
+                            <svg 
+                              key={i} 
+                              className={`w-5 h-5 ${i < selectedSession.rating! ? 'text-yellow-400' : 'text-gray-300'}`}
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Added additional bottom padding instead of a footer line */}
+                  <div className="mt-8"></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Edit Session Modal */}
+          {isEditModalOpen && selectedSession && (
+            <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-6">
+              <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div className="p-8">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-semibold text-gray-900">Edit Session</h3>
+                    <button 
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                      onClick={() => setIsEditModalOpen(false)}
+                    >
+                      <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">Date & Time</label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Date</label>
+                          <input
+                            type="date"
+                            value={(editSessionData.dateObject || new Date()).toISOString().split('T')[0]}
+                            onChange={(e) => {
+                              const currentDate = editSessionData.dateObject || new Date();
+                              const newDate = new Date(e.target.value);
+                              newDate.setHours(currentDate.getHours(), currentDate.getMinutes());
+                              
+                              setEditSessionData({
+                                ...editSessionData,
+                                dateObject: newDate,
+                                date: newDate.toLocaleDateString('en-US', { 
+                                  month: 'long', 
+                                  day: 'numeric', 
+                                  year: 'numeric'
+                                }) + ' • ' + newDate.toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit'
+                                })
+                              });
+                            }}
+                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Time</label>
+                          <input
+                            type="time"
+                            value={(editSessionData.dateObject || new Date()).toTimeString().slice(0, 5)}
+                            onChange={(e) => {
+                              const [hours, minutes] = e.target.value.split(':').map(Number);
+                              const currentDate = editSessionData.dateObject || new Date();
+                              currentDate.setHours(hours, minutes);
+                              
+                              setEditSessionData({
+                                ...editSessionData,
+                                dateObject: new Date(currentDate),
+                                date: currentDate.toLocaleDateString('en-US', { 
+                                  month: 'long', 
+                                  day: 'numeric', 
+                                  year: 'numeric'
+                                }) + ' • ' + currentDate.toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit'
+                                })
+                              });
+                            }}
+                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
+                      <input
+                        type="number"
+                        value={editSessionData.duration || selectedSession.duration}
+                        onChange={(e) => setEditSessionData({...editSessionData, duration: parseInt(e.target.value)})}
+                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                      <textarea
+                        value={editSessionData.notes || selectedSession.notes || ""}
+                        onChange={(e) => setEditSessionData({...editSessionData, notes: e.target.value})}
+                        rows={4}
+                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                      ></textarea>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-8 pt-6 border-t border-gray-100 flex justify-end">
+                    <button
+                      className="px-6 py-3 bg-primary hover:bg-opacity-90 text-white rounded-md text-sm font-medium transition-colors"
+                      onClick={saveSessionEdit}
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cancel Session Modal */}
+          {isCancelModalOpen && selectedSession && (
+            <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-6">
+              <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+                <div className="p-8">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-semibold text-gray-900">Cancel Session</h3>
+                    <button 
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                      onClick={() => setIsCancelModalOpen(false)}
+                    >
+                      <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <p className="text-gray-700">
+                      Are you sure you want to cancel the session scheduled for <span className="font-medium">{selectedSession.date}</span>?
+                    </p>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Reason for cancellation</label>
+                      <textarea
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                        rows={3}
+                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                        placeholder="Please provide a reason for cancellation..."
+                      ></textarea>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-8 pt-6 border-t border-gray-100 flex justify-end space-x-4">
+                    <button
+                      className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md text-sm font-medium transition-colors"
+                      onClick={() => setIsCancelModalOpen(false)}
+                    >
+                      Keep Session
+                    </button>
+                    <button
+                      className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium transition-colors"
+                      onClick={confirmCancelSession}
+                    >
+                      Cancel Session
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

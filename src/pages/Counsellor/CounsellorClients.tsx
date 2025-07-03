@@ -161,7 +161,10 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
             </div>
             
             <div className="mt-4 flex flex-col space-y-2">
-              <button className="w-full py-1.5 px-3 bg-primary hover:bg-primaryLight text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1">
+              <button 
+                className="w-full py-1.5 px-3 bg-primary hover:bg-primaryLight text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1"
+                onClick={() => window.location.href = `/counsellor/chats?clientId=${client.id}`}
+              >
                 <MessageCircle className="w-4 h-4" />
                 Message
               </button>
