@@ -1,19 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, User, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import Card from '../../components/ui/Card';
-import Container from '../../components/ui/Container';
 import Checkbox from '../../components/ui/Checkbox';
-import Modal from '../../components/ui/Modal';
 
 const SignIn = () => {
   const navigate = useNavigate();
   const [userType, setUserType] = useState<'counsellor' | 'psychiatrist'>('counsellor');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{
@@ -21,44 +18,99 @@ const SignIn = () => {
     password?: string;
     general?: string;
   }>({});
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState('');
-  const [resetSent, setResetSent] = useState(false);
+
+  // Letter dissolve effect states
+  const [visibleLetters, setVisibleLetters] = useState({
+    wellness: 0,
+    startsWith: 0,
+    conversation: 0
+  });
+
+  const [showConversation, setShowConversation] = useState(false);
+
+  const texts = {
+    wellness: 'Wellness',
+    startsWith: 'starts with a',
+    conversation: 'Conversation'
+  };
+
+  useEffect(() => {
+    const dissolveText = (
+      key: keyof typeof visibleLetters,
+      text: string,
+      startDelay: number,
+      letterDelay: number = 60
+    ) => {
+      const timer = setTimeout(() => {
+        for (let i = 0; i < text.length; i++) {
+          setTimeout(() => {
+            setVisibleLetters(prev => ({
+              ...prev,
+              [key]: i + 1
+            }));
+          }, i * letterDelay);
+        }
+      }, startDelay);
+
+      return () => clearTimeout(timer);
+    };
+
+    // Start dissolve animations with faster, more consistent timing
+    const cleanup1 = dissolveText('wellness', texts.wellness, 400, 80);
+    const cleanup2 = dissolveText('startsWith', texts.startsWith, 1000, 60);
+    
+    // Special handling for "Conversation" - show as whole word after previous text completes
+    // Calculate when "starts with a" finishes: 1000ms delay + (13 chars * 60ms) = 1780ms
+    const cleanup3 = setTimeout(() => {
+      setShowConversation(true);
+    }, 2200); // Much longer delay for smoother, more dramatic entrance
+
+    return () => {
+      cleanup1();
+      cleanup2();
+      clearTimeout(cleanup3);
+    };
+  }, []);
+
+  const renderTextWithDissolve = (text: string, visibleCount: number) => {
+    return text.split('').map((letter, index) => (
+      <span
+        key={index}
+        className={`inline-block transition-opacity duration-300 ease-out ${
+          index < visibleCount ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{
+          transitionDelay: `${index * 30}ms`
+        }}
+      >
+        {letter === ' ' ? '\u00A0' : letter}
+      </span>
+    ));
+  };
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
-
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
+    if (!email) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Please enter a valid email address';
+    if (!password) newErrors.password = 'Password is required';
+    else if (password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-
+    
     setIsLoading(true);
     setErrors({});
-
+    
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Mock validation - in real app, this would be an API call
-      if (email === 'test@example.com' && password === 'password') {
-        // Successful login
+      // For demo purposes, accept any valid email/password
+      if (email && password.length >= 6) {
         if (userType === 'counsellor') {
           navigate('/counsellor-dashboard');
         } else {
@@ -67,352 +119,270 @@ const SignIn = () => {
       } else {
         setErrors({ general: 'Invalid email or password. Please try again.' });
       }
-    } catch (error) {
+    } catch {
       setErrors({ general: 'An error occurred. Please try again later.' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!forgotEmail) {
-      setErrors({ email: 'Email is required' });
-      return;
-    }
-
-    if (!/\S+@\S+\.\S+/.test(forgotEmail)) {
-      setErrors({ email: 'Please enter a valid email address' });
-      return;
-    }
-
-    setIsLoading(true);
-    setErrors({});
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setResetSent(true);
-    } catch (error) {
-      setErrors({ general: 'Failed to send reset email. Please try again.' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const resetForgotPassword = () => {
-    setShowForgotPassword(false);
-    setForgotEmail('');
-    setResetSent(false);
-    setErrors({});
-  };
-
-  if (showForgotPassword) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 flex items-center justify-center p-4">
-        <Container>
-          <div className="flex justify-center">
-            <Card className="w-full max-w-lg">
-              <div className="text-center mb-8">
-                <div className="mx-auto w-20 h-20 bg-gradient-to-r from-pink-100 to-purple-100 rounded-full flex items-center justify-center mb-6">
-                  <Lock className="w-10 h-10 text-pink-600" />
-                </div>
-                <h2 className="text-3xl font-bold text-gray-800 mb-3">Forgot Password?</h2>
-                <p className="text-gray-600">
-                  Enter your email address and we'll send you a link to reset your password.
-                </p>
-              </div>
-
-              {resetSent ? (
-                <div className="text-center">
-                  <div className="mx-auto w-20 h-20 bg-gradient-to-r from-green-100 to-emerald-100 rounded-full flex items-center justify-center mb-6">
-                    <CheckCircle className="w-10 h-10 text-green-600" />
-                  </div>
-                  <h3 className="text-2xl font-semibold text-gray-800 mb-3">Email Sent!</h3>
-                  <p className="text-gray-600 mb-8">
-                    We've sent a password reset link to <strong>{forgotEmail}</strong>
-                  </p>
-                  <Button
-                    onClick={resetForgotPassword}
-                    variant="primary"
-                    className="w-full py-4 text-lg"
-                  >
-                    Back to Sign In
-                  </Button>
-                </div>
-              ) : (
-                <form onSubmit={handleForgotPassword} className="space-y-6">
-                  <div>
-                    <Input
-                      type="email"
-                      placeholder="Enter your email address"
-                      value={forgotEmail}
-                      onChange={(e) => setForgotEmail(e.target.value)}
-                      label="Email Address"
-                    />
-                    {errors.email && (
-                      <p className="text-red-500 text-sm mt-2 flex items-center">
-                        <AlertCircle className="w-4 h-4 mr-2" />
-                        {errors.email}
-                      </p>
-                    )}
-                  </div>
-
-                  {errors.general && (
-                    <Card className="bg-red-50 border border-red-200">
-                      <p className="text-red-600 text-sm flex items-center">
-                        <AlertCircle className="w-4 h-4 mr-2" />
-                        {errors.general}
-                      </p>
-                    </Card>
-                  )}
-
-                  <div className="space-y-4">
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      variant="primary"
-                      className="w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isLoading ? 'Sending...' : 'Send Reset Link'}
-                    </Button>
-
-                    <button
-                      type="button"
-                      onClick={resetForgotPassword}
-                      className="w-full text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors py-2"
-                    >
-                      Back to Sign In
-                    </button>
-                  </div>
-                </form>
-              )}
-            </Card>
-          </div>
-        </Container>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50">
-      <Container className="py-8 lg:py-16">
-        <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen lg:min-h-0">
-          {/* Left Side - Branding */}
-          <div className="hidden lg:block space-y-8">
-            <div className="space-y-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center">
-                  <User className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-4xl font-bold text-gray-800">Sona</h1>
-                  <p className="text-gray-600">Professional Portal</p>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold text-gray-800">Professional Access Portal</h2>
-                <p className="text-lg text-gray-600 leading-relaxed">
-                  Access your professional dashboard to manage patient sessions, track progress, and provide quality mental health care through our secure platform.
-                </p>
-              </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-rose-50 to-white px-4">
+      {/* Mobile: Full screen with gradient background */}
+      <div className="mobile-layout w-full min-h-screen animate-gradient flex items-center justify-center px-6 py-8">
+        <div className="w-full max-w-md bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
+          {/* Mobile Logo */}
+          <div className="text-center mb-8">
+            <img 
+              src="/assets/images/Sona-logo.png" 
+              alt="Sona Logo" 
+              className="h-8 w-auto mx-auto mb-4 drop-shadow-lg"
+            />
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome Back!</h2>
+            <p className="text-gray-600">Access your portal</p>
+          </div>
 
-              <div className="grid grid-cols-1 gap-4 pt-8">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  </div>
-                  <span className="text-gray-700">Secure Patient Management System</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Lock className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <span className="text-gray-700">HIPAA Compliant & Encrypted</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                    <User className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <span className="text-gray-700">Professional Tools & Analytics</span>
-                </div>
+          {/* Role Toggle - Mobile */}
+          <div className="flex items-center justify-center mb-6">
+            <div className="relative bg-gray-100 rounded-full p-1 w-full max-w-sm drop-shadow-md">
+              <div
+                className={`absolute top-1 left-1 h-10 bg-secondary rounded-full transition-all duration-300 ease-in-out drop-shadow-md ${
+                  userType === 'psychiatrist' ? 'w-1/2 transform translate-x-[calc(100%-0.5rem)]' : 'w-1/2'
+                }`}
+              />
+              <div className="relative flex">
+                <button
+                  type="button"
+                  className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-full transition-colors duration-300 z-10 focus:outline-none ${
+                    userType === 'counsellor' ? 'text-black' : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                  onClick={() => setUserType('counsellor')}
+                >
+                  Counsellor
+                </button>
+                <button
+                  type="button"
+                  className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-full transition-colors duration-300 z-10 focus:outline-none ${
+                    userType === 'psychiatrist' ? 'text-black' : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                  onClick={() => setUserType('psychiatrist')}
+                >
+                  Psychiatrist
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Right Side - Sign In Form */}
-          <div className="w-full max-w-md mx-auto lg:max-w-lg">
-            <Card className="p-8 lg:p-10">
-              {/* Mobile Header */}
-              <div className="text-center mb-8 lg:hidden">
-                <div className="mx-auto w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4">
-                  <User className="w-8 h-8 text-white" />
-                </div>
-                <h1 className="text-2xl font-bold text-gray-800 mb-2">Professional Access</h1>
-                <p className="text-gray-600">Sign in to your dashboard</p>
-              </div>
-
-              {/* Desktop Header */}
-              <div className="hidden lg:block text-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">Professional Access</h1>
-                <p className="text-gray-600">Sign in to manage your practice</p>
-              </div>
-
-              {/* User Type Toggle - Enhanced */}
-              <div className="mb-8">
-                <p className="text-sm font-medium text-gray-700 mb-4">Select your professional role:</p>
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-2 rounded-2xl border border-gray-200">
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setUserType('counsellor')}
-                      className={`relative py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
-                        userType === 'counsellor'
-                          ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg transform scale-105'
-                          : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-center space-x-2">
-                        <User className="w-4 h-4" />
-                        <span>Counsellor</span>
-                      </div>
-                      {userType === 'counsellor' && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl opacity-20 animate-pulse"></div>
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setUserType('psychiatrist')}
-                      className={`relative py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
-                        userType === 'psychiatrist'
-                          ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg transform scale-105'
-                          : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-center space-x-2">
-                        <User className="w-4 h-4" />
-                        <span>Psychiatrist</span>
-                      </div>
-                      {userType === 'psychiatrist' && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl opacity-20 animate-pulse"></div>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sign In Form */}
-              <form onSubmit={handleSignIn} className="space-y-6">
-                {/* Email Input */}
-                <div>
-                  <Input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    label="Email Address"
-                  />
-                  {errors.email && (
-                    <p className="text-red-500 text-sm mt-2 flex items-center">
-                      <AlertCircle className="w-4 h-4 mr-2" />
-                      {errors.email}
-                    </p>
-                  )}
-                </div>
-
-                {/* Password Input */}
-                <div>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      label="Password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-11 text-gray-500 hover:text-gray-700 transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <p className="text-red-500 text-sm mt-2 flex items-center">
-                      <AlertCircle className="w-4 h-4 mr-2" />
-                      {errors.password}
-                    </p>
-                  )}
-                </div>
-
-                {/* Remember Me & Forgot Password */}
-                <div className="flex items-center justify-between">
-                  <Checkbox
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    label="Remember me"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotPassword(true)}
-                    className="text-sm text-pink-600 hover:text-pink-700 font-medium transition-colors"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-
-                {/* General Error Message */}
-                {errors.general && (
-                  <Card className="bg-red-50 border border-red-200">
-                    <p className="text-red-600 text-sm flex items-center">
-                      <AlertCircle className="w-4 h-4 mr-2" />
-                      {errors.general}
-                    </p>
-                  </Card>
-                )}
-
-                {/* Sign In Button */}
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  variant="primary"
-                  className="w-full py-4 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? 'Signing in...' : 'Sign In'}
-                </Button>
-              </form>
-
-              {/* Demo Credentials */}
-              <Card className="mt-8 bg-blue-50 border border-blue-200">
-                <div className="text-center">
-                  <p className="text-sm text-blue-800 font-medium mb-2">Demo Professional Login:</p>
-                  <div className="space-y-1">
-                    <p className="text-xs text-blue-700">Email: test@example.com</p>
-                    <p className="text-xs text-blue-700">Password: password</p>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Sign Up Link */}
-              <div className="text-center mt-8 pt-6 border-t border-gray-200">
-                <p className="text-sm text-gray-600">
-                  Need professional access?{' '}
-                  <button
-                    type="button"
-                    onClick={() => navigate('/signup')}
-                    className="text-pink-600 hover:text-pink-700 font-medium transition-colors"
-                  >
-                    Request access here
-                  </button>
+          <form onSubmit={handleSignIn} className="space-y-5">
+            <div>
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                label="E-Mail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              {errors.email && (
+                <p className="text-red-600 text-sm mt-1 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-2" />{errors.email}
                 </p>
+              )}
+            </div>
+            <div>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                label="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              {errors.password && (
+                <p className="text-red-600 text-sm mt-1 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-2" />{errors.password}
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-3 text-sm">
+              <Checkbox
+                label="Remember me"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <button
+                type="button"
+                className="text-pink-600 hover:underline text-left"
+                onClick={() => alert('Forgot password logic here')}
+              >
+                Forgot Password?
+              </button>
+            </div>
+
+            {errors.general && (
+              <p className="text-red-700 text-sm flex items-center">
+                <AlertCircle className="w-4 h-4 mr-2" />{errors.general}
+              </p>
+            )}
+
+            <Button 
+              type="submit" 
+              variant="special" 
+              className="w-full py-3 font-semibold"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-gray-600 mt-6">
+            New to Sona?{' '}
+            <button
+              onClick={() => navigate('/signup')}
+              className="text-pink-600 font-medium hover:underline"
+            >
+              Join with us
+            </button>
+          </p>
+        </div>
+      </div>
+
+      {/* Desktop: Card layout */}
+      <Card className="two-pane-desktop w-full max-w-5xl shadow-lg rounded-2xl overflow-hidden">
+        {/* Left Pane - Form */}
+        <div className="w-full md:w-1/2 p-8 md:p-12 bg-white flex flex-col justify-center">
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back!</h2>
+          <p className="text-gray-600 mb-6">Access your portal</p>
+
+          {/* Role Toggle */}
+          <div className="flex items-center justify-center mb-6">
+            <div className="relative bg-gray-100 rounded-full p-1 w-full max-w-sm drop-shadow-md">
+              <div
+                className={`absolute top-1 left-1 h-10 bg-secondary rounded-full transition-all duration-300 ease-in-out drop-shadow-md ${
+                  userType === 'psychiatrist' ? 'w-1/2 transform translate-x-[calc(100%-0.5rem)]' : 'w-1/2'
+                }`}
+              />
+              <div className="relative flex">
+                <button
+                  type="button"
+                  className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-full transition-colors duration-300 z-10 focus:outline-none ${
+                    userType === 'counsellor' ? 'text-black' : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                  onClick={() => setUserType('counsellor')}
+                >
+                  Counsellor
+                </button>
+                <button
+                  type="button"
+                  className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-full transition-colors duration-300 z-10 focus:outline-none ${
+                    userType === 'psychiatrist' ? 'text-black' : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                  onClick={() => setUserType('psychiatrist')}
+                >
+                  Psychiatrist
+                </button>
               </div>
-            </Card>
+            </div>
+          </div>
+
+          <form onSubmit={handleSignIn} className="space-y-5">
+            <div>
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                label="E-Mail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              {errors.email && (
+                <p className="text-red-600 text-sm mt-1 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-2" />{errors.email}
+                </p>
+              )}
+            </div>
+            <div>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                label="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              {errors.password && (
+                <p className="text-red-600 text-sm mt-1 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-2" />{errors.password}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between text-sm">
+              <Checkbox
+                label="Remember me"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <button
+                type="button"
+                className="text-pink-600 hover:underline"
+                onClick={() => alert('Forgot password logic here')}
+              >
+                Forgot Password?
+              </button>
+            </div>
+
+            {errors.general && (
+              <p className="text-red-700 text-sm flex items-center">
+                <AlertCircle className="w-4 h-4 mr-2" />{errors.general}
+              </p>
+            )}
+
+            <Button 
+              type="submit" 
+              variant="special" 
+              className="w-full py-3 font-semibold"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-gray-600 mt-6">
+            New to Sona?{' '}
+            <button
+              onClick={() => navigate('/signup')}
+              className="text-pink-600 font-medium hover:underline"
+            >
+              Join with us
+            </button>
+          </p>
+        </div>
+
+        {/* Right Pane - Welcome */}
+        <div className="hidden md:flex w-1/2 animate-gradient text-white items-center justify-center flex-col px-10 py-12 rounded-r-2xl overflow-hidden relative">
+          {/* Subtle overlay for better text readability */}
+          <div className="absolute inset-0 bg-black bg-opacity-10 rounded-r-2xl"></div>
+          <div className="text-left pl--2 relative z-10">
+            <img 
+              src="/assets/images/Sona-logo.png" 
+              alt="Sona Logo" 
+              className="h-8 w-auto mb-6 drop-shadow-lg animate-fade-in-up"
+              style={{ animationDelay: '0.2s' }}
+            />
+            <h2 className="text-6xl pl-4 font-bold mb-3 drop-shadow-md min-h-[4.5rem] flex items-center">
+              {renderTextWithDissolve(texts.wellness, visibleLetters.wellness)}
+            </h2>
+            <h2 className="text-6xl pl-4 font-bold mb-3 drop-shadow-md min-h-[4.5rem] flex items-center">
+              {renderTextWithDissolve(texts.startsWith, visibleLetters.startsWith)}
+            </h2>
+            <h2 className="text-6xl pl-4 font-bold mb-3 drop-shadow-md min-h-[4.5rem] flex items-center">
+              <span className={`inline-block bg-clip-text text-transparent bg-gradient-to-r from-gray-800 via-gray-600 to-gray-800 transition-all duration-[2000ms] ease-out transform ${
+                showConversation ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}>
+                {texts.conversation}
+              </span>
+            </h2>
           </div>
         </div>
-      </Container>
+      </Card>
     </div>
   );
 };

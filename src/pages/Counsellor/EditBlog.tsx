@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Eye, 
@@ -8,24 +8,18 @@ import {
   Image, 
   Bold, 
   Italic, 
-  Underline, 
   List, 
-  ListOrdered, 
   Quote, 
   Link, 
   Type,
-  Hash,
-  Tag,
   Calendar,
-  Clock,
   X,
-  Plus,
-  FileText,
-  Sparkles
+  Plus
 } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
 
 interface BlogFormData {
+  id?: string;
   title: string;
   excerpt: string;
   content: string;
@@ -37,16 +31,23 @@ interface BlogFormData {
   isScheduled: boolean;
 }
 
-const BlogCreator: React.FC = () => {
+interface EditBlogProps {
+  blogData?: BlogFormData;
+}
+
+const EditBlog: React.FC<EditBlogProps> = ({ blogData }) => {
   const navigate = useNavigate();
+  const { blogId } = useParams<{ blogId: string }>();
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [activeView, setActiveView] = useState<'write' | 'preview'>('write');
   const [newTag, setNewTag] = useState('');
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
   const [formData, setFormData] = useState<BlogFormData>({
+    id: '',
     title: '',
     excerpt: '',
     content: '',
@@ -76,6 +77,90 @@ const BlogCreator: React.FC = () => {
     'meditation', 'self-care', 'therapy', 'healing', 'motivation',
     'anxiety', 'depression', 'relationships', 'communication', 'boundaries'
   ];
+
+  // Mock function to fetch blog data - replace with actual API call
+  const fetchBlogData = async (id: string): Promise<BlogFormData> => {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Mock blog data - replace with actual API response
+    return {
+      id: id,
+      title: 'Managing Stress in Daily Life',
+      excerpt: 'Learn effective techniques to manage stress and maintain mental wellness in your everyday routine.',
+      content: `# Managing Stress in Daily Life
+
+Stress is an inevitable part of modern life, but it doesn't have to control us. Here are some practical strategies to help you manage stress effectively:
+
+## Understanding Stress
+
+Stress is your body's natural response to challenges and demands. While some stress can be motivating, chronic stress can negatively impact your physical and mental health.
+
+## Effective Stress Management Techniques
+
+### 1. Deep Breathing Exercises
+- Practice diaphragmatic breathing
+- Try the 4-7-8 breathing technique
+- Use breathing apps for guided sessions
+
+### 2. Mindfulness and Meditation
+- Start with just 5 minutes daily
+- Use mindfulness apps
+- Practice being present in the moment
+
+### 3. Physical Activity
+- Regular exercise reduces stress hormones
+- Even a 10-minute walk can help
+- Find activities you enjoy
+
+### 4. Time Management
+- Prioritize important tasks
+- Break large projects into smaller steps
+- Learn to say no to unnecessary commitments
+
+## Building Resilience
+
+Remember that building stress resilience is a journey, not a destination. Be patient with yourself as you develop these new habits.`,
+      category: 'Stress Management',
+      tags: ['stress', 'mindfulness', 'wellness', 'self-care'],
+      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop',
+      publishDate: '2024-12-15',
+      publishTime: '10:00',
+      isScheduled: false
+    };
+  };
+
+  // Load blog data when component mounts or blogId changes
+  useEffect(() => {
+    const loadBlogData = async () => {
+      setIsLoading(true);
+      try {
+        let data: BlogFormData;
+        
+        if (blogData) {
+          // Use provided blog data
+          data = blogData;
+        } else if (blogId) {
+          // Fetch blog data by ID
+          data = await fetchBlogData(blogId);
+        } else {
+          // Redirect if no blog data or ID provided
+          navigate('/counsellor-blogs');
+          return;
+        }
+        
+        setFormData(data);
+      } catch (error) {
+        console.error('Error loading blog data:', error);
+        // Handle error - maybe show notification
+        navigate('/counsellor-blogs');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadBlogData();
+  }, [blogId, blogData, navigate]);
 
   const handleInputChange = (field: keyof BlogFormData, value: string | boolean) => {
     setFormData(prev => ({
@@ -167,19 +252,23 @@ const BlogCreator: React.FC = () => {
     }, 0);
   };
 
-  const handleSaveDraft = () => {
-    console.log('Saving draft:', formData);
-    // Add save draft logic here
+  const handleSaveChanges = () => {
+    console.log('Saving changes:', formData);
+    // Add save changes logic here
+    // After successful save, redirect back to blogs list
+    navigate('/counsellor-blogs');
   };
 
-  const handlePublish = () => {
-    console.log('Publishing blog:', formData);
-    // Add publish logic here
+  const handleUpdateAndPublish = () => {
+    console.log('Updating and publishing blog:', formData);
+    // Add update and publish logic here
+    navigate('/counsellor-blogs');
   };
 
-  const handleSchedule = () => {
-    console.log('Scheduling blog:', formData);
-    // Add schedule logic here
+  const handleScheduleUpdate = () => {
+    console.log('Scheduling blog update:', formData);
+    // Add schedule update logic here
+    navigate('/counsellor-blogs');
   };
 
   const handleGoBack = () => {
@@ -200,7 +289,7 @@ const BlogCreator: React.FC = () => {
       <div className="p-6">
         <div className="flex items-center gap-2 mb-4">
           <Calendar className="w-4 h-4 text-gray-400" />
-          <span className="text-gray-500 text-sm">Today • Just now</span>
+          <span className="text-gray-500 text-sm">Updated • Just now</span>
         </div>
         
         {formData.category && (
@@ -247,6 +336,32 @@ const BlogCreator: React.FC = () => {
     </div>
   );
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-screen">
+        <NavBar onMenuClick={toggleSidebar} />
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar */}
+          <div className="hidden lg:block w-80 flex-shrink-0">
+            <Sidebar isOpen={true} onClose={closeSidebar}/>
+          </div>
+          
+          <div className="lg:hidden">
+            <Sidebar isOpen={sidebarOpen} onClose={closeSidebar}/>
+          </div>
+          
+          {/* Loading content */}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading blog data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-screen">
       <NavBar onMenuClick={toggleSidebar} />
@@ -273,8 +388,8 @@ const BlogCreator: React.FC = () => {
                   <ArrowLeft className="w-5 h-5 text-gray-600" />
                 </button>
                 <div>
-                  <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Create New Blog</h1>
-                  <p className="text-gray-500 text-sm">Share your thoughts and insights</p>
+                  <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Edit Blog</h1>
+                  <p className="text-gray-500 text-sm">Update your blog content and settings</p>
                 </div>
               </div>
               
@@ -561,7 +676,7 @@ const BlogCreator: React.FC = () => {
                           onChange={() => handleInputChange('isScheduled', false)}
                           className="text-primary focus:ring-primary"
                         />
-                        <span className="text-sm text-gray-700">Publish immediately</span>
+                        <span className="text-sm text-gray-700">Update immediately</span>
                       </label>
                       
                       <label className="flex items-center gap-3">
@@ -572,7 +687,7 @@ const BlogCreator: React.FC = () => {
                           onChange={() => handleInputChange('isScheduled', true)}
                           className="text-primary focus:ring-primary"
                         />
-                        <span className="text-sm text-gray-700">Schedule for later</span>
+                        <span className="text-sm text-gray-700">Schedule update</span>
                       </label>
                     </div>
                     
@@ -594,32 +709,32 @@ const BlogCreator: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Publish Button */}
+                  {/* Update Buttons */}
                   <div className="space-y-2">
                     {formData.isScheduled ? (
                       <button
-                        onClick={handleSchedule}
+                        onClick={handleScheduleUpdate}
                         className="w-full bg-primary hover:bg-primaryLight text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                       >
                         <Calendar className="w-4 h-4" />
-                        Schedule Blog
+                        Schedule Update
                       </button>
                     ) : (
                       <button
-                        onClick={handlePublish}
+                        onClick={handleUpdateAndPublish}
                         className="w-full bg-primary hover:bg-primaryLight text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                       >
                         <Send className="w-4 h-4" />
-                        Publish Now
+                        Update & Publish
                       </button>
                     )}
                     
                     <button
-                      onClick={handleSaveDraft}
+                      onClick={handleSaveChanges}
                       className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                     >
-                      <FileText className="w-4 h-4" />
-                      Save as Draft
+                      <Save className="w-4 h-4" />
+                      Save Changes
                     </button>
                   </div>
                 </div>
@@ -635,7 +750,7 @@ const BlogCreator: React.FC = () => {
                       <Eye className="w-5 h-5" />
                       <span className="font-medium">Preview Mode</span>
                     </div>
-                    <p className="text-gray-600 text-sm">This is how your blog will appear to readers</p>
+                    <p className="text-gray-600 text-sm">This is how your updated blog will appear to readers</p>
                   </div>
                   
                   <PreviewContent />
@@ -649,4 +764,4 @@ const BlogCreator: React.FC = () => {
   );
 };
 
-export default BlogCreator;
+export default EditBlog;
