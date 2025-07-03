@@ -408,7 +408,7 @@ const CounsellorClients: React.FC = () => {
                     <input
                       type="text"
                       placeholder="Search clients by name, email, phone..."
-                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(174,175,247)] focus:border-[rgb(174,175,247)] transition-all"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary focus:border-opacity-50 transition-all"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -431,7 +431,7 @@ const CounsellorClients: React.FC = () => {
                     <span className="text-sm text-gray-700 mr-1">Status:</span>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        activeFilter === 'all' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        activeFilter === 'all' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setActiveFilter('all')}
                     >
@@ -439,7 +439,7 @@ const CounsellorClients: React.FC = () => {
                     </button>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        activeFilter === 'active' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        activeFilter === 'active' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setActiveFilter('active')}
                     >
@@ -447,7 +447,7 @@ const CounsellorClients: React.FC = () => {
                     </button>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        activeFilter === 'new' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        activeFilter === 'new' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setActiveFilter('new')}
                     >
@@ -455,7 +455,7 @@ const CounsellorClients: React.FC = () => {
                     </button>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        activeFilter === 'inactive' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        activeFilter === 'inactive' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setActiveFilter('inactive')}
                     >
@@ -469,7 +469,7 @@ const CounsellorClients: React.FC = () => {
                     <span className="text-sm text-gray-700 mr-1">Privacy:</span>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        anonymousFilter === 'all' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        anonymousFilter === 'all' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setAnonymousFilter('all')}
                     >
@@ -477,7 +477,7 @@ const CounsellorClients: React.FC = () => {
                     </button>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        anonymousFilter === 'anonymous' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        anonymousFilter === 'anonymous' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setAnonymousFilter('anonymous')}
                     >
@@ -485,7 +485,7 @@ const CounsellorClients: React.FC = () => {
                     </button>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        anonymousFilter === 'identified' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        anonymousFilter === 'identified' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setAnonymousFilter('identified')}
                     >
@@ -499,7 +499,7 @@ const CounsellorClients: React.FC = () => {
                     <span className="text-sm text-gray-700 mr-1">Type:</span>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        studentFilter === 'all' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        studentFilter === 'all' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setStudentFilter('all')}
                     >
@@ -507,7 +507,7 @@ const CounsellorClients: React.FC = () => {
                     </button>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        studentFilter === 'student' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        studentFilter === 'student' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setStudentFilter('student')}
                     >
@@ -515,7 +515,7 @@ const CounsellorClients: React.FC = () => {
                     </button>
                     <button 
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        studentFilter === 'non-student' ? 'bg-[rgb(174,175,247)] bg-opacity-30 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        studentFilter === 'non-student' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                       onClick={() => setStudentFilter('non-student')}
                     >
@@ -548,7 +548,8 @@ const CounsellorClients: React.FC = () => {
                             type="radio" 
                             id="anonymous-all" 
                             name="anonymousFilter" 
-                            className="h-4 w-4 text-[rgb(174,175,247)] border-gray-300 focus:ring-[rgb(174,175,247)]"
+                            className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
+                            style={{accentColor: '#EF5DA8'}} 
                             checked={anonymousFilter === 'all'}
                             onChange={() => setAnonymousFilter('all')}
                           />
@@ -561,7 +562,8 @@ const CounsellorClients: React.FC = () => {
                             type="radio" 
                             id="anonymous-only" 
                             name="anonymousFilter" 
-                            className="h-4 w-4 text-[rgb(174,175,247)] border-gray-300 focus:ring-[rgb(174,175,247)]"
+                            className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
+                            style={{accentColor: '#EF5DA8'}}
                             checked={anonymousFilter === 'anonymous'}
                             onChange={() => setAnonymousFilter('anonymous')}
                           />
@@ -574,7 +576,8 @@ const CounsellorClients: React.FC = () => {
                             type="radio" 
                             id="identified-only" 
                             name="anonymousFilter" 
-                            className="h-4 w-4 text-green-600 border-gray-300 focus:ring-[rgb(174,175,247)]"
+                            className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
+                            style={{accentColor: '#EF5DA8'}}
                             checked={anonymousFilter === 'identified'}
                             onChange={() => setAnonymousFilter('identified')}
                           />
@@ -595,7 +598,8 @@ const CounsellorClients: React.FC = () => {
                             type="radio" 
                             id="student-all" 
                             name="studentFilter" 
-                            className="h-4 w-4 text-[rgb(174,175,247)] border-gray-300 focus:ring-[rgb(174,175,247)]"
+                            className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
+                            style={{accentColor: '#EF5DA8'}}
                             checked={studentFilter === 'all'}
                             onChange={() => setStudentFilter('all')}
                           />
@@ -608,7 +612,8 @@ const CounsellorClients: React.FC = () => {
                             type="radio" 
                             id="student-only" 
                             name="studentFilter" 
-                            className="h-4 w-4 text-[rgb(174,175,247)] border-gray-300 focus:ring-[rgb(174,175,247)]"
+                            className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
+                            style={{accentColor: '#EF5DA8'}}
                             checked={studentFilter === 'student'}
                             onChange={() => setStudentFilter('student')}
                           />
@@ -621,7 +626,8 @@ const CounsellorClients: React.FC = () => {
                             type="radio" 
                             id="non-student-only" 
                             name="studentFilter" 
-                            className="h-4 w-4 text-gray-600 border-gray-300 focus:ring-[rgb(174,175,247)]"
+                            className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
+                            style={{accentColor: '#EF5DA8'}}
                             checked={studentFilter === 'non-student'}
                             onChange={() => setStudentFilter('non-student')}
                           />
@@ -635,7 +641,7 @@ const CounsellorClients: React.FC = () => {
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Session Count
                       </label>
-                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(174,175,247)]">
+                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary focus:border-opacity-50">
                         <option value="any">Any</option>
                         <option value="new">New (1-2 sessions)</option>
                         <option value="regular">Regular (3-10 sessions)</option>
@@ -646,7 +652,7 @@ const CounsellorClients: React.FC = () => {
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Primary Concern
                       </label>
-                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(174,175,247)]">
+                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary focus:border-opacity-50">
                         <option value="any">Any</option>
                         <option value="anxiety">Anxiety</option>
                         <option value="depression">Depression</option>
@@ -659,7 +665,7 @@ const CounsellorClients: React.FC = () => {
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Last Session
                       </label>
-                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(174,175,247)]">
+                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary focus:border-opacity-50">
                         <option value="any">Any time</option>
                         <option value="week">Within last week</option>
                         <option value="month">Within last month</option>
@@ -682,7 +688,7 @@ const CounsellorClients: React.FC = () => {
                 
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">Sort by:</span>
-                  <select className="text-sm border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[rgb(174,175,247)]">
+                  <select className="text-sm border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary focus:border-opacity-50">
                     <option value="name">Name (A-Z)</option>
                     <option value="recent">Recent Activity</option>
                     <option value="sessions">Session Count</option>
