@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavBar, Sidebar } from '../../components/layout';
 import { Search, Users, Calendar, MessageCircle, Filter, ChevronDown, Phone, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Client {
   id: number;
@@ -179,6 +180,7 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
 };
 
 const CounsellorClients: React.FC = () => {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -190,8 +192,7 @@ const CounsellorClients: React.FC = () => {
   const closeSidebar = () => setSidebarOpen(false);
   
   const handleViewClientDetails = (clientId: number) => {
-    console.log(`View client details for ID: ${clientId}`);
-    // Navigation logic would go here
+    navigate(`/counsellor-clients/${clientId}`);
   };
 
   // Mock client data

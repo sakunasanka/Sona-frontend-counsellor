@@ -15,6 +15,7 @@ import CounsellorChats from './pages/Counsellor/CounsellorChats';
 import CounsellorProfile from './pages/Counsellor/CounsellorProfile';
 import CounsellorCalendar from './pages/Counsellor/CounsellorCalendar';
 import CounsellorClients from './pages/Counsellor/CounsellorClients';
+import ClientDetails from './pages/Counsellor/ClientDetails';
 
 function App() {
 
@@ -37,6 +38,7 @@ function App() {
         <Route path="/counsellor-profile" element={<CounsellorProfile />} />
         <Route path="/counsellor-calendar" element={<CounsellorCalendar />} />
         <Route path="/counsellor-clients" element={<CounsellorClients />} />
+        <Route path="/counsellor-clients/:clientId" element={<ClientDetails />} />
       </Routes>
     </Router>
   );
