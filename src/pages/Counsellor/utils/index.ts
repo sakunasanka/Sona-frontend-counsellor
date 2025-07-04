@@ -1,0 +1,1 @@
+export { filterClients } from './filterClients';
