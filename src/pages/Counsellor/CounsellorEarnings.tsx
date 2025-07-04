@@ -179,11 +179,8 @@ const CounsellorEarnings: React.FC = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                      Earnings Dashboard
+                      Earnings
                     </h1>
-                    <p className="text-gray-600">
-                      Track your income, sessions, and financial growth
-                    </p>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <select 
