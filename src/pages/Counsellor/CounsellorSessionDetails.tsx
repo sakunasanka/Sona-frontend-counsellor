@@ -313,33 +313,47 @@ const CounsellorSessionDetails: React.FC = () => {
                             {/* Client Stats */}
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-6">Client Overview</h3>
-                                <div className="space-y-4">
-                                    <div className="text-center p-5 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100 transition-colors">
-                                        <div className="text-3xl font-bold text-gray-900 mb-1">{sessionData.previousSessions}</div>
-                                        <div className="text-sm text-gray-600 font-medium">Total Sessions</div>
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                            <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                                <Activity className="w-5 h-5 text-gray-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Total Sessions</p>
+                                                <p className="text-base font-semibold text-gray-900 mt-1">{sessionData.previousSessions}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        {sessionData.rating && (
+                                            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                                <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                                    <Star className="w-5 h-5 text-yellow-500" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Average Rating</p>
+                                                    <p className="text-base font-semibold text-gray-900 mt-1">{sessionData.rating}/5</p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                     
-                                    {sessionData.rating && (
-                                        <div className="text-center p-5 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100 transition-colors">
-                                            <div className="flex items-center justify-center gap-1 mb-1">
-                                                <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                                                <span className="text-2xl font-bold text-gray-900">{sessionData.rating}</span>
-                                            </div>
-                                            <div className="text-sm text-gray-600 font-medium">Average Rating</div>
+                                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                        <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                            <AlertCircle className="w-5 h-5 text-gray-600" />
                                         </div>
-                                    )}
-                                    
-                                    <div className="space-y-3">
-                                        <p className="text-sm font-semibold text-gray-900">Main Concerns</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {sessionData.concerns.map((concern, index) => (
-                                                <span
-                                                    key={index}
-                                                    className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-200 hover:bg-gray-200 transition-colors"
-                                                >
-                                                    {concern}
-                                                </span>
-                                            ))}
+                                        <div className="flex-1">
+                                            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Main Concerns</p>
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {sessionData.concerns.map((concern, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full border border-gray-200"
+                                                    >
+                                                        {concern}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
