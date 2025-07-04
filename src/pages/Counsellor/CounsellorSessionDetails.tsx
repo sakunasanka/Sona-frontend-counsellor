@@ -202,50 +202,77 @@ const CounsellorSessionDetails: React.FC = () => {
                 
                 {/* Main content */}
                 <div className="flex-1 overflow-auto bg-gray-50">
-                    <div className="p-4 lg:p-6">
+                    <div className="p-3 sm:p-4 lg:p-6">
                         {/* Client Overview Card */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 p-6">
-                            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                                <div className="flex items-start gap-4 flex-1">
-                                    <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-gray-100 flex-shrink-0">
-                                        <img
-                                            src={sessionData.profileImage}
-                                            alt="Client"
-                                            className="w-full h-full object-cover"
-                                        />
+                        <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 mb-4 sm:mb-6 overflow-hidden">
+                            {/* Header Section */}
+                            <div className="p-4 sm:p-6 border-b border-gray-100">
+                                <div className="flex items-start gap-4 sm:gap-6">
+                                    <div className="relative">
+                                        <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl overflow-hidden border-3 border-white shadow-lg flex-shrink-0">
+                                            <img
+                                                src={sessionData.profileImage}
+                                                alt="Client"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
+                                    <div className="flex-1 min-w-0">
                                         <div className="mb-2">
-                                            <h2 className="text-2xl font-bold text-gray-900">{sessionData.clientName}</h2>
+                                            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
+                                                {sessionData.clientName}
+                                            </h1>
                                         </div>
-                                        <p className="text-gray-600 mb-3">@{sessionData.username}</p>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                                            <MapPin className="w-4 h-4" />
-                                            <span>Identity: {sessionData.identity}</span>
-                                        </div>
-                                        {sessionData.institution && (
+                                        <p className="text-primary text-sm sm:text-base font-medium mb-3">
+                                            @{sessionData.username}
+                                        </p>
+                                        <div className="space-y-2">
                                             <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                <FileText className="w-4 h-4" />
-                                                <span>{sessionData.institution}</span>
+                                                <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <MapPin className="w-3 h-3" />
+                                                </div>
+                                                <span className="font-medium">Identity:</span>
+                                                <span>{sessionData.identity}</span>
+                                            </div>
+                                            {sessionData.institution && (
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                                        <FileText className="w-3 h-3" />
+                                                    </div>
+                                                    <span className="font-medium">Institution:</span>
+                                                    <span className="truncate">{sessionData.institution}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Status and Action Section */}
+                            <div className="p-4 sm:p-6 bg-gray-50">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                        <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border ${getStatusColor(sessionData.status)}`}>
+                                            <div className={`w-2 h-2 rounded-full ${
+                                                sessionData.status === 'completed' ? 'bg-green-500' :
+                                                sessionData.status === 'cancelled' ? 'bg-red-500' : 'bg-yellow-500'
+                                            }`} />
+                                            {sessionData.status === 'completed' ? 'Completed' : 
+                                             sessionData.status === 'cancelled' ? 'Cancelled' : 
+                                             'No Show'}
+                                        </div>
+                                        {sessionData.followUpRequired && (
+                                            <div className="inline-flex items-center gap-2 px-3 py-2 bg-orange-50 text-orange-700 text-sm font-medium rounded-lg border border-orange-200">
+                                                <AlertCircle className="w-3 h-3" />
+                                                Follow-up Required
                                             </div>
                                         )}
                                     </div>
-                                </div>
-                                <div className="flex flex-col lg:items-end gap-3">
-                                    <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(sessionData.status)}`}>
-                                        {sessionData.status === 'completed' ? 'Completed' : 
-                                         sessionData.status === 'cancelled' ? 'Cancelled' : 
-                                         'No Show'}
-                                    </span>
-                                    {sessionData.followUpRequired && (
-                                        <span className="px-3 py-1 bg-orange-50 text-orange-600 text-sm rounded-full border border-orange-200">
-                                            Follow-up Required
-                                        </span>
-                                    )}
                                     <button 
                                         onClick={() => navigate('/counsellor-feedbacks')}
-                                        className="px-6 py-2 bg-primary text-white rounded-xl hover:bg-primary hover:bg-opacity-90 transition-all duration-200 font-medium text-sm"
+                                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md w-full sm:w-auto"
                                     >
+                                        <Star className="w-4 h-4" />
                                         View Feedback
                                     </button>
                                 </div>
@@ -253,102 +280,102 @@ const CounsellorSessionDetails: React.FC = () => {
                         </div>
 
                         {/* Session Info Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
                             {/* Session Details */}
-                            <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-6">Session Information</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                        <div className="p-3 bg-white rounded-xl border border-gray-200">
-                                            <Calendar className="w-5 h-5 text-gray-600" />
+                            <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Session Information</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+                                    <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                        <div className="p-2 sm:p-3 bg-white rounded-xl border border-gray-200 flex-shrink-0">
+                                            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                                         </div>
-                                        <div>
+                                        <div className="min-w-0 flex-1">
                                             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Date</p>
-                                            <p className="text-base font-semibold text-gray-900 mt-1">
+                                            <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1 leading-tight">
                                                 {new Date(sessionData.date).toLocaleDateString('en-US', { 
-                                                    weekday: 'long',
-                                                    year: 'numeric', 
-                                                    month: 'long', 
-                                                    day: 'numeric' 
+                                                    weekday: 'short',
+                                                    month: 'short', 
+                                                    day: 'numeric',
+                                                    year: 'numeric'
                                                 })}
                                             </p>
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                        <div className="p-3 bg-white rounded-xl border border-gray-200">
-                                            <Clock className="w-5 h-5 text-gray-600" />
+                                    <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                        <div className="p-2 sm:p-3 bg-white rounded-xl border border-gray-200 flex-shrink-0">
+                                            <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                                         </div>
-                                        <div>
+                                        <div className="min-w-0 flex-1">
                                             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Time & Duration</p>
-                                            <p className="text-base font-semibold text-gray-900 mt-1">{sessionData.time}</p>
-                                            <p className="text-sm text-gray-600">{sessionData.duration} minutes</p>
+                                            <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">{sessionData.time}</p>
+                                            <p className="text-xs sm:text-sm text-gray-600">{sessionData.duration} minutes</p>
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                        <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                    <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                        <div className="p-2 sm:p-3 bg-white rounded-xl border border-gray-200 flex-shrink-0">
                                             <div className="text-gray-600">
                                                 {getSessionTypeIcon(sessionData.sessionType)}
                                             </div>
                                         </div>
-                                        <div>
+                                        <div className="min-w-0 flex-1">
                                             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Session Type</p>
-                                            <p className="text-base font-semibold text-gray-900 mt-1 capitalize">{sessionData.sessionType}</p>
+                                            <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1 capitalize">{sessionData.sessionType}</p>
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                        <div className="p-3 bg-white rounded-xl border border-gray-200">
-                                            <div className={`w-5 h-5 rounded-full ${getMoodColor(sessionData.mood)}`} />
+                                    <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                        <div className="p-2 sm:p-3 bg-white rounded-xl border border-gray-200 flex-shrink-0">
+                                            <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full ${getMoodColor(sessionData.mood)}`} />
                                         </div>
-                                        <div>
+                                        <div className="min-w-0 flex-1">
                                             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Mood Assessment</p>
-                                            <p className="text-base font-semibold text-gray-900 mt-1 capitalize">{sessionData.mood}</p>
+                                            <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1 capitalize">{sessionData.mood}</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Client Stats */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-6">Client Overview</h3>
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                            <div className="p-3 bg-white rounded-xl border border-gray-200">
-                                                <Activity className="w-5 h-5 text-gray-600" />
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Client Overview</h3>
+                                <div className="space-y-4 sm:space-y-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4">
+                                        <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                            <div className="p-2 sm:p-3 bg-white rounded-xl border border-gray-200 flex-shrink-0">
+                                                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                                             </div>
-                                            <div>
+                                            <div className="min-w-0 flex-1">
                                                 <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Total Sessions</p>
-                                                <p className="text-base font-semibold text-gray-900 mt-1">{sessionData.previousSessions}</p>
+                                                <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">{sessionData.previousSessions}</p>
                                             </div>
                                         </div>
                                         
                                         {sessionData.rating && (
-                                            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                                <div className="p-3 bg-white rounded-xl border border-gray-200">
-                                                    <Star className="w-5 h-5 text-yellow-500" />
+                                            <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                                <div className="p-2 sm:p-3 bg-white rounded-xl border border-gray-200 flex-shrink-0">
+                                                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
                                                 </div>
-                                                <div>
+                                                <div className="min-w-0 flex-1">
                                                     <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Average Rating</p>
-                                                    <p className="text-base font-semibold text-gray-900 mt-1">{sessionData.rating}/5</p>
+                                                    <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">{sessionData.rating}/5</p>
                                                 </div>
                                             </div>
                                         )}
                                     </div>
                                     
-                                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                        <div className="p-3 bg-white rounded-xl border border-gray-200">
-                                            <AlertCircle className="w-5 h-5 text-gray-600" />
+                                    <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                        <div className="p-2 sm:p-3 bg-white rounded-xl border border-gray-200 flex-shrink-0">
+                                            <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                                         </div>
-                                        <div className="flex-1">
+                                        <div className="flex-1 min-w-0">
                                             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Main Concerns</p>
-                                            <div className="flex flex-wrap gap-2 mt-2">
+                                            <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
                                                 {sessionData.concerns.map((concern, index) => (
                                                     <span
                                                         key={index}
-                                                        className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full border border-gray-200"
+                                                        className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full border border-gray-200 break-words"
                                                     >
                                                         {concern}
                                                     </span>
@@ -361,83 +388,153 @@ const CounsellorSessionDetails: React.FC = () => {
                         </div>
 
                         {/* Session Notes */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-                            <div className="flex items-center gap-3 mb-4">
+                        <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
+                            <div className="flex items-center gap-3 mb-3 sm:mb-4">
                                 <div className="p-2 bg-blue-50 rounded-lg">
-                                    <FileText className="w-5 h-5 text-blue-600" />
+                                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-gray-900">Session Notes</h3>
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Session Notes</h3>
                             </div>
-                            <div className="bg-gray-50 rounded-xl p-4">
-                                <p className="text-gray-700 leading-relaxed">{sessionData.notes}</p>
+                            <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{sessionData.notes}</p>
                             </div>
                         </div>
 
                         {/* Analytics Section */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                            {/* Progress Chart */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <div className="flex items-center gap-3 mb-6">
+                        <div className="space-y-4 sm:space-y-6 mb-4 sm:mb-6">
+                            {/* Progress Chart - Mobile First */}
+                            <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+                                <div className="flex items-center gap-3 mb-4 sm:mb-6">
                                     <div className="p-2 bg-[rgb(174,175,247)] bg-opacity-10 rounded-lg">
-                                        <TrendingUp className="w-5 h-5 text-[rgb(174,175,247)]" />
+                                        <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[rgb(174,175,247)]" />
                                     </div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Progress Overview</h3>
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Progress Overview</h3>
                                 </div>
-                                <div className="bg-gray-50 rounded-xl p-4">
-                                    <Line data={progressData} options={chartOptions} />
+                                <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4 overflow-hidden">
+                                    <div className="h-64 sm:h-72 lg:h-80">
+                                        <Line data={progressData} options={{
+                                            ...chartOptions,
+                                            maintainAspectRatio: false,
+                                            responsive: true,
+                                            plugins: {
+                                                ...chartOptions.plugins,
+                                                legend: {
+                                                    position: 'top' as const,
+                                                    labels: {
+                                                        usePointStyle: true,
+                                                        pointStyle: 'circle',
+                                                        padding: 15,
+                                                        font: {
+                                                            size: 12
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            scales: {
+                                                ...chartOptions.scales,
+                                                x: {
+                                                    ticks: {
+                                                        maxRotation: 45,
+                                                        font: {
+                                                            size: 10
+                                                        }
+                                                    }
+                                                },
+                                                y: {
+                                                    ...chartOptions.scales.y,
+                                                    ticks: {
+                                                        font: {
+                                                            size: 10
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }} />
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Session Metrics */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <div className="flex items-center gap-3 mb-6">
+                            {/* Session Metrics - Mobile Optimized */}
+                            <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+                                <div className="flex items-center gap-3 mb-4 sm:mb-6">
                                     <div className="p-2 bg-primary bg-opacity-10 rounded-lg">
-                                        <Activity className="w-5 h-5 text-primary" />
+                                        <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                                     </div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Session Metrics</h3>
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Session Metrics</h3>
                                 </div>
-                                <div className="bg-gray-50 rounded-xl p-4">
-                                    <Bar data={sessionMetrics} options={barChartOptions} />
+                                <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4 overflow-hidden">
+                                    <div className="h-64 sm:h-72 lg:h-80">
+                                        <Bar data={sessionMetrics} options={{
+                                            ...barChartOptions,
+                                            maintainAspectRatio: false,
+                                            responsive: true,
+                                            plugins: {
+                                                ...barChartOptions.plugins,
+                                                legend: {
+                                                    display: false,
+                                                }
+                                            },
+                                            scales: {
+                                                ...barChartOptions.scales,
+                                                x: {
+                                                    ticks: {
+                                                        maxRotation: 45,
+                                                        font: {
+                                                            size: 10
+                                                        }
+                                                    }
+                                                },
+                                                y: {
+                                                    ...barChartOptions.scales.y,
+                                                    ticks: {
+                                                        font: {
+                                                            size: 10
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Recent Activity */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <div className="flex items-center gap-3 mb-6">
+                        <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+                            <div className="flex items-center gap-3 mb-4 sm:mb-6">
                                 <div className="p-2 bg-green-50 rounded-lg">
-                                    <MessageCircle className="w-5 h-5 text-green-600" />
+                                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-gray-900">Recent Interactions</h3>
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Recent Interactions</h3>
                             </div>
-                            <div className="space-y-4">
-                                <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
-                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                        <Video className="w-4 h-4 text-blue-600" />
+                            <div className="space-y-3 sm:space-y-4">
+                                <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                                    <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                                        <Video className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="font-medium text-gray-900">Emergency session completed</p>
-                                        <p className="text-sm text-gray-600">Today at {sessionData.time} • Duration: {sessionData.duration} mins</p>
-                                    </div>
-                                </div>
-                                
-                                <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
-                                    <div className="p-2 bg-green-100 rounded-lg">
-                                        <CheckCircle2 className="w-4 h-4 text-green-600" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-medium text-gray-900">Coping strategies discussed</p>
-                                        <p className="text-sm text-gray-600">Breathing exercises and grounding techniques provided</p>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-gray-900 text-sm sm:text-base">Emergency session completed</p>
+                                        <p className="text-xs sm:text-sm text-gray-600 mt-0.5">Today at {sessionData.time} • Duration: {sessionData.duration} mins</p>
                                     </div>
                                 </div>
                                 
-                                <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
-                                    <div className="p-2 bg-orange-100 rounded-lg">
-                                        <Calendar className="w-4 h-4 text-orange-600" />
+                                <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                                    <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
+                                        <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="font-medium text-gray-900">Follow-up scheduled</p>
-                                        <p className="text-sm text-gray-600">Next session planned for tomorrow</p>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-gray-900 text-sm sm:text-base">Coping strategies discussed</p>
+                                        <p className="text-xs sm:text-sm text-gray-600 mt-0.5">Breathing exercises and grounding techniques provided</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                                    <div className="p-2 bg-orange-100 rounded-lg flex-shrink-0">
+                                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-gray-900 text-sm sm:text-base">Follow-up scheduled</p>
+                                        <p className="text-xs sm:text-sm text-gray-600 mt-0.5">Next session planned for tomorrow</p>
                                     </div>
                                 </div>
                             </div>
