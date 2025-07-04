@@ -1,7 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavBar, Sidebar } from '../../components/layout';
 import { Search, Users, Calendar, MessageCircle, Filter, ChevronDown, Phone, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
+// Add CSS animations for the drawer
+const drawerStyles = `
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideDown {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
+  
+  .animate-fadeIn {
+    animation: fadeIn 0.2s ease-out;
+  }
+  
+  .animate-fadeOut {
+    animation: fadeOut 0.2s ease-out;
+  }
+  
+  .animate-slideUp {
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .animate-slideDown {
+    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+`;
+
+// Inject styles into the head
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = drawerStyles;
+  document.head.appendChild(styleSheet);
+}
 
 interface Client {
   id: number;
@@ -211,12 +273,55 @@ const CounsellorClients: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'new' | 'inactive'>('all');
   const [anonymousFilter, setAnonymousFilter] = useState<'all' | 'anonymous' | 'identified'>('all');
   const [studentFilter, setStudentFilter] = useState<'all' | 'student' | 'non-student'>('all');
+  const filterDropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  
+  const closeFilterDrawer = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setFilterOpen(false);
+      setIsClosing(false);
+    }, 300); // Match animation duration
+  };
+  
+  const handleDesktopFilterToggle = () => {
+    if (filterOpen) {
+      closeFilterDrawer();
+    } else {
+      setFilterOpen(true);
+    }
+  };
   const closeSidebar = () => setSidebarOpen(false);
+  
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // For desktop dropdown
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        if (filterOpen && window.innerWidth >= 1024) { // Only close desktop on large screens
+          closeFilterDrawer();
+        }
+      }
+      
+      // For mobile modal - close if clicking on the backdrop
+      if (filterOpen && window.innerWidth < 1024) {
+        const target = event.target as HTMLElement;
+        if (target.classList.contains('bg-black') || target.classList.contains('bg-opacity-50')) {
+          closeFilterDrawer();
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [filterOpen]);
   
   const handleViewClientDetails = (clientId: number) => {
     navigate(`/counsellor-clients/${clientId}`);
@@ -426,7 +531,7 @@ const CounsellorClients: React.FC = () => {
               </div>
 
               {/* Search & Filters */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 relative overflow-visible">
                 <div className="p-4">
                   <div className="relative w-full">
                     <input
@@ -450,7 +555,44 @@ const CounsellorClients: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="border-t border-gray-100 px-4 py-2 flex flex-wrap gap-2 items-center">
+                {/* Mobile: Simplified filter bar */}
+                <div className="border-t border-gray-100 px-4 py-3 lg:hidden">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-700">Status:</span>
+                      <select 
+                        value={activeFilter} 
+                        onChange={(e) => setActiveFilter(e.target.value as any)}
+                        className="text-xs border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
+                      >
+                        <option value="all">All</option>
+                        <option value="active">Active</option>
+                        <option value="new">New</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </div>
+                    <button 
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                      onClick={() => {
+                        if (filterOpen) {
+                          closeFilterDrawer();
+                        } else {
+                          setFilterOpen(true);
+                          setIsClosing(false);
+                        }
+                      }}
+                    >
+                      <Filter className="w-3.5 h-3.5" />
+                      <span>Filters</span>
+                      <span className="bg-primary text-white text-xs px-1.5 py-0.5 rounded-full">
+                        {(anonymousFilter !== 'all' ? 1 : 0) + (studentFilter !== 'all' ? 1 : 0)}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Desktop: Full filter bar */}
+                <div className="border-t border-gray-100 px-4 py-2 hidden lg:flex flex-wrap gap-2 items-center relative overflow-visible">
                   <div className="flex items-center flex-wrap gap-2">
                     <span className="text-sm text-gray-700 mr-1">Status:</span>
                     <button 
@@ -547,10 +689,10 @@ const CounsellorClients: React.FC = () => {
                     </button>
                   </div>
                   
-                  <div className="ml-auto">
+                  <div className="ml-auto relative" ref={filterDropdownRef}>
                     <button 
-                      className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors"
-                      onClick={() => setFilterOpen(!filterOpen)}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all duration-200"
+                      onClick={handleDesktopFilterToggle}
                     >
                       <Filter className="w-3.5 h-3.5" />
                       <span>{filterOpen ? 'Hide Filters' : 'More Filters'}</span>
@@ -561,142 +703,308 @@ const CounsellorClients: React.FC = () => {
                 
                 {/* Expanded filter options */}
                 {filterOpen && (
-                  <div className="border-t border-gray-100 p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Privacy Status
-                      </label>
-                      <div className="space-y-2">
-                        <div className="flex items-center">
-                          <input 
-                            type="radio" 
-                            id="anonymous-all" 
-                            name="anonymousFilter" 
-                            className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
-                            style={{accentColor: '#EF5DA8'}} 
-                            checked={anonymousFilter === 'all'}
-                            onChange={() => setAnonymousFilter('all')}
-                          />
-                          <label htmlFor="anonymous-all" className="ml-2 block text-sm text-gray-700">
-                            All Clients
-                          </label>
+                  <>
+                    {/* Mobile: Filter modal overlay */}
+                    <div 
+                      className={`lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end ${isClosing ? 'animate-fadeOut' : 'animate-fadeIn'}`}
+                      onClick={closeFilterDrawer}
+                    >
+                      <div 
+                        className={`bg-white w-full rounded-t-2xl max-h-[80vh] overflow-y-auto transform transition-transform duration-300 ease-out ${isClosing ? 'animate-slideDown' : 'animate-slideUp'}`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+                          <button 
+                            onClick={closeFilterDrawer}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
                         </div>
-                        <div className="flex items-center">
-                          <input 
-                            type="radio" 
-                            id="anonymous-only" 
-                            name="anonymousFilter" 
-                            className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
-                            style={{accentColor: '#EF5DA8'}}
-                            checked={anonymousFilter === 'anonymous'}
-                            onChange={() => setAnonymousFilter('anonymous')}
-                          />
-                          <label htmlFor="anonymous-only" className="ml-2 block text-sm text-gray-700">
-                            Anonymous Only
-                          </label>
-                        </div>
-                        <div className="flex items-center">
-                          <input 
-                            type="radio" 
-                            id="identified-only" 
-                            name="anonymousFilter" 
-                            className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
-                            style={{accentColor: '#EF5DA8'}}
-                            checked={anonymousFilter === 'identified'}
-                            onChange={() => setAnonymousFilter('identified')}
-                          />
-                          <label htmlFor="identified-only" className="ml-2 block text-sm text-gray-700">
-                            Identified Only
-                          </label>
+                        
+                        <div className="p-4 space-y-6">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                              Privacy Status
+                            </label>
+                            <div className="grid grid-cols-1 gap-3">
+                              <div className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  id="mobile-anonymous-all" 
+                                  name="mobileAnonymousFilter" 
+                                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50 transition-colors duration-200"
+                                  style={{accentColor: 'rgb(174,175,247)'}} 
+                                  checked={anonymousFilter === 'all'}
+                                  onChange={() => setAnonymousFilter('all')}
+                                />
+                                <label htmlFor="mobile-anonymous-all" className="ml-3 block text-sm text-gray-700 cursor-pointer">
+                                  All Clients
+                                </label>
+                              </div>
+                              <div className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  id="mobile-anonymous-only" 
+                                  name="mobileAnonymousFilter" 
+                                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50 transition-colors duration-200"
+                                  style={{accentColor: 'rgb(174,175,247)'}}
+                                  checked={anonymousFilter === 'anonymous'}
+                                  onChange={() => setAnonymousFilter('anonymous')}
+                                />
+                                <label htmlFor="mobile-anonymous-only" className="ml-3 block text-sm text-gray-700 cursor-pointer">
+                                  Anonymous Only
+                                </label>
+                              </div>
+                              <div className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  id="mobile-identified-only" 
+                                  name="mobileAnonymousFilter" 
+                                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50 transition-colors duration-200"
+                                  style={{accentColor: 'rgb(174,175,247)'}}
+                                  checked={anonymousFilter === 'identified'}
+                                  onChange={() => setAnonymousFilter('identified')}
+                                />
+                                <label htmlFor="mobile-identified-only" className="ml-3 block text-sm text-gray-700 cursor-pointer">
+                                  Identified Only
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                              Client Type
+                            </label>
+                            <div className="grid grid-cols-1 gap-3">
+                              <div className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  id="mobile-student-all" 
+                                  name="mobileStudentFilter" 
+                                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50 transition-colors duration-200"
+                                  style={{accentColor: 'rgb(174,175,247)'}}
+                                  checked={studentFilter === 'all'}
+                                  onChange={() => setStudentFilter('all')}
+                                />
+                                <label htmlFor="mobile-student-all" className="ml-3 block text-sm text-gray-700 cursor-pointer">
+                                  All Clients
+                                </label>
+                              </div>
+                              <div className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  id="mobile-student-only" 
+                                  name="mobileStudentFilter" 
+                                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50 transition-colors duration-200"
+                                  style={{accentColor: 'rgb(174,175,247)'}}
+                                  checked={studentFilter === 'student'}
+                                  onChange={() => setStudentFilter('student')}
+                                />
+                                <label htmlFor="mobile-student-only" className="ml-3 block text-sm text-gray-700 cursor-pointer">
+                                  Students Only
+                                </label>
+                              </div>
+                              <div className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  id="mobile-non-student-only" 
+                                  name="mobileStudentFilter" 
+                                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50 transition-colors duration-200"
+                                  style={{accentColor: 'rgb(174,175,247)'}}
+                                  checked={studentFilter === 'non-student'}
+                                  onChange={() => setStudentFilter('non-student')}
+                                />
+                                <label htmlFor="mobile-non-student-only" className="ml-3 block text-sm text-gray-700 cursor-pointer">
+                                  Non-Students Only
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-4 border-t border-gray-200">
+                            <button 
+                              onClick={closeFilterDrawer}
+                              className="w-full px-4 py-3 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primaryLight transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                              Apply Filters
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
                     
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Client Type
-                      </label>
-                      <div className="space-y-2">
-                        <div className="flex items-center">
-                          <input 
-                            type="radio" 
-                            id="student-all" 
-                            name="studentFilter" 
-                            className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
-                            style={{accentColor: '#EF5DA8'}}
-                            checked={studentFilter === 'all'}
-                            onChange={() => setStudentFilter('all')}
-                          />
-                          <label htmlFor="student-all" className="ml-2 block text-sm text-gray-700">
-                            All Clients
-                          </label>
+                    {/* Desktop: Dropdown overlay positioned relative to the filter button */}
+                    <div className={`hidden lg:block absolute right-0 top-full mt-2 w-96 bg-white rounded-xl shadow-lg border border-gray-200 z-50 ${isClosing ? 'animate-fadeOut' : 'animate-fadeIn'}`} style={{position: 'absolute'}}>
+                      <div className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold text-gray-900">Advanced Filters</h3>
+                          <button 
+                            onClick={closeFilterDrawer}
+                            className="p-1 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
                         </div>
-                        <div className="flex items-center">
-                          <input 
-                            type="radio" 
-                            id="student-only" 
-                            name="studentFilter" 
-                            className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
-                            style={{accentColor: '#EF5DA8'}}
-                            checked={studentFilter === 'student'}
-                            onChange={() => setStudentFilter('student')}
-                          />
-                          <label htmlFor="student-only" className="ml-2 block text-sm text-gray-700">
-                            Students Only
-                          </label>
-                        </div>
-                        <div className="flex items-center">
-                          <input 
-                            type="radio" 
-                            id="non-student-only" 
-                            name="studentFilter" 
-                            className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
-                            style={{accentColor: '#EF5DA8'}}
-                            checked={studentFilter === 'non-student'}
-                            onChange={() => setStudentFilter('non-student')}
-                          />
-                          <label htmlFor="non-student-only" className="ml-2 block text-sm text-gray-700">
-                            Non-Students Only
-                          </label>
+                        
+                        <div className="space-y-6">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                              Privacy Status
+                            </label>
+                            <div className="grid grid-cols-1 gap-2">
+                              <div className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  id="desktop-anonymous-all" 
+                                  name="desktopAnonymousFilter" 
+                                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
+                                  style={{accentColor: 'rgb(174,175,247)'}} 
+                                  checked={anonymousFilter === 'all'}
+                                  onChange={() => setAnonymousFilter('all')}
+                                />
+                                <label htmlFor="desktop-anonymous-all" className="ml-3 block text-sm text-gray-700 cursor-pointer">
+                                  All Clients
+                                </label>
+                              </div>
+                              <div className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  id="desktop-anonymous-only" 
+                                  name="desktopAnonymousFilter" 
+                                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
+                                  style={{accentColor: 'rgb(174,175,247)'}}
+                                  checked={anonymousFilter === 'anonymous'}
+                                  onChange={() => setAnonymousFilter('anonymous')}
+                                />
+                                <label htmlFor="desktop-anonymous-only" className="ml-3 block text-sm text-gray-700 cursor-pointer">
+                                  Anonymous Only
+                                </label>
+                              </div>
+                              <div className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  id="desktop-identified-only" 
+                                  name="desktopAnonymousFilter" 
+                                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
+                                  style={{accentColor: 'rgb(174,175,247)'}}
+                                  checked={anonymousFilter === 'identified'}
+                                  onChange={() => setAnonymousFilter('identified')}
+                                />
+                                <label htmlFor="desktop-identified-only" className="ml-3 block text-sm text-gray-700 cursor-pointer">
+                                  Identified Only
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                              Client Type
+                            </label>
+                            <div className="grid grid-cols-1 gap-2">
+                              <div className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  id="desktop-student-all" 
+                                  name="desktopStudentFilter" 
+                                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
+                                  style={{accentColor: 'rgb(174,175,247)'}}
+                                  checked={studentFilter === 'all'}
+                                  onChange={() => setStudentFilter('all')}
+                                />
+                                <label htmlFor="desktop-student-all" className="ml-3 block text-sm text-gray-700 cursor-pointer">
+                                  All Clients
+                                </label>
+                              </div>
+                              <div className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  id="desktop-student-only" 
+                                  name="desktopStudentFilter" 
+                                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
+                                  style={{accentColor: 'rgb(174,175,247)'}}
+                                  checked={studentFilter === 'student'}
+                                  onChange={() => setStudentFilter('student')}
+                                />
+                                <label htmlFor="desktop-student-only" className="ml-3 block text-sm text-gray-700 cursor-pointer">
+                                  Students Only
+                                </label>
+                              </div>
+                              <div className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  id="desktop-non-student-only" 
+                                  name="desktopStudentFilter" 
+                                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary focus:ring-opacity-50"
+                                  style={{accentColor: 'rgb(174,175,247)'}}
+                                  checked={studentFilter === 'non-student'}
+                                  onChange={() => setStudentFilter('non-student')}
+                                />
+                                <label htmlFor="desktop-non-student-only" className="ml-3 block text-sm text-gray-700 cursor-pointer">
+                                  Non-Students Only
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Session Count
+                              </label>
+                              <select className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary">
+                                <option value="any">Any</option>
+                                <option value="new">New (1-2 sessions)</option>
+                                <option value="regular">Regular (3-10 sessions)</option>
+                                <option value="long-term">Long-term (10+ sessions)</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Primary Concern
+                              </label>
+                              <select className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary">
+                                <option value="any">Any</option>
+                                <option value="anxiety">Anxiety</option>
+                                <option value="depression">Depression</option>
+                                <option value="stress">Stress</option>
+                                <option value="relationships">Relationships</option>
+                                <option value="academic">Academic</option>
+                              </select>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Last Session
+                            </label>
+                            <select className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary">
+                              <option value="any">Any time</option>
+                              <option value="week">Within last week</option>
+                              <option value="month">Within last month</option>
+                              <option value="three-months">Within last 3 months</option>
+                            </select>
+                          </div>
+                          
+                          <div className="pt-4 border-t border-gray-200">
+                            <button 
+                              onClick={closeFilterDrawer}
+                              className="w-full px-4 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primaryLight transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                              Apply Filters
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Session Count
-                      </label>
-                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary focus:border-opacity-50">
-                        <option value="any">Any</option>
-                        <option value="new">New (1-2 sessions)</option>
-                        <option value="regular">Regular (3-10 sessions)</option>
-                        <option value="long-term">Long-term (10+ sessions)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Primary Concern
-                      </label>
-                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary focus:border-opacity-50">
-                        <option value="any">Any</option>
-                        <option value="anxiety">Anxiety</option>
-                        <option value="depression">Depression</option>
-                        <option value="stress">Stress</option>
-                        <option value="relationships">Relationships</option>
-                        <option value="academic">Academic</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Last Session
-                      </label>
-                      <select className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary focus:border-opacity-50">
-                        <option value="any">Any time</option>
-                        <option value="week">Within last week</option>
-                        <option value="month">Within last month</option>
-                        <option value="three-months">Within last 3 months</option>
-                      </select>
-                    </div>
-                  </div>
+                  </>
                 )}
               </div>
 
@@ -705,7 +1013,7 @@ const CounsellorClients: React.FC = () => {
                 <div className="flex items-center gap-2 text-gray-600">
                   <Users className="w-5 h-5" />
                   <span className="text-sm">{filteredClients.length} {filteredClients.length === 1 ? 'client' : 'clients'} found</span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 hidden lg:inline">
                     (<span className="text-indigo-500">{filteredClients.filter(c => c.anonymous).length}</span> anonymous, <span className="text-indigo-500">{filteredClients.filter(c => !c.anonymous).length}</span> identified, <span className="text-indigo-500">{filteredClients.filter(c => c.student).length}</span> students)
                   </span>
                 </div>
