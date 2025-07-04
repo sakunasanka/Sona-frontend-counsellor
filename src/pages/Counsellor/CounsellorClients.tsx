@@ -31,104 +31,103 @@ interface ClientCardProps {
 const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-[rgb(174,175,247)] hover:border-opacity-50 transition-all hover:shadow-md overflow-hidden">
-      <div className="flex flex-col md:flex-row">
-        {/* Left Section - Client info */}
-        <div className="flex p-4 flex-1">
-          <div className={`w-16 h-16 rounded-full overflow-hidden flex-shrink-0 ${client.anonymous ? 'bg-[rgb(174,175,247)] bg-opacity-10 flex items-center justify-center' : 'border-2 border-gray-100'}`}>
-            {client.anonymous ? (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-[rgb(174,175,247)]">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            ) : (
-              <img 
-                src={client.profileImage} 
-                alt={client.name}
-                className="w-full h-full object-cover"
-              />
-            )}
-          </div>
-          
-          <div className="ml-4 flex-1 min-w-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-gray-900 text-lg">
-                    {client.anonymous ? (client.nickname || 'Anonymous Client') : client.name}
-                  </h3>
-                  {client.anonymous && (
-                    <span className="px-2 py-0.5 rounded-full bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800 text-xs font-medium">
-                      Anonymous
-                    </span>
-                  )}
-                </div>
-                <div className="text-sm text-gray-600 mt-1 flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    {!client.anonymous && <span>{client.age} yrs • {client.gender}</span>}
-                    {client.student && (
-                      <div className="flex items-center gap-1">
-                        <span className="inline-flex items-center px-2 py-0.5 bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-500 text-xs rounded-full">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 mr-1">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
-                          </svg>
-                          Student
-                        </span>
-                        {client.institution && (
-                          <span className="text-xs text-gray-500">• {client.institution}</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                
-                </div>
-              </div>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium h-fit ${
-                client.status === 'active' ? 'bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800' : 
-                client.status === 'new' ? 'bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800' : 
-                'bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800'
-              }`}>
-                {client.status === 'active' ? 'Active' : 
-                 client.status === 'new' ? 'New Client' : 
-                 'Inactive'}
-              </span>
+      <div className="p-6">
+        {/* Three Column Layout */}
+        <div className="grid grid-cols-12 gap-6 items-start">
+          {/* Left Section - Profile & Basic Info (4 columns) */}
+          <div className="col-span-4 flex items-start space-x-4">
+            {/* Profile Image */}
+            <div className={`w-16 h-16 rounded-full overflow-hidden flex-shrink-0 ${client.anonymous ? 'bg-[rgb(174,175,247)] bg-opacity-10 flex items-center justify-center' : 'border-2 border-gray-100'}`}>
+              {client.anonymous ? (
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-[rgb(174,175,247)]">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              ) : (
+                <img 
+                  src={client.profileImage} 
+                  alt={client.name}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
             
-            {/* Email and Phone */}
-            {!client.anonymous ? (
-              <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-1">
-                <div className="flex items-center text-sm text-gray-600 truncate">
-                  <Phone className="w-4 h-4 mr-1 text-gray-500 flex-shrink-0" />
-                  <span className="truncate">{client.phone}</span>
-                </div>
-                <div className="flex items-center text-sm text-gray-600 truncate">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1 text-gray-500 flex-shrink-0">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                  </svg>
-                  <span className="truncate">{client.email}</span>
-                </div>
+            {/* Basic Info */}
+            <div className="flex-1 min-w-0">
+              {/* Name and badges */}
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <h3 className="text-lg font-semibold text-gray-900 truncate">
+                  {client.anonymous ? (client.nickname || 'Anonymous Client') : client.name}
+                </h3>
+                {client.anonymous && (
+                  <span className="px-2 py-0.5 rounded-full bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-800 text-xs font-medium">
+                    Anonymous
+                  </span>
+                )}
+                {client.student && (
+                  <span className="inline-flex items-center px-2 py-0.5 bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-500 text-xs rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 mr-1">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 717.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+                    </svg>
+                    Student
+                  </span>
+                )}
               </div>
-            ) : (
-              <div className="mt-2 text-sm text-gray-500">
-                <div className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1 flex-shrink-0">
+              
+              {/* Demographics and Institution */}
+              <div className="text-sm text-gray-600 mb-1">
+                {!client.anonymous && (
+                  <div>{client.age} years old • {client.gender}</div>
+                )}
+                {client.institution && (
+                  <div className="text-indigo-600 font-medium truncate">
+                    {client.institution}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Center Section - Contact & Concerns (5 columns) */}
+          <div className="col-span-5 space-y-3">
+            {/* Contact Information */}
+            <div>
+              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Contact</h4>
+              {!client.anonymous ? (
+                <div className="space-y-1">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Phone className="w-4 h-4 mr-2 text-gray-500 flex-shrink-0" />
+                    <span className="truncate">{client.phone}</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2 text-gray-500 flex-shrink-0">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                    </svg>
+                    <span className="truncate">{client.email}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center text-sm text-gray-500 bg-gray-50 rounded-lg p-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2 flex-shrink-0">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                   </svg>
                   <span>Contact details hidden for privacy</span>
                 </div>
-              </div>
-            )}
-            
-            {/* Tags for concerns */}
+              )}
+            </div>
+
+            {/* Concerns */}
             {client.concerns.length > 0 && (
-              <div className="mt-2">
+              <div>
+                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Primary Concerns</h4>
                 <div className="flex flex-wrap gap-1">
-                  {client.concerns.map((concern, index) => (
+                  {client.concerns.slice(0, 3).map((concern, index) => (
                     <span 
                       key={index} 
                       className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
                     >
                       {concern}
                     </span>
-                  )).slice(0, 3)}
+                  ))}
                   {client.concerns.length > 3 && (
                     <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
                       +{client.concerns.length - 3} more
@@ -138,38 +137,49 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
               </div>
             )}
           </div>
-        </div>
-        
-        {/* Right Section - Stats and actions */}
-        <div className="border-t md:border-t-0 md:border-l border-gray-100 bg-gray-50 md:w-64 lg:w-72 flex-shrink-0">
-          <div className="p-4">
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center text-sm text-gray-600">
-                <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-                <span>Sessions: <span className="font-medium text-indigo-500">{client.sessionCount}</span></span>
+          
+          {/* Right Section - Status, Sessions & Actions (3 columns) */}
+          <div className="col-span-3 flex flex-col items-end space-y-4">
+            {/* Status Badge */}
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+              client.status === 'active' ? 'bg-green-100 text-green-800' : 
+              client.status === 'new' ? 'bg-blue-100 text-blue-800' : 
+              'bg-gray-100 text-gray-800'
+            }`}>
+              {client.status === 'active' ? 'Active' : 
+               client.status === 'new' ? 'New Client' : 
+               'Inactive'}
+            </span>
+            
+            {/* Session Stats */}
+            <div className="text-right text-sm text-gray-600 space-y-1">
+              <div className="flex items-center justify-end">
+                <Calendar className="w-4 h-4 mr-1 text-gray-500" />
+                <span>Sessions: <span className="font-medium text-indigo-600">{client.sessionCount}</span></span>
               </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Clock className="w-4 h-4 mr-2 text-gray-500" />
-                <span>Last session: <span className="font-medium text-indigo-500">{client.lastSession}</span></span>
+              <div className="flex items-center justify-end">
+                <Clock className="w-4 h-4 mr-1 text-gray-500" />
+                <span>Last: <span className="font-medium text-indigo-600">{client.lastSession}</span></span>
               </div>
               {client.nextSession && (
-                <div className="flex items-center text-sm text-indigo-500">
-                  <Calendar className="w-4 h-4 mr-2 text-indigo-500" />
-                  <span className="font-medium">{client.nextSession}</span>
+                <div className="flex items-center justify-end text-indigo-600">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  <span className="font-medium">Next: {client.nextSession}</span>
                 </div>
               )}
             </div>
             
-            <div className="mt-4 flex flex-col space-y-2">
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-2 w-full">
               <button 
-                className="w-full py-1.5 px-3 bg-primary hover:bg-primaryLight text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1"
+                className="px-3 py-1.5 bg-primary hover:bg-primaryLight text-white text-xs font-medium rounded-md transition-colors flex items-center justify-center gap-1 w-full"
                 onClick={() => window.location.href = `/counsellor/chats?clientId=${client.id}`}
               >
-                <MessageCircle className="w-4 h-4" />
+                <MessageCircle className="w-3.5 h-3.5" />
                 Message
               </button>
               <button 
-                className="w-full py-1.5 px-3 bg-white hover:bg-gray-100 text-gray-800 text-sm font-medium rounded-md border border-gray-300 transition-colors"
+                className="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-800 text-xs font-medium rounded-md border border-gray-300 transition-colors w-full"
                 onClick={() => onViewDetails(client.id)}
               >
                 View Details
@@ -398,7 +408,7 @@ const CounsellorClients: React.FC = () => {
         <div className="flex-1 overflow-auto p-4 lg:p-6">
               {/* Header */}
               <div className="mb-6 lg:mb-8">
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">My Clients</h1>
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Your Clients</h1>
               </div>
 
               {/* Search & Filters */}
