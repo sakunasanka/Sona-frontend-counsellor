@@ -148,9 +148,9 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
         {/* Notes Section */}
         {session.notes && (
           <div className="mb-4">
-            <div className="bg-blue-50 border-l-4 border-blue-200 rounded-r-lg p-3">
-              <h4 className="text-xs font-semibold text-blue-800 mb-1 uppercase tracking-wide">Session Notes</h4>
-              <p className="text-sm text-blue-700 line-clamp-2">
+            <div className="bg-secondary bg-opacity-20 border-l-4 border-secondary rounded-r-lg p-3">
+              <h4 className="text-xs font-semibold text-gray-800 mb-1 uppercase tracking-wide">Session Notes</h4>
+              <p className="text-sm text-gray-700 line-clamp-2">
                 {session.notes}
               </p>
             </div>
@@ -161,7 +161,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
         <div className="pt-2 border-t border-gray-100">
           <button
             onClick={() => onViewDetails(session.id)}
-            className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-700 rounded-xl hover:bg-[rgb(174,175,247)] hover:bg-opacity-40 hover:text-indigo-800 transition-all duration-200 font-medium text-sm"
+            className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary hover:bg-opacity-90 transition-all duration-200 font-medium text-sm"
           >
             <Eye className="w-4 h-4" />
             View Details
@@ -421,7 +421,7 @@ const CounsellorSessions = () => {
                                         placeholder="Search by client name, username, or date..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white focus:border-[rgb(174,175,247)] focus:ring-2 focus:ring-[rgb(174,175,247)] focus:ring-opacity-20 transition-all duration-200 outline-none shadow-sm"
+                                        className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white focus:border-primary focus:border-opacity-50 focus:ring-2 focus:ring-primary focus:ring-opacity-20 transition-all duration-200 outline-none shadow-sm"
                                     />
                                     {searchTerm && (
                                         <button
@@ -440,7 +440,7 @@ const CounsellorSessions = () => {
                                     <select
                                         value={filterBy}
                                         onChange={(e) => setFilterBy(e.target.value)}
-                                        className="appearance-none w-full pl-4 pr-10 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 hover:bg-white focus:bg-white focus:border-[rgb(174,175,247)] focus:ring-2 focus:ring-[rgb(174,175,247)] focus:ring-opacity-20 transition-all duration-200 outline-none cursor-pointer shadow-sm font-medium"
+                                        className="appearance-none w-full pl-4 pr-10 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 hover:bg-white focus:bg-white focus:border-primary focus:border-opacity-50 focus:ring-2 focus:ring-primary focus:ring-opacity-20 transition-all duration-200 outline-none cursor-pointer shadow-sm font-medium"
                                     >
                                         <option value="All">All Status</option>
                                         <option value="completed">Completed</option>
@@ -454,7 +454,7 @@ const CounsellorSessions = () => {
                                     <select
                                         value={sortBy}
                                         onChange={(e) => setSortBy(e.target.value)}
-                                        className="appearance-none w-full pl-4 pr-10 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 hover:bg-white focus:bg-white focus:border-[rgb(174,175,247)] focus:ring-2 focus:ring-[rgb(174,175,247)] focus:ring-opacity-20 transition-all duration-200 outline-none cursor-pointer shadow-sm font-medium"
+                                        className="appearance-none w-full pl-4 pr-10 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 hover:bg-white focus:bg-white focus:border-primary focus:border-opacity-50 focus:ring-2 focus:ring-primary focus:ring-opacity-20 transition-all duration-200 outline-none cursor-pointer shadow-sm font-medium"
                                     >
                                         <option value="Newest">Newest First</option>
                                         <option value="Oldest">Oldest First</option>
