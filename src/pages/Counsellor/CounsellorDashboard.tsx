@@ -4,7 +4,8 @@ import { NavBar, Sidebar } from "../../components/layout";
 import { 
   Calendar, 
   Users, 
-  MessageCircle, 
+  MessageCircle,
+  HandCoins,
   DollarSign, 
   Clock,
   Star,
@@ -100,7 +101,7 @@ const CounsellorDashboard = () => {
     {
       title: "View Earnings",
       description: "Track your income and payments",
-      icon: DollarSign,
+      icon: HandCoins,
       action: () => navigate("/signin"),
       color: "bg-yellow-500",
       bgColor: "bg-yellow-50",
@@ -137,81 +138,81 @@ const CounsellorDashboard = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-6 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 lg:gap-6 mb-8">
             {/* Total Sessions */}
-            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Calendar className="w-5 h-5 lg:w-6 lg:h-6 text-blue-600" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="text-xl lg:text-2xl font-bold text-gray-900">{dashboardStats.totalSessions}</p>
-                  <p className="text-gray-600 text-xs lg:text-sm">Total Sessions</p>
+                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">Total Sessions</p>
                 </div>
               </div>
             </div>
 
             {/* Upcoming Sessions */}
-            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Clock className="w-5 h-5 lg:w-6 lg:h-6 text-orange-600" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="text-xl lg:text-2xl font-bold text-gray-900">{dashboardStats.upcomingSessions}</p>
-                  <p className="text-gray-600 text-xs lg:text-sm">Upcoming Sessions</p>
+                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">Upcoming Sessions</p>
                 </div>
               </div>
             </div>
 
             {/* Total Clients */}
-            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 rounded-xl flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Users className="w-5 h-5 lg:w-6 lg:h-6 text-green-600" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="text-xl lg:text-2xl font-bold text-gray-900">{dashboardStats.totalClients}</p>
-                  <p className="text-gray-600 text-xs lg:text-sm">Total Clients</p>
+                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">Total Clients</p>
                 </div>
               </div>
             </div>
 
             {/* Average Rating */}
-            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Star className="w-5 h-5 lg:w-6 lg:h-6 text-yellow-600" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="text-xl lg:text-2xl font-bold text-gray-900">{dashboardStats.averageRating}</p>
-                  <p className="text-gray-600 text-xs lg:text-sm">Avg Rating</p>
+                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">Avg Rating</p>
                 </div>
               </div>
             </div>
 
             {/* Monthly Earnings */}
-            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 lg:w-6 lg:h-6 text-green-600" />
+            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <HandCoins className="w-5 h-5 lg:w-6 lg:h-6 text-green-600" />
                 </div>
-                <div>
-                  <p className="text-xl lg:text-2xl font-bold text-gray-900">${dashboardStats.monthlyEarnings}</p>
-                  <p className="text-gray-600 text-xs lg:text-sm">This Month</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xl lg:text-2xl font-bold text-gray-900">Rs {dashboardStats.monthlyEarnings}</p>
+                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">This Month</p>
                 </div>
               </div>
             </div>
 
             {/* Total Blogs */}
-            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
                   <BookOpen className="w-5 h-5 lg:w-6 lg:h-6 text-purple-600" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="text-xl lg:text-2xl font-bold text-gray-900">{dashboardStats.totalBlogs}</p>
-                  <p className="text-gray-600 text-xs lg:text-sm">Published Blogs</p>
+                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">Published Blogs</p>
                 </div>
               </div>
             </div>
