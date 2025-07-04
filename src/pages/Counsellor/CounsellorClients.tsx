@@ -32,14 +32,13 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-[rgb(174,175,247)] hover:border-opacity-50 transition-all hover:shadow-md overflow-hidden">
       <div className="p-6">
-        {/* Three Column Layout */}
+        {/* Multi-Column Layout */}
         <div className="grid grid-cols-12 gap-6 items-start">
-          {/* Left Section - Profile & Basic Info (4 columns) */}
+          {/* Column 1: Profile + Name + Demographics + College + Buttons (1/3 of total width) */}
           <div className="col-span-4 flex items-start space-x-4">
-            {/* Profile Image */}
-            <div className={`w-16 h-16 rounded-full overflow-hidden flex-shrink-0 ${client.anonymous ? 'bg-[rgb(174,175,247)] bg-opacity-10 flex items-center justify-center' : 'border-2 border-gray-100'}`}>
+            <div className={`w-14 h-14 rounded-full overflow-hidden flex-shrink-0 ${client.anonymous ? 'bg-[rgb(174,175,247)] bg-opacity-10 flex items-center justify-center' : 'border-2 border-gray-100'}`}>
               {client.anonymous ? (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-[rgb(174,175,247)]">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-[rgb(174,175,247)]">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               ) : (
@@ -50,12 +49,10 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
                 />
               )}
             </div>
-            
-            {/* Basic Info */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1">
               {/* Name and badges */}
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <h3 className="text-lg font-semibold text-gray-900 truncate">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <h3 className="text-lg font-semibold text-gray-900">
                   {client.anonymous ? (client.nickname || 'Anonymous Client') : client.name}
                 </h3>
                 {client.anonymous && (
@@ -73,117 +70,118 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
                 )}
               </div>
               
-              {/* Demographics and Institution */}
-              <div className="text-sm text-gray-600 mb-1">
-                {!client.anonymous && (
-                  <div>{client.age} years old • {client.gender}</div>
-                )}
-                {client.institution && (
-                  <div className="text-indigo-600 font-medium truncate">
-                    {client.institution}
-                  </div>
-                )}
+              {/* Age and Gender */}
+              {!client.anonymous && (
+                <div className="text-sm text-gray-600 mb-1">
+                  {client.age} years old • {client.gender}
+                </div>
+              )}
+              
+              {/* College/Institution */}
+              {client.institution && (
+                <div className="text-sm text-indigo-600 font-medium mb-3">
+                  {client.institution}
+                </div>
+              )}
+              
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <button 
+                  className="flex-1 px-3 py-1.5 bg-primary hover:bg-primaryLight text-white text-xs font-medium rounded-md transition-colors flex items-center justify-center gap-1"
+                  onClick={() => window.location.href = `/counsellor/chats?clientId=${client.id}`}
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  Message
+                </button>
+                <button 
+                  className="flex-1 px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-800 text-xs font-medium rounded-md border border-gray-300 transition-colors flex items-center justify-center"
+                  onClick={() => onViewDetails(client.id)}
+                >
+                  Details
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Center Section - Contact & Concerns (5 columns) */}
-          <div className="col-span-5 space-y-3">
-            {/* Contact Information */}
-            <div>
-              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Contact</h4>
-              {!client.anonymous ? (
-                <div className="space-y-1">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Phone className="w-4 h-4 mr-2 text-gray-500 flex-shrink-0" />
-                    <span className="truncate">{client.phone}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2 text-gray-500 flex-shrink-0">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                    </svg>
-                    <span className="truncate">{client.email}</span>
-                  </div>
+          {/* Column 2: Contact Information */}
+          <div className="col-span-4 text-left">
+            <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Contact</h4>
+            {!client.anonymous ? (
+              <div className="space-y-1">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Phone className="w-4 h-4 mr-2 text-gray-500 flex-shrink-0" />
+                  <span className="truncate">{client.phone}</span>
                 </div>
-              ) : (
-                <div className="flex items-center text-sm text-gray-500 bg-gray-50 rounded-lg p-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2 flex-shrink-0">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                <div className="flex items-center text-sm text-gray-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2 text-gray-500 flex-shrink-0">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                   </svg>
-                  <span>Contact details hidden for privacy</span>
+                  <span className="truncate">{client.email}</span>
                 </div>
-              )}
-            </div>
-
-            {/* Concerns */}
-            {client.concerns.length > 0 && (
-              <div>
-                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Primary Concerns</h4>
-                <div className="flex flex-wrap gap-1">
-                  {client.concerns.slice(0, 3).map((concern, index) => (
-                    <span 
-                      key={index} 
-                      className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
-                    >
-                      {concern}
-                    </span>
-                  ))}
-                  {client.concerns.length > 3 && (
-                    <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                      +{client.concerns.length - 3} more
-                    </span>
-                  )}
-                </div>
+              </div>
+            ) : (
+              <div className="flex items-center text-sm text-gray-500 bg-gray-50 rounded-lg p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2 flex-shrink-0">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+                <span>Contact details hidden</span>
               </div>
             )}
           </div>
-          
-          {/* Right Section - Status, Sessions & Actions (3 columns) */}
-          <div className="col-span-3 flex flex-col items-end space-y-4">
+
+          {/* Column 3: Concerns */}
+          <div className="col-span-2 text-left">
+            <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Concerns</h4>
+            {client.concerns.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {client.concerns.slice(0, 3).map((concern, index) => (
+                  <span 
+                    key={index} 
+                    className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                  >
+                    {concern}
+                  </span>
+                ))}
+                {client.concerns.length > 3 && (
+                  <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                    +{client.concerns.length - 3} more
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Column 4: Status + Sessions (Right-aligned) */}
+          <div className="col-span-2 text-right">
             {/* Status Badge */}
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              client.status === 'active' ? 'bg-green-100 text-green-800' : 
-              client.status === 'new' ? 'bg-blue-100 text-blue-800' : 
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {client.status === 'active' ? 'Active' : 
-               client.status === 'new' ? 'New Client' : 
-               'Inactive'}
-            </span>
+            <div className="flex justify-end mb-3">
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                client.status === 'active' ? 'bg-green-100 text-green-800' : 
+                client.status === 'new' ? 'bg-blue-100 text-blue-800' : 
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {client.status === 'active' ? 'Active' : 
+                 client.status === 'new' ? 'New' : 
+                 'Inactive'}
+              </span>
+            </div>
             
             {/* Session Stats */}
-            <div className="text-right text-sm text-gray-600 space-y-1">
+            <div className="text-sm text-gray-600 space-y-1">
               <div className="flex items-center justify-end">
                 <Calendar className="w-4 h-4 mr-1 text-gray-500" />
-                <span>Sessions: <span className="font-medium text-indigo-600">{client.sessionCount}</span></span>
+                <span><span className="font-medium text-indigo-600">{client.sessionCount}</span> sessions</span>
               </div>
               <div className="flex items-center justify-end">
                 <Clock className="w-4 h-4 mr-1 text-gray-500" />
-                <span>Last: <span className="font-medium text-indigo-600">{client.lastSession}</span></span>
+                <span className="font-medium text-indigo-600">{client.lastSession}</span>
               </div>
               {client.nextSession && (
                 <div className="flex items-center justify-end text-indigo-600">
                   <Calendar className="w-4 h-4 mr-1" />
-                  <span className="font-medium">Next: {client.nextSession}</span>
+                  <span className="font-medium text-xs">Next: {client.nextSession}</span>
                 </div>
               )}
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-2 w-full">
-              <button 
-                className="px-3 py-1.5 bg-primary hover:bg-primaryLight text-white text-xs font-medium rounded-md transition-colors flex items-center justify-center gap-1 w-full"
-                onClick={() => window.location.href = `/counsellor/chats?clientId=${client.id}`}
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-                Message
-              </button>
-              <button 
-                className="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-800 text-xs font-medium rounded-md border border-gray-300 transition-colors w-full"
-                onClick={() => onViewDetails(client.id)}
-              >
-                View Details
-              </button>
             </div>
           </div>
         </div>
