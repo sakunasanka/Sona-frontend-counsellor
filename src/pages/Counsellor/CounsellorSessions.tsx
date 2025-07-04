@@ -334,12 +334,12 @@ const CounsellorSessions = () => {
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar - Let the Sidebar component handle its own positioning */}
                 <div className="w-80 bg-white border-r hidden lg:block">
-                    <Sidebar isOpen={true} onClose={closeSidebar} activeItem="sessions" />
+                    <Sidebar isOpen={true} onClose={closeSidebar} />
                 </div>
                 
                 {/* Mobile Sidebar - Handled entirely by Sidebar component */}
                 <div className="lg:hidden">
-                    <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} activeItem="sessions" />
+                    <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
                 </div>
                 
                 {/* Main content */}
