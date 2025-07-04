@@ -60,7 +60,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
             <h3 className="font-semibold text-gray-900 text-lg mb-1">
               {session.fullName}
             </h3>
-            <p className="text-sm text-gray-500">@{session.username}</p>
+            <p className="text-sm text-primary font-medium">@{session.username}</p>
           </div>
           <div className="flex flex-col items-end gap-2">
             <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(session.status)}`}>
@@ -346,8 +346,15 @@ const CounsellorSessions = () => {
                 <div className="flex-1 overflow-auto">
                     <div className="p-4 lg:p-6">
                         {/* Page Title */}
-                        <div className="mb-6 lg:mb-8">
-                            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Session History</h1>
+                        <div className="mb-6 lg:mb-8 flex items-center justify-between">
+                            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Session History</h1>
+                            <button
+                                onClick={() => navigate('/counsellor-calendar')}
+                                className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
+                            >
+                                <Calendar className="w-4 h-4" />
+                                <span className="hidden sm:inline">View Calendar</span>
+                            </button>
                         </div>
 
                         {/* Stats Cards - Desktop Only */}
