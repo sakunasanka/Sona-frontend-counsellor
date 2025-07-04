@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, LogOut } from 'lucide-react';
+import { ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, DollarSign, LogOut } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -24,7 +24,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const menuItems = [
     { icon: Home, label: 'Home', href: '/counsellor-dashboard', id: 'home' },
     { icon: Calendar, label: 'Sessions', href: '/counsellor-sessions', id: 'sessions' },
-    { icon: Users, label: 'Clients', href: '#', id: 'clients' },
+    { icon: Users, label: 'Clients', href: '/counsellor-clients', id: 'clients' },
+    { icon: DollarSign, label: 'Earnings', href: '/counsellor/earnings', id: 'earnings' },
     { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks', id: 'feedbacks' },
     { icon: MessageCircle, label: 'Chats', href: '/counsellor/chats', id: 'chats' },
     { icon: FileText, label: 'Blogs', href: '/counsellor-blogs', id: 'blogs' },

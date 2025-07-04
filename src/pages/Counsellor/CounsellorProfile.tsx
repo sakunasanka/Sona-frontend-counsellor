@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavBar, Sidebar } from "../../components/layout";
 import type { CounsellorProfile as CounsellorProfileType } from './types';
+import { AVAILABLE_LANGUAGES } from './constants';
 import { useProfileState, useImageHandlers, useLanguageHandlers, useSpecializationHandlers, useCredentialsHandlers, useAchievementHandlers } from './hooks';
 import ProfileHeader from './components/ProfileHeader';
 import ProfileInfo from './components/ProfileInfo';
@@ -22,13 +23,13 @@ const CounsellorProfile: React.FC = () => {
     profileImage: "/assets/images/profile-photo1.webp",
     coverImage: "/assets/images/bg-trans.jpeg",
     bio: "Passionate mental health counselor with 8+ years of experience helping individuals overcome anxiety, depression, and life transitions. I believe in creating a safe, non-judgmental space where healing can begin. 🌱",
-    location: "Los Angeles, CA",
+    location: "Colombo, Sri Lanka",
     website: "www.sarahmitchelltherapy.com",
     email: "sarah.mitchell@therapy.com",
     phone: "+1 (555) 123-4567",
     joinDate: "January 2018",
     specializations: ["Anxiety Disorders", "Depression", "Trauma Therapy", "Relationship Counseling", "Mindfulness-Based Therapy"],
-    languages: ["English", "Spanish", "French"],
+    languages: [...AVAILABLE_LANGUAGES],
     experience: 8,
     rating: 4.9,
     totalReviews: 127,
@@ -91,9 +92,7 @@ const CounsellorProfile: React.FC = () => {
   );
   const languageHandlers = useLanguageHandlers(
     profileState.editingLanguages,
-    profileState.setEditingLanguages,
-    profileState.newLanguage,
-    profileState.setNewLanguage
+    profileState.setEditingLanguages
   );
   const specializationHandlers = useSpecializationHandlers(
     profileState.editingSpecializations,
@@ -215,14 +214,11 @@ const CounsellorProfile: React.FC = () => {
                   profile={profileState.profile}
                   isEditing={profileState.isEditing}
                   editingLanguages={profileState.editingLanguages}
-                  newLanguage={profileState.newLanguage}
-                  setNewLanguage={profileState.setNewLanguage}
                   editingSpecializations={profileState.editingSpecializations}
                   newSpecialization={profileState.newSpecialization}
                   setNewSpecialization={profileState.setNewSpecialization}
                   onAddLanguage={languageHandlers.handleAddLanguage}
                   onRemoveLanguage={languageHandlers.handleRemoveLanguage}
-                  onLanguageInputKeyPress={languageHandlers.handleLanguageInputKeyPress}
                   onAddSpecialization={specializationHandlers.handleAddSpecialization}
                   onRemoveSpecialization={specializationHandlers.handleRemoveSpecialization}
                   onSpecializationInputKeyPress={specializationHandlers.handleSpecializationInputKeyPress}

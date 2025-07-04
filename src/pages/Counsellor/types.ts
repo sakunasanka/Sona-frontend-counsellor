@@ -1,3 +1,5 @@
+import { Language } from './constants';
+
 export interface CounsellorProfile {
   id: number;
   firstName: string;
@@ -11,7 +13,7 @@ export interface CounsellorProfile {
   phone: string;
   joinDate: string;
   specializations: string[];
-  languages: string[];
+  languages: Language[];
   experience: number;
   rating: number;
   totalReviews: number;

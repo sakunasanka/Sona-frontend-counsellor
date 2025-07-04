@@ -15,9 +15,9 @@ const CounsellorDashboard = () => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
 
-  const handleFeature = () => navigate("/signin");
   const handleCreateBlog = () => navigate("/counsellor/create-blog");
   const handleExploreCalendar = () => navigate("/counsellor-calendar");
+  const handleExploreEarnings = () => navigate("/counsellor/earnings");
 
 
   const sessions = [
@@ -224,7 +224,7 @@ const CounsellorDashboard = () => {
                       <h3 className="text-lg font-bold mb-2">Earnings</h3>
                       <p className="mb-4 flex-grow">Check your earnings on your humane efforts</p>
                       <div className="mt-auto">
-                        <Button variant="special" onClick={handleFeature} className="flex items-center">
+                        <Button variant="special" onClick={handleExploreEarnings} className="flex items-center">
                           <FaMoneyBillWave className="mr-2" /> Explore Earnings
                         </Button>
                       </div>
