@@ -201,17 +201,17 @@ function Home() {
             
             {/* Navigation Links and Button - Desktop */}
             <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-primary transition-all duration-300 font-medium relative group text-sm xl:text-base">
+              <a href="#features" className="text-gray-600 hover:text-pink-500 transition-all duration-300 font-medium relative group text-sm xl:text-base">
                 Features
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
               </a>
-              <a href="#about" className="text-gray-600 hover:text-primary transition-all duration-300 font-medium relative group text-sm xl:text-base">
+              <a href="#about" className="text-gray-600 hover:text-pink-500 transition-all duration-300 font-medium relative group text-sm xl:text-base">
                 About
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
               </a>
-              <a href="#contact" className="text-gray-600 hover:text-primary transition-all duration-300 font-medium relative group text-sm xl:text-base">
+              <a href="#contact" className="text-gray-600 hover:text-pink-500 transition-all duration-300 font-medium relative group text-sm xl:text-base">
                 Contact
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
               </a>
               <Button 
                 variant="special" 
@@ -351,8 +351,8 @@ function Home() {
                               onSelect={handleRoleSelect}
                               className={`!mb-0 !p-0 transition-all duration-300 ${
                                 showAuthFocus && !isDropdownInteracted
-                                  ? '[&>div>button>span]:animate-pulse [&>div>button>span]:text-gray-600 [&>div>button>span]:font-semibold [&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-gray-300 [&>div>button]:!h-12 [&>div>button]:!text-base' 
-                                  : '[&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-gray-300 [&>div>button]:!h-12 [&>div>button]:!text-base'
+                                  ? '[&>div>button>span]:animate-pulse [&>div>button>span]:text-gray-600 [&>div>button>span]:font-semibold [&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-gray-300 [&>div>button]:!h-12 [&>div>button]:!text-base [&>div>button]:!font-medium' 
+                                  : '[&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-gray-300 [&>div>button]:!h-12 [&>div>button]:!text-base [&>div>button]:!font-medium'
                               }`}
                             />
                           </div>
@@ -378,7 +378,7 @@ function Home() {
                     <Button 
                       variant="border"
                       onClick={handleSignUp}
-                      className="w-full sm:w-auto px-8 py-3 text-base font-medium border border-white/40 text-white hover:bg-white hover:text-gray-900 transition-all duration-300 flex-shrink-0"
+                      className="w-full sm:w-auto px-8 py-3 h-12 text-base font-medium border border-white/40 text-white hover:bg-white hover:text-gray-900 transition-all duration-300 flex-shrink-0"
                     >
                       Join with us!
                     </Button>
@@ -404,7 +404,7 @@ function Home() {
                         selected={selectedRole}
                         placeholder="Choose who you are"
                         onSelect={handleRoleSelect}
-                        className={`w-full !ml-0 !pl-0 !left-0 transition-all duration-300 ${
+                        className={`w-full transition-all duration-300 [&>div]:!w-full [&>div]:!relative [&>div>ul]:!absolute [&>div>ul]:!left-0 [&>div>ul]:!right-0 [&>div>ul]:!w-full [&>div>ul]:!mt-1 [&>div>ul]:!z-50 ${
                           showAuthFocus && !isDropdownInteracted
                             ? '[&>div>button>span]:animate-pulse [&>div>button>span]:text-gray-600 [&>div>button>span]:font-semibold [&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-2 [&>div>button]:!border-primary/60 [&>div>button]:!h-12 [&>div>button]:!text-base [&>div>button]:!font-medium [&>div>button]:!shadow-lg [&>div>button]:shadow-primary/25' 
                             : '[&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-gray-300 [&>div>button]:!h-12 [&>div>button]:!text-base [&>div>button]:!font-medium'
@@ -412,7 +412,7 @@ function Home() {
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col space-y-4">
+                  <div className="flex flex-col space-y-6">
                     <Button 
                       variant="special"
                       onClick={handleSignIn}
@@ -422,7 +422,7 @@ function Home() {
                     </Button>
                     
                     {/* Not a member section for mobile */}
-                    <div className="flex flex-col space-y-3">
+                    <div className="flex flex-col space-y-4">
                       <span className={`text-white/90 text-base transition-all duration-300 text-center ${
                         showAuthFocus && !isDropdownInteracted ? 'animate-pulse font-semibold' : ''
                       }`}>
@@ -431,7 +431,7 @@ function Home() {
                       <Button 
                         variant="border"
                         onClick={handleSignUp}
-                        className="w-full px-6 py-3 text-base font-medium border border-white/40 text-white hover:bg-white hover:text-gray-900 transition-all duration-300"
+                        className="w-full px-6 py-3 h-12 text-base font-medium border border-white/40 text-white hover:bg-white hover:text-gray-900 transition-all duration-300"
                       >
                         Join with us!
                       </Button>
