@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { CounsellorProfile, Credential, Achievement } from './types';
+import { Language } from './constants';
 
 export const useProfileState = (initialProfile: CounsellorProfile) => {
   const [profile, setProfile] = useState<CounsellorProfile>(initialProfile);
@@ -11,8 +12,7 @@ export const useProfileState = (initialProfile: CounsellorProfile) => {
   const [showProfileImageOptions, setShowProfileImageOptions] = useState<boolean>(false);
   
   // Language and specialization editing
-  const [newLanguage, setNewLanguage] = useState<string>('');
-  const [editingLanguages, setEditingLanguages] = useState<string[]>([]);
+  const [editingLanguages, setEditingLanguages] = useState<Language[]>([]);
   const [newSpecialization, setNewSpecialization] = useState<string>('');
   const [editingSpecializations, setEditingSpecializations] = useState<string[]>([]);
   
@@ -104,8 +104,6 @@ export const useProfileState = (initialProfile: CounsellorProfile) => {
     setShowCoverImageOptions,
     showProfileImageOptions,
     setShowProfileImageOptions,
-    newLanguage,
-    setNewLanguage,
     editingLanguages,
     setEditingLanguages,
     newSpecialization,
@@ -298,33 +296,22 @@ export const useCredentialsHandlers = (
 };
 
 export const useLanguageHandlers = (
-  editingLanguages: string[],
-  setEditingLanguages: React.Dispatch<React.SetStateAction<string[]>>,
-  newLanguage: string,
-  setNewLanguage: React.Dispatch<React.SetStateAction<string>>
+  editingLanguages: Language[],
+  setEditingLanguages: React.Dispatch<React.SetStateAction<Language[]>>
 ) => {
-  const handleAddLanguage = useCallback(() => {
-    if (newLanguage.trim() && !editingLanguages.includes(newLanguage.trim())) {
-      setEditingLanguages(prev => [...prev, newLanguage.trim()]);
-      setNewLanguage('');
+  const handleAddLanguage = useCallback((language: Language) => {
+    if (language.trim() && !editingLanguages.includes(language.trim() as Language)) {
+      setEditingLanguages(prev => [...prev, language.trim() as Language]);
     }
-  }, [newLanguage, editingLanguages, setEditingLanguages, setNewLanguage]);
+  }, [editingLanguages, setEditingLanguages]);
 
-  const handleRemoveLanguage = useCallback((languageToRemove: string) => {
+  const handleRemoveLanguage = useCallback((languageToRemove: Language) => {
     setEditingLanguages(prev => prev.filter(lang => lang !== languageToRemove));
   }, [setEditingLanguages]);
 
-  const handleLanguageInputKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddLanguage();
-    }
-  }, [handleAddLanguage]);
-
   return {
     handleAddLanguage,
-    handleRemoveLanguage,
-    handleLanguageInputKeyPress
+    handleRemoveLanguage
   };
 };
 
