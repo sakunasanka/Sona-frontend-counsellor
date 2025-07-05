@@ -179,18 +179,18 @@ const CounsellorEarnings: React.FC = () => {
                   Your Earnings
                 </h1>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-row gap-3">
                 <select 
                   value={selectedPeriod} 
                   onChange={(e) => setSelectedPeriod(e.target.value)}
-                  className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="flex-1 sm:flex-none px-3 sm:px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm sm:text-base"
                 >
                   <option value="thisMonth">This Month</option>
                   <option value="lastMonth">Last Month</option>
                   <option value="last3Months">Last 3 Months</option>
                   <option value="thisYear">This Year</option>
                 </select>
-                <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors">
+                <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors text-sm sm:text-base">
                   <Download className="w-4 h-4" />
                   Export
                 </button>
@@ -199,75 +199,75 @@ const CounsellorEarnings: React.FC = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
             {/* Total Earnings */}
-            <div className="bg-white rounded-2xl p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-primary/20 rounded-xl">
-                  <HandCoins className="w-6 h-6 text-primary" />
+            <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <div className="p-2 lg:p-3 bg-primary/20 rounded-lg lg:rounded-xl">
+                  <HandCoins className="w-4 h-4 lg:w-6 lg:h-6 text-primary" />
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-gray-600 mb-1">Total Earnings</div>
-                  <div className="text-2xl font-bold text-gray-900">Rs {stats.totalEarnings.toLocaleString()}</div>
+                  <div className="text-xs lg:text-sm text-gray-600 mb-1">Total Earnings</div>
+                  <div className="text-sm lg:text-2xl font-bold text-gray-900">Rs {stats.totalEarnings.toLocaleString()}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <ArrowUpRight className="w-4 h-4 text-green-500" />
+              <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                <ArrowUpRight className="w-3 h-3 lg:w-4 lg:h-4 text-green-500" />
                 <span className="text-green-600 font-medium">+12.5%</span>
-                <span className="text-gray-500">from last month</span>
+                <span className="text-gray-500 hidden sm:inline">from last month</span>
               </div>
             </div>
 
             {/* This Month */}
-            <div className="bg-white rounded-2xl p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-buttonBlue-500/20 rounded-xl">
-                  <Calendar className="w-6 h-6 text-buttonBlue-500" />
+            <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <div className="p-2 lg:p-3 bg-buttonBlue-500/20 rounded-lg lg:rounded-xl">
+                  <Calendar className="w-4 h-4 lg:w-6 lg:h-6 text-buttonBlue-500" />
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-gray-600 mb-1">This Month</div>
-                  <div className="text-2xl font-bold text-gray-900">Rs {stats.thisMonth.toLocaleString()}</div>
+                  <div className="text-xs lg:text-sm text-gray-600 mb-1">This Month</div>
+                  <div className="text-sm lg:text-2xl font-bold text-gray-900">Rs {stats.thisMonth.toLocaleString()}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <ArrowUpRight className="w-4 h-4 text-green-500" />
+              <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                <ArrowUpRight className="w-3 h-3 lg:w-4 lg:h-4 text-green-500" />
                 <span className="text-green-600 font-medium">+16.7%</span>
-                <span className="text-gray-500">vs last month</span>
+                <span className="text-gray-500 hidden sm:inline">vs last month</span>
               </div>
             </div>
 
             {/* Total Sessions */}
-            <div className="bg-white rounded-2xl p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-buttonGreen-500/20 rounded-xl">
-                  <Users className="w-6 h-6 text-buttonGreen-500" />
+            <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <div className="p-2 lg:p-3 bg-buttonGreen-500/20 rounded-lg lg:rounded-xl">
+                  <Users className="w-4 h-4 lg:w-6 lg:h-6 text-buttonGreen-500" />
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-gray-600 mb-1">Total Sessions</div>
-                  <div className="text-2xl font-bold text-gray-900">{stats.totalSessions}</div>
+                  <div className="text-xs lg:text-sm text-gray-600 mb-1">Total Sessions</div>
+                  <div className="text-sm lg:text-2xl font-bold text-gray-900">{stats.totalSessions}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <TrendingUp className="w-4 h-4 text-green-500" />
+              <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                <TrendingUp className="w-3 h-3 lg:w-4 lg:h-4 text-green-500" />
                 <span className="text-green-600 font-medium">35 this month</span>
               </div>
             </div>
 
             {/* Average per Session */}
-            <div className="bg-white rounded-2xl p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-buttonOrange-500/20 rounded-xl">
-                  <TrendingUp className="w-6 h-6 text-buttonOrange-500" />
+            <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <div className="p-2 lg:p-3 bg-buttonOrange-500/20 rounded-lg lg:rounded-xl">
+                  <TrendingUp className="w-4 h-4 lg:w-6 lg:h-6 text-buttonOrange-500" />
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-gray-600 mb-1">Avg per Session</div>
-                  <div className="text-2xl font-bold text-gray-900">Rs {stats.avgPerSession.toFixed(2)}</div>
+                  <div className="text-xs lg:text-sm text-gray-600 mb-1">Avg per Session</div>
+                  <div className="text-sm lg:text-2xl font-bold text-gray-900">Rs {stats.avgPerSession.toFixed(2)}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <ArrowUpRight className="w-4 h-4 text-green-500" />
+              <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                <ArrowUpRight className="w-3 h-3 lg:w-4 lg:h-4 text-green-500" />
                 <span className="text-green-600 font-medium">+5.2%</span>
-                <span className="text-gray-500">improvement</span>
+                <span className="text-gray-500 hidden sm:inline">improvement</span>
               </div>
             </div>
           </div>
