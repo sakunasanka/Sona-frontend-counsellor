@@ -78,7 +78,7 @@ export const PendingRequestsModal: React.FC<PendingRequestsModalProps> = ({
                 .map(session => (
                 <div 
                   key={session.id} 
-                  className="p-4 rounded-lg border-2 border-orange-200 bg-white hover:bg-gray-50 transition-colors"
+                  className="p-4 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">

@@ -606,6 +606,8 @@ const CounsellorCalendar: React.FC = () => {
             <MarkUnavailableModal
               unavailabilityType={unavailabilityType}
               onUnavailabilityTypeChange={setUnavailabilityType}
+              sessions={sessions}
+              unavailableDates={unavailableDates}
               onClose={() => {
                 setShowUnavailable(false);
                 setUnavailabilityType('full-day');
