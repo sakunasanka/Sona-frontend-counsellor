@@ -34,16 +34,18 @@ const QuickStats: React.FC<QuickStatsProps> = ({
         </div>
       </div>
       
-      {/* Quick Action for Pending */}
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <p className="text-sm text-gray-600 mb-2">Pending requests need your attention</p>
-        <button 
-          onClick={onShowPendingRequests}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
-        >
-          Review Pending ({pendingCount})
-        </button>
-      </div>
+      {/* Quick Action for Pending - Only show if there are pending requests */}
+      {pendingCount > 0 && (
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <p className="text-sm text-gray-600 mb-2">Pending requests need your attention</p>
+          <button 
+            onClick={onShowPendingRequests}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
+          >
+            Review Pending ({pendingCount})
+          </button>
+        </div>
+      )}
     </div>
   );
 };

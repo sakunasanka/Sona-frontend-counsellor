@@ -78,7 +78,7 @@ export const PendingRequestsModal: React.FC<PendingRequestsModalProps> = ({
                 .map(session => (
                 <div 
                   key={session.id} 
-                  className="p-4 rounded-lg border-2 border-orange-200 bg-orange-50 hover:bg-orange-75 transition-colors"
+                  className="p-4 rounded-lg border-2 border-orange-200 bg-white hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -137,8 +137,7 @@ export const PendingRequestsModal: React.FC<PendingRequestsModalProps> = ({
               
               {/* Batch Actions */}
               {pendingSessions.length > 1 && (
-                <div className="mt-6 pt-4 border-t border-gray-200">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Batch Actions</h4>
+                <div className="mt-6">
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleBatchAction('accept')}

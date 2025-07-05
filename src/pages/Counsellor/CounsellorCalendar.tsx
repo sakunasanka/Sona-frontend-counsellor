@@ -596,6 +596,7 @@ const CounsellorCalendar: React.FC = () => {
             <TimeSlotsModal
               selectedDate={selectedDate}
               timeSlots={timeSlots}
+              sessions={sessions}
               isTimeSlotUnavailable={isTimeSlotUnavailable}
               onClose={() => setShowTimeSlots(false)}
             />

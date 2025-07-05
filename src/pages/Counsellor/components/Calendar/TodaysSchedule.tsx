@@ -24,7 +24,7 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({
         <Calendar className="w-5 h-5 text-primary" />
         Today's Schedule
       </h3>
-      <div className="space-y-3">
+      <div className={`space-y-3 ${todaySessions.length > 2 ? 'max-h-40 overflow-y-auto' : ''}`}>
         {todaySessions.map(session => (
           <div key={session.id} className={`flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 ${
             session.status === 'confirmed' ? 'border-l-green-400' : 
