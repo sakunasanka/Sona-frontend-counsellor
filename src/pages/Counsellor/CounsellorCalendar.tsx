@@ -570,7 +570,7 @@ const CounsellorCalendar: React.FC = () => {
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <div className="w-80 bg-white border-r hidden lg:block">
-          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+          <Sidebar isOpen={true} onClose={closeSidebar} />
         </div>
 
         {/* Mobile Sidebar */}
@@ -579,13 +579,11 @@ const CounsellorCalendar: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto lg:ml-0">
-          <div className="h-full bg-gray-50">
-            <div className="h-full max-w-7xl mx-auto p-2 lg:pl-1 lg:pr-4 lg:py-4">
+        <div className="flex-1 overflow-auto p-4 lg:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-3 lg:mb-4">
+        <div className="flex items-center justify-between mb-6 lg:mb-8">
             <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">Calendar</h1>
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Calendar</h1>
                 <p className="text-sm text-gray-600">Manage your sessions and availability</p>
             </div>
             <div className="flex items-center gap-3">
@@ -603,7 +601,7 @@ const CounsellorCalendar: React.FC = () => {
         </div>
 
         {/* Status Legend */}
-        <div className="mb-4 bg-white rounded-lg shadow-sm border border-gray-100 p-3">
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-100 p-3">
           <h3 className="text-sm font-medium text-gray-700 mb-2">Session Status Legend</h3>
           <div className="flex flex-wrap gap-4 text-xs">
             <div className="flex items-center gap-2">
@@ -1276,8 +1274,6 @@ const CounsellorCalendar: React.FC = () => {
             </div>
           </div>
         )}
-            </div>
-          </div>
         </div>
       </div>
     </div>
