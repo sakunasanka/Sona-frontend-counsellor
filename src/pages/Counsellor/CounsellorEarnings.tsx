@@ -205,7 +205,7 @@ const CounsellorEarnings: React.FC = () => {
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   {/* Total Earnings */}
-                  <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-6 border border-primary/10">
+                  <div className="bg-white rounded-2xl p-6 border border-gray-200">
                     <div className="flex items-center justify-between mb-4">
                       <div className="p-3 bg-primary/20 rounded-xl">
                         <HandCoins className="w-6 h-6 text-primary" />
@@ -223,7 +223,7 @@ const CounsellorEarnings: React.FC = () => {
                   </div>
 
                   {/* This Month */}
-                  <div className="bg-gradient-to-br from-buttonBlue-500/10 to-buttonBlue-500/5 rounded-2xl p-6 border border-buttonBlue-500/20">
+                  <div className="bg-white rounded-2xl p-6 border border-gray-200">
                     <div className="flex items-center justify-between mb-4">
                       <div className="p-3 bg-buttonBlue-500/20 rounded-xl">
                         <Calendar className="w-6 h-6 text-buttonBlue-500" />
@@ -241,7 +241,7 @@ const CounsellorEarnings: React.FC = () => {
                   </div>
 
                   {/* Total Sessions */}
-                  <div className="bg-gradient-to-br from-buttonGreen-500/10 to-buttonGreen-500/5 rounded-2xl p-6 border border-buttonGreen-500/20">
+                  <div className="bg-white rounded-2xl p-6 border border-gray-200">
                     <div className="flex items-center justify-between mb-4">
                       <div className="p-3 bg-buttonGreen-500/20 rounded-xl">
                         <Users className="w-6 h-6 text-buttonGreen-500" />
@@ -258,7 +258,7 @@ const CounsellorEarnings: React.FC = () => {
                   </div>
 
                   {/* Average per Session */}
-                  <div className="bg-gradient-to-br from-buttonOrange-500/10 to-buttonOrange-500/5 rounded-2xl p-6 border border-buttonOrange-500/20">
+                  <div className="bg-white rounded-2xl p-6 border border-gray-200">
                     <div className="flex items-center justify-between mb-4">
                       <div className="p-3 bg-buttonOrange-500/20 rounded-xl">
                         <TrendingUp className="w-6 h-6 text-buttonOrange-500" />
@@ -291,7 +291,7 @@ const CounsellorEarnings: React.FC = () => {
                       {monthlyData.map((data, index) => (
                         <div key={index} className="flex-1 flex flex-col items-center">
                           <div 
-                            className="w-full bg-gradient-to-t from-primary to-primary/70 rounded-t-lg mb-2 min-h-[20px] transition-all hover:from-primary/90 hover:to-primary/60"
+                            className="w-full bg-gradient-to-t from-primary/40 to-primary/30 rounded-t-lg mb-2 min-h-[20px] transition-all hover:from-primary/50 hover:to-primary/40"
                             style={{ height: `${(data.earnings / 3000) * 200}px` }}
                           ></div>
                           <span className="text-xs text-gray-500 font-medium">{data.month}</span>
