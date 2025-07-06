@@ -66,8 +66,8 @@ function Home() {
       if (selectedRole === 'general') {
         navigate('/generalusersignin');
       } else {
-        // For counsellor or psychiatrist, redirect to sign up page
-        navigate('/signup');
+        // For counsellor or psychiatrist, redirect to sign up page with role state
+        navigate('/signup', { state: { selectedRole } });
       }
       return;
     }
@@ -95,8 +95,8 @@ function Home() {
       if (selectedRole === 'general') {
         navigate('/generalusersignin');
       } else {
-        // For counsellor or psychiatrist, redirect to sign up page
-        navigate('/signup');
+        // For counsellor or psychiatrist, redirect to sign up page with role state
+        navigate('/signup', { state: { selectedRole } });
       }
       return;
     }
@@ -136,7 +136,8 @@ function Home() {
     if (selectedRole === 'general') {
       navigate('/generalusersignin');
     } else {
-      navigate('/signin');
+      // Pass the selected role to sign-in page for counsellor or psychiatrist
+      navigate('/signin', { state: { selectedRole } });
     }
   };
 
@@ -159,7 +160,8 @@ function Home() {
     if (selectedRole === 'general') {
       navigate('/generalusersignin');
     } else {
-      navigate('/signup');
+      // Pass the selected role to sign-up page for counsellor or psychiatrist
+      navigate('/signup', { state: { selectedRole } });
     }
   };
 
