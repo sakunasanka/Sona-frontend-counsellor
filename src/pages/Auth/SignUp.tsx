@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { AlertCircle, CheckCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Checkbox from '../../components/ui/Checkbox';
@@ -18,7 +18,15 @@ const languageOptions = [
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const [userType, setUserType] = useState<'counsellor' | 'psychiatrist'>('counsellor');
+  const location = useLocation();
+  
+  // Get the selected role from navigation state if available
+  const passedRole = location.state?.selectedRole;
+  const initialUserType = (passedRole === 'counsellor' || passedRole === 'psychiatrist') 
+    ? passedRole as 'counsellor' | 'psychiatrist'
+    : 'counsellor';
+  
+  const [userType, setUserType] = useState<'counsellor' | 'psychiatrist'>(initialUserType);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
