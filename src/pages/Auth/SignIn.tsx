@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -8,7 +8,15 @@ import Checkbox from '../../components/ui/Checkbox';
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const [userType, setUserType] = useState<'counsellor' | 'psychiatrist'>('counsellor');
+  const location = useLocation();
+  
+  // Get the selected role from navigation state if available
+  const passedRole = location.state?.selectedRole;
+  const initialUserType = (passedRole === 'counsellor' || passedRole === 'psychiatrist') 
+    ? passedRole as 'counsellor' | 'psychiatrist'
+    : 'counsellor';
+  
+  const [userType, setUserType] = useState<'counsellor' | 'psychiatrist'>(initialUserType);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -250,8 +258,8 @@ const SignIn = () => {
       <Card className="two-pane-desktop w-full max-w-5xl shadow-lg rounded-2xl overflow-hidden">
         {/* Left Pane - Form */}
         <div className="w-full md:w-1/2 p-8 md:p-12 bg-white flex flex-col justify-center">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back!</h2>
-          <p className="text-gray-600 mb-6">Access your portal</p>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2 ml-2">Welcome Back!</h2>
+          <p className="text-gray-600 mb-6 ml-2">Access your portal</p>
 
           {/* Role Toggle */}
           <div className="flex items-center justify-center mb-6">
@@ -364,7 +372,7 @@ const SignIn = () => {
             <img 
               src="/assets/images/Sona-logo.png" 
               alt="Sona Logo" 
-              className="h-8 w-auto mb-6 drop-shadow-lg animate-fade-in-up"
+              className="h-8 w-auto mb-6 ml-4 drop-shadow-lg animate-fade-in-up"
               style={{ animationDelay: '0.2s' }}
             />
             <h2 className="text-6xl pl-4 font-bold mb-3 drop-shadow-md min-h-[4.5rem] flex items-center">
