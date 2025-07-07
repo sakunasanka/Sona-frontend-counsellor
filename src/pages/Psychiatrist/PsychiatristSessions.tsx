@@ -293,7 +293,7 @@ const CounsellorSessions = () => {
     const visibleSessions = filteredSessions.slice(0, visibleCount);
 
     const handleViewDetails = (sessionId: string) => {
-        navigate(`/counsellor-session-details?id=${sessionId}`);
+        navigate(`/psychiatrist-session-details?id=${sessionId}`);
     };
 
     useEffect(() => {
