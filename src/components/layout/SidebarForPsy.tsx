@@ -23,7 +23,7 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
   const navigate = useNavigate();
   const menuItems = [
     { icon: Home, label: 'Home', href: '/psychiatrist-dashboard', id: 'home' },
-    { icon: Camera, label: 'Video Sessions', href: '#', id: 'video-sessions' },
+    { icon: Camera, label: 'Sessions', href: '/psychiatrist-sessions', id: 'sessions' },
     { icon: Users, label: 'Patients', href: '#', id: 'patients' },
     { icon: Pen, label: 'Prescriptions', href: '#', id: 'prescriptions' },
     { icon: DollarSign, label: 'Earnings', href: '#', id: 'earnings' },

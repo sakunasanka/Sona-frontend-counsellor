@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignUp from "./pages/Auth/SignUp";
 import SignIn from './pages/Auth/SignIn';
 import CounsellorDashboard from './pages/Counsellor/CounsellorDashboard';
-import PsychiatristDashboard from './pages/Psychiatrist/PsychiatristDashboard';
 import ExampleUse from './pages/ExampleUse';
 import CounsellorFeedbacks from './pages/Counsellor/CounsellorFeedbacks';
 import CounsellorSessions from './pages/Counsellor/CounsellorSessions';
@@ -17,7 +16,9 @@ import CounsellorCalendar from './pages/Counsellor/CounsellorCalendar';
 import CounsellorClients from './pages/Counsellor/CounsellorClients';
 import CounsellorEarnings from './pages/Counsellor/CounsellorEarnings';
 import ClientDetails from './pages/Counsellor/ClientDetails';
+import PsychiatristDashboard from './pages/Psychiatrist/PsychiatristDashboard';
 import PsychiatristChat from './pages/Psychiatrist/PsychiatristChats';
+import PsychiatristSessions from './pages/Psychiatrist/PsychiatristSessions';
 
 function App() {
 
@@ -43,6 +44,7 @@ function App() {
         <Route path="/counsellor/earnings" element={<CounsellorEarnings />} />
         <Route path="/counsellor-clients/:clientId" element={<ClientDetails />} />
         <Route path="/psychiatrist-chats" element={<PsychiatristChat />} />
+        <Route path="/psychiatrist-sessions" element={<PsychiatristSessions />} />
       </Routes>
     </Router>
   );
