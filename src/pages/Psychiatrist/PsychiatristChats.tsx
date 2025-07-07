@@ -8,7 +8,7 @@ import {
   MoreVertical,
   MessageCircle
 } from 'lucide-react';
-import { NavBar, Sidebar } from "../../components/layout";
+import { NavBar, SidebarForPsy } from "../../components/layout";
 
 interface Chat {
   id: number;
@@ -69,7 +69,7 @@ const ChatList: React.FC<{
             placeholder="Search conversations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondaryDarker/50 focus:border-secondaryDarker transition-all"
           />
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           {searchTerm && (
@@ -93,7 +93,7 @@ const ChatList: React.FC<{
             onClick={() => onChatSelect(chat)}
             className={`
               flex items-center p-4 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50
-              ${selectedChat?.id === chat.id ? 'bg-pink-50 border-pink-100' : ''}
+              ${selectedChat?.id === chat.id ? 'bg-secondaryDarker/20 border-secondaryDarker/30' : ''}
             `}
           >
             <div className="relative">
@@ -118,7 +118,7 @@ const ChatList: React.FC<{
             </div>
             
             {chat.unreadCount > 0 && (
-              <div className="ml-2 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              <div className="ml-2 bg-secondaryDarker text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {chat.unreadCount}
               </div>
             )}
@@ -138,18 +138,18 @@ const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
       <div className={`
         max-w-xs lg:max-w-md px-4 py-2 rounded-2xl
         ${isMe 
-          ? 'bg-pink-500 text-white rounded-br-md' 
+          ? 'bg-secondaryDarker text-white rounded-br-md' 
           : 'bg-gray-100 text-gray-900 rounded-bl-md'
         }
       `}>
         <p className="text-sm">{message.text}</p>
-        <div className={`flex items-center justify-end mt-1 ${isMe ? 'text-pink-100' : 'text-gray-500'}`}>
+        <div className={`flex items-center justify-end mt-1 ${isMe ? 'text-white/70' : 'text-gray-500'}`}>
           <span className="text-xs">{message.time}</span>
           {isMe && message.status && (
             <div className="ml-1">
               {message.status === 'sent' && <span className="text-xs">✓</span>}
               {message.status === 'delivered' && <span className="text-xs">✓✓</span>}
-              {message.status === 'read' && <span className="text-xs text-pink-200">✓✓</span>}
+              {message.status === 'read' && <span className="text-xs text-white/50">✓✓</span>}
             </div>
           )}
         </div>
@@ -257,7 +257,7 @@ const ChatArea: React.FC<{
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondaryDarker/50 focus:border-secondaryDarker transition-all"
             />
             {newMessage && (
               <button 
@@ -276,7 +276,7 @@ const ChatArea: React.FC<{
           <button
             onClick={handleSend}
             disabled={!newMessage.trim()}
-            className="p-2 bg-primary hover:bg-opacity-90 disabled:bg-gray-300 text-white rounded-lg transition-colors"
+            className="p-2 bg-secondaryDarker hover:bg-secondaryDarker/90 disabled:bg-gray-300 text-white rounded-lg transition-colors"
           >
             <Send size={20} />
           </button>
@@ -455,7 +455,7 @@ const PsychiatristChat: React.FC<CounsellorChatProps> = () => {
         
         {/* Minimized Sidebar - Always visible on desktop */}
         <div className="hidden lg:block">
-          <Sidebar 
+          <SidebarForPsy 
             isOpen={sidebarOpen} 
             onClose={closeSidebar} 
             isMinimized={sidebarMinimized}
@@ -465,7 +465,7 @@ const PsychiatristChat: React.FC<CounsellorChatProps> = () => {
 
         {/* Mobile Sidebar */}
         <div className="lg:hidden">
-          <Sidebar 
+          <SidebarForPsy
             isOpen={sidebarOpen} 
             onClose={closeSidebar}
           />
