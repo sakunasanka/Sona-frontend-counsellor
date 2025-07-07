@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, Camera, Users, Pen, DollarSign, MessageCircle, Contact, HelpingHand, LogOut } from 'lucide-react';
 
 interface SidebarProps {
@@ -19,13 +20,14 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
   activeItem = '',
   onExpandBeforeNavigation
 }) => {
+  const navigate = useNavigate();
   const menuItems = [
     { icon: Home, label: 'Home', href: '/psychiatrist-dashboard', id: 'home' },
     { icon: Camera, label: 'Video Sessions', href: '#', id: 'video-sessions' },
     { icon: Users, label: 'Patients', href: '#', id: 'patients' },
     { icon: Pen, label: 'Prescriptions', href: '#', id: 'prescriptions' },
     { icon: DollarSign, label: 'Earnings', href: '#', id: 'earnings' },
-    { icon: MessageCircle, label: 'Chats', href: '#', id: 'chats' },
+    { icon: MessageCircle, label: 'Chats', href: '/psychiatrist-chats', id: 'chats' },
     { icon: Contact, label: 'Contact Counsellors', href: '#', id: 'contact' },
     { icon: HelpingHand, label: 'Get Help', href: '#', id: 'help' },
   ];
@@ -64,7 +66,7 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
 
       {/* Sidebar */}
       <div className={`
-        h-full bg-[#FFE9EF] flex flex-col transition-all duration-500 ease-in-out
+        h-full bg-secondary flex flex-col transition-all duration-500 ease-in-out
         fixed top-0 left-0 z-50 lg:relative lg:z-auto
         ${isMinimized 
           ? 'w-16 lg:w-16' 
@@ -148,6 +150,7 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
               title={isMinimized ? 'Log out' : undefined}
               onClick={() => {
                 console.log('Logout clicked');
+                navigate('/signin');
                 onClose();
               }}
             >

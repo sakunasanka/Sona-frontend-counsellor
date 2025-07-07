@@ -17,6 +17,7 @@ import CounsellorCalendar from './pages/Counsellor/CounsellorCalendar';
 import CounsellorClients from './pages/Counsellor/CounsellorClients';
 import CounsellorEarnings from './pages/Counsellor/CounsellorEarnings';
 import ClientDetails from './pages/Counsellor/ClientDetails';
+import PsychiatristChat from './pages/Psychiatrist/PsychiatristChats';
 
 function App() {
 
@@ -41,6 +42,7 @@ function App() {
         <Route path="/counsellor-clients" element={<CounsellorClients />} />
         <Route path="/counsellor/earnings" element={<CounsellorEarnings />} />
         <Route path="/counsellor-clients/:clientId" element={<ClientDetails />} />
+        <Route path="/psychiatrist-chats" element={<PsychiatristChat />} />
       </Routes>
     </Router>
   );

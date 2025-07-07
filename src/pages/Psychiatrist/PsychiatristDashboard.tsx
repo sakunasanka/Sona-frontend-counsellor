@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavBar , SidebarForPsy } from "../../components/layout";  
 import Container from "../../components/ui/Container";
@@ -52,19 +52,36 @@ const PsychiatristDashboard = () => {
     },
   ];
 
-  const [sliderRef] = useKeenSlider<HTMLDivElement>({
-  slides: {
-    perView: 3,
-    spacing: 16,
-  },
-  loop: false,
-  slideChanged(s) {
-    setCurrentSlide(s.track.details.rel);
-  },
+  const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
+    slides: {
+      perView: 3,
+      spacing: 16,
+    },
+    loop: true,
+    defaultAnimation: {
+      duration: 1200, // Smoother transition duration (1.2 seconds)
+    },
+    slideChanged(s) {
+      setCurrentSlide(s.track.details.rel);
+    },
   });
 
   const [currentSlide, setCurrentSlide] = useState(0);
-  const totalSlides = Math.ceil(sessions.length / 3) + 1;
+  const totalSlides = sessions.length; // 5 dots total
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Auto-slide functionality
+  useEffect(() => {
+    if (isHovered) return; // Don't start interval when hovered
+    
+    const interval = setInterval(() => {
+      if (instanceRef.current) {
+        instanceRef.current.next();
+      }
+    }, 6000); // Slower - 6 seconds instead of 4
+
+    return () => clearInterval(interval);
+  }, [instanceRef, isHovered]);
 
   return (
     <div className="flex flex-col h-screen">
@@ -109,10 +126,15 @@ const PsychiatristDashboard = () => {
                 <section className="mb-10">
                   <h2 className="text-xl font-semibold text-gray-800 mb-0.5 ">Recent Prescriptions</h2>
                   <div className="py--4">
-                    <div ref={sliderRef} className="keen-slider">
+                    <div 
+                      ref={sliderRef} 
+                      className="keen-slider"
+                      onMouseEnter={() => setIsHovered(true)}
+                      onMouseLeave={() => setIsHovered(false)}
+                    >
                       {sessions.map((session, idx) => (
                         <div key={idx} className="keen-slider__slide pr-6 py-4 px-0.5">
-                          <Card className="bg-pink-200 p-6 h-full shadow-lg transition-all hover:scale-104 hover:translate-x-2 duration-300 origin-left">
+                          <Card className="bg-secondary p-6 h-full shadow-lg transition-all hover:scale-104 hover:translate-x-2 duration-300 origin-left">
                             <h3 className="text-xl font-bold mb-3">{session.name}</h3>
                             <p className="text-base mb-3">{session.date}</p>
                             <p className="text-sm text-gray-600 mb-4">
@@ -148,7 +170,7 @@ const PsychiatristDashboard = () => {
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold text-gray-800 mb-4 px-0.5">Browse Features</h2>
                   <section className="grid md:grid-cols-3 gap-6 px-0.5">
-                    <Card className="bg-primaryLight p-6">
+                    <Card className="bg-secondaryDarker p-6">
                       <h3 className="text-lg font-bold mb-2">Video Sessions</h3>
                       <p className="mb-4">View previous video sessions with your patients</p>
                       <Button variant="special" onClick={handleFeature} className="flex items-center">
@@ -156,7 +178,7 @@ const PsychiatristDashboard = () => {
                       </Button>
                     </Card>
 
-                    <Card className="bg-primaryLight p-6">
+                    <Card className="bg-secondaryDarker p-6">
                       <h3 className="text-lg font-bold mb-2">Earnings</h3>
                       <p className="mb-4">Check your earnings on your humane efforts</p>
                       <Button variant="special" onClick={handleFeature} className="flex items-center">
@@ -164,7 +186,7 @@ const PsychiatristDashboard = () => {
                       </Button>
                     </Card>
 
-                    <Card className="bg-primaryLight p-6">
+                    <Card className="bg-secondaryDarker p-6">
                       <h3 className="text-lg font-bold mb-2">View Issued Prescriptions</h3>
                       <p className="mb-4">Monitor all the prescriptions issued under your supervision</p>
                       <Button variant="special" onClick={handleFeature} className="flex items-center">
