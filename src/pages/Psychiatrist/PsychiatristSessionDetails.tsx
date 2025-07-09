@@ -269,7 +269,7 @@ const PsychiatristSessionDetails: React.FC = () => {
                                         )}
                                     </div>
                                     <button 
-                                        onClick={() => navigate('/counsellor-feedbacks')}
+                                        onClick={() => navigate('/psychiatrist-feedbacks')}
                                         className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-secondaryDarker text-white rounded-lg hover:bg-secondaryDusk/90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md w-full sm:w-auto"
                                     >
                                         <Star className="w-4 h-4" />

@@ -20,6 +20,7 @@ import PsychiatristDashboard from './pages/Psychiatrist/PsychiatristDashboard';
 import PsychiatristChat from './pages/Psychiatrist/PsychiatristChats';
 import PsychiatristSessions from './pages/Psychiatrist/PsychiatristSessions';
 import PsychiatristSessionDetails from './pages/Psychiatrist/PsychiatristSessionDetails';
+import PsychiatristFeedbacks from './pages/Psychiatrist/PsychiatristFeedbacks';
 
 function App() {
 
@@ -47,6 +48,7 @@ function App() {
         <Route path="/psychiatrist-chats" element={<PsychiatristChat />} />
         <Route path="/psychiatrist-sessions" element={<PsychiatristSessions />} />
         <Route path="/psychiatrist-session-details" element={<PsychiatristSessionDetails />} />
+        <Route path="/psychiatrist-feedbacks" element={<PsychiatristFeedbacks />} />
       </Routes>
     </Router>
   );
