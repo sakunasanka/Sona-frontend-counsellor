@@ -132,7 +132,7 @@ const MarkUnavailableModal: React.FC<MarkUnavailableModalProps> = ({
       >
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-gray-900">Mark Unavailable</h3>
+            <h3 className="text-xl font-semibold text-gray-900">Mark as Unavailable</h3>
             <button 
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -239,7 +239,7 @@ const MarkUnavailableModal: React.FC<MarkUnavailableModalProps> = ({
               onClick={handleSubmit}
               className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-medium transition-all"
             >
-              Mark Unavailable
+              Mark as Unavailable
             </button>
           </div>
         </div>
