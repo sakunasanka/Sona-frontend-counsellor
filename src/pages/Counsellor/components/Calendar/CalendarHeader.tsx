@@ -1,31 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CalendarX, Settings } from 'lucide-react';
+import UnavailabilitySettingsModal from './modals/UnavailabilitySettingsModal';
 
 interface CalendarHeaderProps {
   onMarkUnavailable: () => void;
+  onSaveUnavailabilityRules: (rules: any[]) => void;
+  existingRules?: any[];
 }
 
 const CalendarHeader: React.FC<CalendarHeaderProps> = ({
-  onMarkUnavailable
+  onMarkUnavailable,
+  onSaveUnavailabilityRules,
+  existingRules = []
 }) => {
+  const [showSettings, setShowSettings] = useState(false);
+
   return (
-    <div className="flex items-center justify-between mb-6 lg:mb-8">
-      <div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Calendar</h1>
-        <p className="text-sm text-gray-600">Manage your sessions and availability</p>
-      </div>
+    <div className="flex items-center justify-between mb-6">
+      <h2 className="text-2xl font-semibold text-gray-900">Calendar</h2>
       <div className="flex items-center gap-3">
-        <button 
+        <button
           onClick={onMarkUnavailable}
-          className="bg-primary hover:bg-primaryLight text-white px-3 lg:px-4 py-2 rounded-lg font-medium transition-all shadow-sm flex items-center gap-2"
+          className="bg-primary from-pink-500 to-purple-500 hover:bg-primaryLight text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-medium transition-all shadow-sm flex items-center gap-2 flex-shrink-0"
         >
-          <CalendarX className="w-4 h-4" />
-          <span className="hidden sm:inline text-sm">Mark Unavailable</span>
+          <CalendarX className="w-5 h-5" />
+          Mark as Unavailable
         </button>
-        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <Settings className="w-4 h-4 text-gray-600" />
+        <button
+          onClick={() => setShowSettings(true)}
+          className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          title="Unavailability Settings"
+        >
+          <Settings className="w-5 h-5" />
         </button>
       </div>
+
+      <UnavailabilitySettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        onSave={onSaveUnavailabilityRules}
+        existingRules={existingRules}
+      />
     </div>
   );
 };

@@ -13,7 +13,8 @@ import {
   TimeSlot,
   Session,
   UnavailableDate,
-  HistoricalDate
+  HistoricalDate,
+  UnavailabilityRule
 } from './components/Calendar';
 
 const CounsellorCalendar: React.FC = () => {
@@ -28,6 +29,7 @@ const CounsellorCalendar: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unavailabilityType, setUnavailabilityType] = useState('full-day');
   const [showPendingRequests, setShowPendingRequests] = useState(false);
+  const [unavailabilityRules, setUnavailabilityRules] = useState<UnavailabilityRule[]>([]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -546,6 +548,16 @@ const CounsellorCalendar: React.FC = () => {
     }
   };
 
+  const handleSaveUnavailabilityRules = (rules: UnavailabilityRule[]) => {
+    setUnavailabilityRules(rules);
+    
+    // Here you would typically:
+    // 1. Save rules to backend
+    // 2. Update calendar UI to reflect new rules
+    // 3. Show success message
+    console.log('Saving unavailability rules:', rules);
+  };
+
   const days = getDaysInMonth(currentDate);
 
   return (
@@ -568,7 +580,11 @@ const CounsellorCalendar: React.FC = () => {
         {/* Main Content */}
         <div className="flex-1 overflow-auto p-4 lg:p-6">
           {/* Header */}
-          <CalendarHeader onMarkUnavailable={() => setShowUnavailable(true)} />
+          <CalendarHeader 
+            onMarkUnavailable={() => setShowUnavailable(true)} 
+            onSaveUnavailabilityRules={handleSaveUnavailabilityRules}
+            existingRules={unavailabilityRules}
+          />
 
           {/* Status Legend */}
           <StatusLegend />

@@ -13,3 +13,4 @@ export * from './modals';
 
 // Export types
 export * from './types';
+export type { UnavailabilityRule } from './modals/UnavailabilitySettingsModal';
