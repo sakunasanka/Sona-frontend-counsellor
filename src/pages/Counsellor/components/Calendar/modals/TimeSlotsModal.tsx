@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { X, Calendar, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { TimeSlot, Session } from '../types';
 
@@ -17,31 +17,9 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
   isTimeSlotUnavailable,
   onClose
 }) => {
-  const modalContentRef = useRef<HTMLDivElement>(null);
-  const pendingSlotRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-
   // Get sessions for the selected date
   const dateString = selectedDate.toISOString().split('T')[0];
   const daysSessions = sessions.filter(session => session.date === dateString);
-  const pendingSessions = daysSessions.filter(session => session.status === 'pending');
-
-  // Scroll to first pending session when modal opens
-  useEffect(() => {
-    if (pendingSessions.length > 0) {
-      const firstPendingTime = pendingSessions.sort((a, b) => a.time.localeCompare(b.time))[0].time;
-      const pendingElement = pendingSlotRefs.current[firstPendingTime];
-      
-      if (pendingElement && modalContentRef.current) {
-        // Delay scroll to ensure modal is fully rendered
-        setTimeout(() => {
-          pendingElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
-        }, 100);
-      }
-    }
-  }, [pendingSessions]);
 
   // Helper function to get session for a time slot
   const getSessionForTimeSlot = (time: string) => {
@@ -55,7 +33,6 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
       <div 
         className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-screen overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
-        ref={modalContentRef}
       >
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
@@ -86,11 +63,6 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
               return (
                 <div 
                   key={slot.id}
-                  ref={(el) => {
-                    if (isPendingSession) {
-                      pendingSlotRefs.current[slot.time] = el;
-                    }
-                  }}
                   className={`p-4 rounded-lg border-2 transition-all ${
                     isPendingSession
                       ? 'border-orange-300 bg-orange-50 shadow-md'
