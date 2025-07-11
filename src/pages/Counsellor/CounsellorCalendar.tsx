@@ -13,7 +13,8 @@ import {
   TimeSlot,
   Session,
   UnavailableDate,
-  HistoricalDate
+  HistoricalDate,
+  UnavailabilityRule
 } from './components/Calendar';
 
 const CounsellorCalendar: React.FC = () => {
@@ -28,6 +29,7 @@ const CounsellorCalendar: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unavailabilityType, setUnavailabilityType] = useState('full-day');
   const [showPendingRequests, setShowPendingRequests] = useState(false);
+  const [unavailabilityRules, setUnavailabilityRules] = useState<UnavailabilityRule[]>([]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -386,6 +388,12 @@ const CounsellorCalendar: React.FC = () => {
     const startingDay = firstDay.getDay();
     const today = new Date();
 
+    // Helper to compare local dates
+    const isSameDay = (d1: Date, d2: Date) =>
+      d1.getDate() === d2.getDate() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getFullYear() === d2.getFullYear();
+
     const days = [];
 
     // Add empty cells for days before the first day of the month
@@ -397,9 +405,13 @@ const CounsellorCalendar: React.FC = () => {
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDay = new Date(year, month, day);
       const dateString = currentDay.toISOString().split('T')[0];
-      const todayString = today.toISOString().split('T')[0];
-      const isPastDay = dateString < todayString;
-      
+      // const todayString = today.toISOString().split('T')[0];
+      // const isPastDay = dateString < todayString;
+      // Use local comparison for isPastDay:
+      let isPastDay = false;
+      if (currentDay < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+        isPastDay = true;
+      }
       // Get data based on whether it's a past day or not
       const daysSessions = isPastDay 
         ? historicalSessions.filter(session => session.date === dateString)
@@ -420,18 +432,16 @@ const CounsellorCalendar: React.FC = () => {
           status: 'unavailable'
         });
       }
-      
       days.push({
         date: currentDay,
         sessions: daysSessions,
         unavailableSlots: unavailableSlots,
-        isToday: dateString === todayString,
+        isToday: isSameDay(currentDay, today),
         isPastDay: isPastDay,
         isUnavailable: isFullDayUnavailable,
         unavailableDetails: unavailableEntry
       });
     }
-
     return days;
   };
 
@@ -538,6 +548,16 @@ const CounsellorCalendar: React.FC = () => {
     }
   };
 
+  const handleSaveUnavailabilityRules = (rules: UnavailabilityRule[]) => {
+    setUnavailabilityRules(rules);
+    
+    // Here you would typically:
+    // 1. Save rules to backend
+    // 2. Update calendar UI to reflect new rules
+    // 3. Show success message
+    console.log('Saving unavailability rules:', rules);
+  };
+
   const days = getDaysInMonth(currentDate);
 
   return (
@@ -560,7 +580,11 @@ const CounsellorCalendar: React.FC = () => {
         {/* Main Content */}
         <div className="flex-1 overflow-auto p-4 lg:p-6">
           {/* Header */}
-          <CalendarHeader onMarkUnavailable={() => setShowUnavailable(true)} />
+          <CalendarHeader 
+            onMarkUnavailable={() => setShowUnavailable(true)} 
+            onSaveUnavailabilityRules={handleSaveUnavailabilityRules}
+            existingRules={unavailabilityRules}
+          />
 
           {/* Status Legend */}
           <StatusLegend />
