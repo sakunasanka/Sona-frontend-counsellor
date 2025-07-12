@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { X, CalendarX } from 'lucide-react';
+import { X, CalendarX, Calendar } from 'lucide-react';
 import { UnavailableDate } from '../types';
 
 interface UnavailableDayDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   unavailableDate: UnavailableDate | null;
-  onMarkAsAvailable: (recurFor4Weeks: boolean) => void;
+  onMarkAsAvailable: (recurFor4Weeks: boolean, timeRange?: {start: string, end: string} | null) => void;
 }
 
 export const UnavailableDayDetailsModal: React.FC<UnavailableDayDetailsModalProps> = ({
@@ -16,12 +16,19 @@ export const UnavailableDayDetailsModal: React.FC<UnavailableDayDetailsModalProp
   onMarkAsAvailable,
 }) => {
   const [recurFor4Weeks, setRecurFor4Weeks] = useState(false);
+  const [availabilityType, setAvailabilityType] = useState<'full-day' | 'specific-hours'>('full-day');
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('17:00');
   
   if (!isOpen || !unavailableDate) return null;
 
   const handleMarkAsAvailable = () => {
-    // Pass the recurFor4Weeks value to the parent component
-    onMarkAsAvailable(recurFor4Weeks);
+    // Pass the recurFor4Weeks value and time range to the parent component
+    if (availabilityType === 'specific-hours') {
+      onMarkAsAvailable(recurFor4Weeks, { start: startTime, end: endTime });
+    } else {
+      onMarkAsAvailable(recurFor4Weeks, null);
+    }
   };
 
   return (
@@ -79,26 +86,104 @@ export const UnavailableDayDetailsModal: React.FC<UnavailableDayDetailsModalProp
             </div>
           </div>
           
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="recurFor4Weeks"
-              checked={recurFor4Weeks}
-              onChange={(e) => setRecurFor4Weeks(e.target.checked)}
-              className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-            />
-            <label htmlFor="recurFor4Weeks" className="ml-2 text-sm text-gray-700">
-              Make available recurrently for 4 weeks
-            </label>
-          </div>
-          
-          <div className="flex pt-4">
-            <button 
-              onClick={handleMarkAsAvailable}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition-all"
-            >
-              Mark as Available
-            </button>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-700 mb-1">Availability Type:</div>
+              <div className="flex space-x-4">
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    id="full-day"
+                    name="availabilityType"
+                    value="full-day"
+                    checked={availabilityType === 'full-day'}
+                    onChange={() => setAvailabilityType('full-day')}
+                    className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                  />
+                  <label htmlFor="full-day" className="ml-2 text-sm text-gray-700">
+                    Full Day
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    id="specific-hours"
+                    name="availabilityType"
+                    value="specific-hours"
+                    checked={availabilityType === 'specific-hours'}
+                    onChange={() => setAvailabilityType('specific-hours')}
+                    className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                  />
+                  <label htmlFor="specific-hours" className="ml-2 text-sm text-gray-700">
+                    Specific Hours
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            {availabilityType === 'specific-hours' && (
+              <div className="space-y-2 p-3 bg-blue-50 rounded-lg">
+                <div className="text-sm font-medium text-blue-700 mb-2">Select Time Range:</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="startTime" className="block text-xs text-blue-600 mb-1">
+                      Start Time
+                    </label>
+                    <select
+                      id="startTime"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="w-full p-2 border border-blue-300 rounded-md text-sm bg-white"
+                    >
+                      {Array.from({ length: 17 }, (_, i) => i + 8).map((hour) => (
+                        <option key={`start-${hour}`} value={`${hour.toString().padStart(2, '0')}:00`}>
+                          {`${hour.toString().padStart(2, '0')}:00`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="endTime" className="block text-xs text-blue-600 mb-1">
+                      End Time
+                    </label>
+                    <select
+                      id="endTime"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="w-full p-2 border border-blue-300 rounded-md text-sm bg-white"
+                    >
+                      {Array.from({ length: 17 }, (_, i) => i + 8).map((hour) => (
+                        <option key={`end-${hour}`} value={`${hour.toString().padStart(2, '0')}:00`}>
+                          {`${hour.toString().padStart(2, '0')}:00`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="recurFor4Weeks"
+                checked={recurFor4Weeks}
+                onChange={(e) => setRecurFor4Weeks(e.target.checked)}
+                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+              />
+              <label htmlFor="recurFor4Weeks" className="ml-2 text-sm text-gray-700">
+                Make available for this week and 3 more weeks
+              </label>
+            </div>
+            
+            <div className="flex pt-2">
+              <button 
+                onClick={handleMarkAsAvailable}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition-all"
+              >
+                Mark as Available
+              </button>
+            </div>
           </div>
         </div>
       </div>

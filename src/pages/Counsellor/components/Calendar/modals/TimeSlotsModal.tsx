@@ -8,7 +8,7 @@ interface TimeSlotsModalProps {
   sessions: Session[];
   isTimeSlotUnavailable: (date: Date, time: string) => boolean;
   onClose: () => void;
-  onMarkAsUnavailable?: () => void;
+  onMarkAsUnavailable?: (recurFor4Weeks?: boolean, timeRange?: {start: string, end: string} | null) => void;
 }
 
 const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
@@ -19,6 +19,10 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
   onClose,
   onMarkAsUnavailable
 }) => {
+  const [recurFor4Weeks, setRecurFor4Weeks] = useState(false);
+  const [unavailabilityType, setUnavailabilityType] = useState<'full-day' | 'specific-hours'>('full-day');
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('17:00');
   const currentTimeRef = useRef<HTMLDivElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
 
@@ -33,14 +37,21 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
 
   // Helper function to check if a time slot is before current time
   const isBeforeCurrentTime = (time: string) => {
+    // Create a new Date object for the current time
     const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const selectedDateStr = selectedDate.toISOString().split('T')[0];
+    
+    // Create a new Date object for today at 00:00:00
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Create a new Date object for the selected date at 00:00:00
+    const selectedDay = new Date(selectedDate);
+    selectedDay.setHours(0, 0, 0, 0);
     
     // If selected date is before today, all slots are in the past
-    if (selectedDateStr < today) return true;
+    if (selectedDay < today) return true;
     // If selected date is after today, no slots are in the past
-    if (selectedDateStr > today) return false;
+    if (selectedDay > today) return false;
     
     // For today, compare with current time
     const [hours, minutes] = time.split(':').map(Number);
@@ -53,11 +64,17 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
   // Helper function to check if a time slot is the current hour
   const isCurrentTimeSlot = (time: string) => {
     const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const selectedDateStr = selectedDate.toISOString().split('T')[0];
+    
+    // Create a new Date object for today at 00:00:00
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Create a new Date object for the selected date at 00:00:00
+    const selectedDay = new Date(selectedDate);
+    selectedDay.setHours(0, 0, 0, 0);
     
     // Only check for today
-    if (selectedDateStr !== today) return false;
+    if (selectedDay.getTime() !== today.getTime()) return false;
     
     const [hours] = time.split(':').map(Number);
     return hours === now.getHours();
@@ -66,11 +83,16 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
   // Scroll to current time when modal opens
   useEffect(() => {
     if (currentTimeRef.current && modalContentRef.current) {
-      const today = new Date().toISOString().split('T')[0];
-      const selectedDateStr = selectedDate.toISOString().split('T')[0];
+      // Create a new Date object for today at 00:00:00
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Create a new Date object for the selected date at 00:00:00
+      const selectedDay = new Date(selectedDate);
+      selectedDay.setHours(0, 0, 0, 0);
       
       // Only scroll if viewing today's schedule
-      if (selectedDateStr === today) {
+      if (selectedDay.getTime() === today.getTime()) {
         const modalContent = modalContentRef.current;
         const currentTimeElement = currentTimeRef.current;
         const modalHeight = modalContent.clientHeight;
@@ -134,20 +156,117 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
                     Available for Sessions
                   </h5>
                   <p className="text-sm text-blue-700">
-                    You can view available time slots below or mark this day as unavailable.
+                    You can mark this day as unavailable.
                   </p>
                 </div>
               </div>
             </div>
 
             {onMarkAsUnavailable && (
-              <div className="flex pt-2">
-                <button 
-                  onClick={onMarkAsUnavailable}
-                  className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-medium transition-all"
-                >
-                  Mark as Unavailable
-                </button>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-gray-700 mb-1">Unavailability Type:</div>
+                  <div className="flex space-x-4">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        id="full-day"
+                        name="unavailabilityType"
+                        value="full-day"
+                        checked={unavailabilityType === 'full-day'}
+                        onChange={() => setUnavailabilityType('full-day')}
+                        className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                      />
+                      <label htmlFor="full-day" className="ml-2 text-sm text-gray-700">
+                        Full Day
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        id="specific-hours"
+                        name="unavailabilityType"
+                        value="specific-hours"
+                        checked={unavailabilityType === 'specific-hours'}
+                        onChange={() => setUnavailabilityType('specific-hours')}
+                        className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                      />
+                      <label htmlFor="specific-hours" className="ml-2 text-sm text-gray-700">
+                        Specific Hours
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                
+                {unavailabilityType === 'specific-hours' && (
+                  <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
+                    <div className="text-sm font-medium text-gray-700 mb-2">Select Time Range:</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="startTime" className="block text-xs text-gray-600 mb-1">
+                          Start Time
+                        </label>
+                        <select
+                          id="startTime"
+                          value={startTime}
+                          onChange={(e) => setStartTime(e.target.value)}
+                          className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                        >
+                          {Array.from({ length: 17 }, (_, i) => i + 8).map((hour) => (
+                            <option key={`start-${hour}`} value={`${hour.toString().padStart(2, '0')}:00`}>
+                              {`${hour.toString().padStart(2, '0')}:00`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor="endTime" className="block text-xs text-gray-600 mb-1">
+                          End Time
+                        </label>
+                        <select
+                          id="endTime"
+                          value={endTime}
+                          onChange={(e) => setEndTime(e.target.value)}
+                          className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                        >
+                          {Array.from({ length: 17 }, (_, i) => i + 8).map((hour) => (
+                            <option key={`end-${hour}`} value={`${hour.toString().padStart(2, '0')}:00`}>
+                              {`${hour.toString().padStart(2, '0')}:00`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="recurFor4Weeks"
+                    checked={recurFor4Weeks}
+                    onChange={(e) => setRecurFor4Weeks(e.target.checked)}
+                    className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+                  <label htmlFor="recurFor4Weeks" className="ml-2 text-sm text-gray-700">
+                    Make unavailable for this week and 3 more weeks
+                  </label>
+                </div>
+                
+                <div className="flex">
+                  <button 
+                    onClick={() => {
+                      if (unavailabilityType === 'specific-hours') {
+                        onMarkAsUnavailable(recurFor4Weeks, { start: startTime, end: endTime });
+                      } else {
+                        onMarkAsUnavailable(recurFor4Weeks, null);
+                      }
+                    }}
+                    className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-medium transition-all"
+                  >
+                    Mark as Unavailable
+                  </button>
+                </div>
               </div>
             )}
           </div>
