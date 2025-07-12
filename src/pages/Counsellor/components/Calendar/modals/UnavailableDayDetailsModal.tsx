@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, CalendarX } from 'lucide-react';
 import { UnavailableDate } from '../types';
 
@@ -6,7 +6,7 @@ interface UnavailableDayDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   unavailableDate: UnavailableDate | null;
-  onMarkAsAvailable: () => void;
+  onMarkAsAvailable: (recurFor4Weeks: boolean) => void;
 }
 
 export const UnavailableDayDetailsModal: React.FC<UnavailableDayDetailsModalProps> = ({
@@ -15,7 +15,14 @@ export const UnavailableDayDetailsModal: React.FC<UnavailableDayDetailsModalProp
   unavailableDate,
   onMarkAsAvailable,
 }) => {
+  const [recurFor4Weeks, setRecurFor4Weeks] = useState(false);
+  
   if (!isOpen || !unavailableDate) return null;
+
+  const handleMarkAsAvailable = () => {
+    // Pass the recurFor4Weeks value to the parent component
+    onMarkAsAvailable(recurFor4Weeks);
+  };
 
   return (
     <div 
@@ -29,7 +36,7 @@ export const UnavailableDayDetailsModal: React.FC<UnavailableDayDetailsModalProp
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold text-gray-900">
-              {unavailableDate.isFullDay ? 'Unavailable Day' : 'Unavailable Time Slots'}
+              Unavailable Day
             </h3>
             <button 
               onClick={onClose}
@@ -52,10 +59,7 @@ export const UnavailableDayDetailsModal: React.FC<UnavailableDayDetailsModalProp
               })}
             </h4>
             <p className="text-gray-600">
-              {unavailableDate.isFullDay 
-                ? 'This day is marked as unavailable' 
-                : 'Some time slots are marked as unavailable'
-              }
+              This day is currently unavailable
             </p>
           </div>
 
@@ -66,26 +70,32 @@ export const UnavailableDayDetailsModal: React.FC<UnavailableDayDetailsModalProp
               </div>
               <div className="flex-1">
                 <h5 className="font-medium text-red-900 mb-1">
-                  {unavailableDate.isFullDay ? 'Full Day Unavailable' : 'Partial Day Unavailable'}
+                  Unavailable for Sessions
                 </h5>
-                {unavailableDate.reason && (
-                  <p className="text-sm text-red-700 mb-2">
-                    <strong>Reason:</strong> {unavailableDate.reason}
-                  </p>
-                )}
-                {!unavailableDate.isFullDay && unavailableDate.timeRange && (
-                  <p className="text-sm text-red-700">
-                    <strong>Time:</strong> {unavailableDate.timeRange.start} - {unavailableDate.timeRange.end}
-                  </p>
-                )}
+                <p className="text-sm text-red-700">
+                  You can make this day available for scheduling sessions.
+                </p>
               </div>
             </div>
           </div>
           
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="recurFor4Weeks"
+              checked={recurFor4Weeks}
+              onChange={(e) => setRecurFor4Weeks(e.target.checked)}
+              className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+            />
+            <label htmlFor="recurFor4Weeks" className="ml-2 text-sm text-gray-700">
+              Make available recurrently for 4 weeks
+            </label>
+          </div>
+          
           <div className="flex pt-4">
             <button 
-              onClick={onMarkAsAvailable}
-              className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition-all"
+              onClick={handleMarkAsAvailable}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition-all"
             >
               Mark as Available
             </button>

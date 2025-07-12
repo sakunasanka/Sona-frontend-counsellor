@@ -22,6 +22,7 @@ const MarkUnavailableModal: React.FC<MarkUnavailableModalProps> = ({
   const [endTime, setEndTime] = useState('');
   const [reason, setReason] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [recurFor4Weeks, setRecurFor4Weeks] = useState(false);
 
   const checkConflicts = () => {
     if (!selectedDate) {
@@ -34,29 +35,11 @@ const MarkUnavailableModal: React.FC<MarkUnavailableModalProps> = ({
     const todayString = today.toISOString().split('T')[0];
     
     if (selectedDate < todayString) {
-      setErrorMessage('Cannot mark past dates as unavailable. Please select today or a future date.');
+      setErrorMessage('Cannot mark past dates as available. Please select today or a future date.');
       return false;
     }
 
-    // Check if the date already has full day unavailability
-    const existingUnavailable = unavailableDates.find(
-      unavailable => unavailable.date === selectedDate && unavailable.isFullDay
-    );
-
-    if (existingUnavailable) {
-      setErrorMessage(`This date is already marked unavailable. Reason: ${existingUnavailable.reason || 'No reason provided'}`);
-      return false;
-    }
-
-    if (unavailabilityType === 'full-day') {
-      // Check if there are any sessions on this date
-      const existingSessions = sessions.filter(session => session.date === selectedDate);
-      if (existingSessions.length > 0) {
-        const sessionNames = existingSessions.map(s => s.clientName).join(', ');
-        setErrorMessage(`Cannot mark full day unavailable. There are existing sessions with: ${sessionNames}`);
-        return false;
-      }
-    } else {
+    if (unavailabilityType === 'partial') {
       // Partial day - check time conflicts
       if (!startTime || !endTime) {
         setErrorMessage('Please select both start and end times');
@@ -65,40 +48,6 @@ const MarkUnavailableModal: React.FC<MarkUnavailableModalProps> = ({
 
       if (startTime >= endTime) {
         setErrorMessage('End time must be after start time');
-        return false;
-      }
-
-      // Check for existing partial unavailability conflicts
-      const partialUnavailable = unavailableDates.find(
-        unavailable => unavailable.date === selectedDate && 
-        !unavailable.isFullDay && 
-        unavailable.timeRange
-      );
-
-      if (partialUnavailable) {
-        const existingStart = partialUnavailable.timeRange!.start;
-        const existingEnd = partialUnavailable.timeRange!.end;
-        
-        // Check for time overlap
-        if ((startTime >= existingStart && startTime < existingEnd) ||
-            (endTime > existingStart && endTime <= existingEnd) ||
-            (startTime <= existingStart && endTime >= existingEnd)) {
-          setErrorMessage(`Time slot conflicts with existing unavailability (${existingStart}-${existingEnd}). Reason: ${partialUnavailable.reason || 'No reason provided'}`);
-          return false;
-        }
-      }
-
-      // Check for session conflicts in the time range
-      const conflictingSessions = sessions.filter(session => {
-        if (session.date !== selectedDate) return false;
-        
-        const sessionTime = session.time;
-        return sessionTime >= startTime && sessionTime < endTime;
-      });
-
-      if (conflictingSessions.length > 0) {
-        const conflictNames = conflictingSessions.map(s => `${s.clientName} at ${s.time}`).join(', ');
-        setErrorMessage(`Cannot mark unavailable. There are existing sessions: ${conflictNames}`);
         return false;
       }
     }
@@ -110,13 +59,14 @@ const MarkUnavailableModal: React.FC<MarkUnavailableModalProps> = ({
     setErrorMessage('');
     
     if (checkConflicts()) {
-      // Process the unavailability marking here
-      console.log('Marking unavailable:', {
+      // Process the availability marking here
+      console.log('Marking available:', {
         date: selectedDate,
         type: unavailabilityType,
         startTime: unavailabilityType === 'partial' ? startTime : undefined,
         endTime: unavailabilityType === 'partial' ? endTime : undefined,
-        reason
+        reason,
+        recurFor4Weeks
       });
       onClose();
     }
@@ -132,7 +82,7 @@ const MarkUnavailableModal: React.FC<MarkUnavailableModalProps> = ({
       >
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
-                          <h3 className="text-xl font-semibold text-gray-900">Mark as Available</h3>
+            <h3 className="text-xl font-semibold text-gray-900">Mark as Available</h3>
             <button 
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -175,8 +125,8 @@ const MarkUnavailableModal: React.FC<MarkUnavailableModalProps> = ({
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             >
-                              <option value="full-day">Full Day Available</option>
-                <option value="partial">Partial Day Available</option>
+              <option value="full-day">Full Day Available</option>
+              <option value="partial">Partial Day Available</option>
             </select>
           </div>
           
@@ -230,16 +180,29 @@ const MarkUnavailableModal: React.FC<MarkUnavailableModalProps> = ({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none transition-all"
-                              placeholder="Enter reason for availability..."
+              placeholder="Enter reason for availability..."
             />
+          </div>
+
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="recurFor4Weeks"
+              checked={recurFor4Weeks}
+              onChange={(e) => setRecurFor4Weeks(e.target.checked)}
+              className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+            />
+            <label htmlFor="recurFor4Weeks" className="ml-2 text-sm text-gray-700">
+              Make available recurrently for 4 weeks
+            </label>
           </div>
           
           <div className="pt-4">
             <button 
               onClick={handleSubmit}
-              className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-medium transition-all"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition-all"
             >
-                              Mark as Available
+              Mark as Available
             </button>
           </div>
         </div>

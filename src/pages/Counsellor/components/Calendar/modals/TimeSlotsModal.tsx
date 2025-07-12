@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { X, Calendar, Clock, CheckCircle, XCircle, History } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { X, Calendar, Clock, CheckCircle, XCircle, History, CalendarX } from 'lucide-react';
 import { TimeSlot, Session } from '../types';
 
 interface TimeSlotsModalProps {
@@ -8,6 +8,7 @@ interface TimeSlotsModalProps {
   sessions: Session[];
   isTimeSlotUnavailable: (date: Date, time: string) => boolean;
   onClose: () => void;
+  onMarkAsUnavailable?: () => void;
 }
 
 const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
@@ -15,7 +16,8 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
   timeSlots,
   sessions,
   isTimeSlotUnavailable,
-  onClose
+  onClose,
+  onMarkAsUnavailable
 }) => {
   const currentTimeRef = useRef<HTMLDivElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
@@ -111,11 +113,51 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
         </div>
         
         <div className="p-6 overflow-y-auto max-h-[calc(100vh-200px)]" ref={modalContentRef}>
+          <div className="space-y-4 mb-6">
+            <div className="text-center">
+              <Calendar className="w-12 h-12 text-blue-500 mx-auto mb-3" />
+              <h4 className="text-lg font-medium text-gray-900 mb-2">
+                Available Day
+              </h4>
+              <p className="text-gray-600">
+                This day is available for scheduling sessions.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <Calendar className="w-5 h-5 text-blue-600 mt-0.5" />
+                </div>
+                <div className="flex-1">
+                  <h5 className="font-medium text-blue-900 mb-1">
+                    Available for Sessions
+                  </h5>
+                  <p className="text-sm text-blue-700">
+                    You can view available time slots below or mark this day as unavailable.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {onMarkAsUnavailable && (
+              <div className="flex pt-2">
+                <button 
+                  onClick={onMarkAsUnavailable}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-medium transition-all"
+                >
+                  Mark as Unavailable
+                </button>
+              </div>
+            )}
+          </div>
+
+          <h5 className="font-medium text-gray-900 mb-4 border-t pt-4">Time Slots</h5>
+          
           <div className="space-y-4">
             {timeSlots.map((slot, index) => {
               const isSlotUnavailable = isTimeSlotUnavailable(selectedDate, slot.time);
               const sessionForSlot = getSessionForTimeSlot(slot.time);
-              const isPendingSession = sessionForSlot?.status === 'pending';
               const isPastTime = isBeforeCurrentTime(slot.time);
               const isCurrentTime = isCurrentTimeSlot(slot.time);
               
@@ -123,17 +165,15 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
                 <div key={slot.id} className="relative" ref={isCurrentTime ? currentTimeRef : null}>
                   <div 
                     className={`p-4 rounded-lg border-2 transition-all ${
-                      isPendingSession
-                        ? 'border-orange-300 bg-orange-50 shadow-md'
-                        : isSlotUnavailable
-                          ? 'border-red-200 bg-red-50 opacity-75'
-                          : slot.isBooked 
-                            ? isPastTime
-                              ? 'border-gray-200 bg-gray-50'
-                              : 'border-green-200 bg-green-50'
-                            : slot.isAvailable && !isPastTime
-                              ? 'border-blue-200 bg-blue-50 hover:border-blue-300 cursor-pointer' 
-                              : 'border-gray-200 bg-gray-50'
+                      isSlotUnavailable
+                        ? 'border-red-200 bg-red-50 opacity-75'
+                        : slot.isBooked 
+                          ? isPastTime
+                            ? 'border-gray-200 bg-gray-50'
+                            : 'border-green-200 bg-green-50'
+                          : slot.isAvailable && !isPastTime
+                            ? 'border-blue-200 bg-blue-50 hover:border-blue-300 cursor-pointer' 
+                            : 'border-gray-200 bg-gray-50'
                     } ${isPastTime ? 'opacity-75' : ''}`}
                   >
                     <div className="flex items-center justify-between">
@@ -171,26 +211,19 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
                             </span>
                           </div>
                         )}
-                        {isPendingSession && (
-                          <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded font-medium">
-                            Pending Review
-                          </span>
-                        )}
                         {isSlotUnavailable && (
                           <span className="text-xs text-red-600 bg-red-100 px-2 py-1 rounded">
                             Unavailable
                           </span>
                         )}
-                        {isPastTime && !isSlotUnavailable && !slot.isBooked && !isPendingSession && (
+                        {isPastTime && !isSlotUnavailable && !slot.isBooked && (
                           <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
                             Past
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
-                        {isPendingSession ? (
-                          <Clock className="w-5 h-5 text-orange-600" />
-                        ) : isSlotUnavailable ? (
+                        {isSlotUnavailable ? (
                           <XCircle className="w-5 h-5 text-red-600" />
                         ) : slot.isBooked || sessionForSlot ? (
                           isPastTime ? (
@@ -208,11 +241,6 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
                     {(sessionForSlot || (slot.isBooked && slot.client)) && !isSlotUnavailable && (
                       <div className={`mt-2 text-sm ${isPastTime ? 'text-gray-500' : 'text-gray-600'}`}>
                         Duration: {sessionForSlot?.duration || slot.client?.duration} minutes
-                        {isPendingSession && (
-                          <span className="block text-orange-600 font-medium">
-                            This session requires your approval
-                          </span>
-                        )}
                       </div>
                     )}
                   </div>

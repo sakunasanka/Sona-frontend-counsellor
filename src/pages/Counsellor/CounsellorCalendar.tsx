@@ -14,7 +14,8 @@ import {
   Session,
   UnavailableDate,
   HistoricalDate,
-  UnavailabilityRule
+  UnavailabilityRule,
+  CalendarDay
 } from './components/Calendar';
 
 const CounsellorCalendar: React.FC = () => {
@@ -34,13 +35,51 @@ const CounsellorCalendar: React.FC = () => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
 
+  // Get current date and previous dates for mock data
+  const yesterday = new Date(currentDate);
+  yesterday.setDate(currentDate.getDate() - 1);
+  const twoDaysAgo = new Date(currentDate);
+  twoDaysAgo.setDate(currentDate.getDate() - 2);
+  const threeDaysAgo = new Date(currentDate);
+  threeDaysAgo.setDate(currentDate.getDate() - 3);
+  const fourDaysAgo = new Date(currentDate);
+  fourDaysAgo.setDate(currentDate.getDate() - 4);
+  const fiveDaysAgo = new Date(currentDate);
+  fiveDaysAgo.setDate(currentDate.getDate() - 5);
+  
+  // Get future dates for mock data
+  const tomorrow = new Date(currentDate);
+  tomorrow.setDate(currentDate.getDate() + 1);
+  const twoDaysLater = new Date(currentDate);
+  twoDaysLater.setDate(currentDate.getDate() + 2);
+  const threeDaysLater = new Date(currentDate);
+  threeDaysLater.setDate(currentDate.getDate() + 3);
+  const fourDaysLater = new Date(currentDate);
+  fourDaysLater.setDate(currentDate.getDate() + 4);
+  const fiveDaysLater = new Date(currentDate);
+  fiveDaysLater.setDate(currentDate.getDate() + 5);
+
+  // Format dates for mock data
+  const formatDateString = (date: Date) => date.toISOString().split('T')[0];
+  const todayString = formatDateString(currentDate);
+  const yesterdayString = formatDateString(yesterday);
+  const twoDaysAgoString = formatDateString(twoDaysAgo);
+  const threeDaysAgoString = formatDateString(threeDaysAgo);
+  const fourDaysAgoString = formatDateString(fourDaysAgo);
+  const fiveDaysAgoString = formatDateString(fiveDaysAgo);
+  const tomorrowString = formatDateString(tomorrow);
+  const twoDaysLaterString = formatDateString(twoDaysLater);
+  const threeDaysLaterString = formatDateString(threeDaysLater);
+  const fourDaysLaterString = formatDateString(fourDaysLater);
+  const fiveDaysLaterString = formatDateString(fiveDaysLater);
+
   // Sample data
-  const [sessions] = useState<Session[]>([
-    // Today's sessions (July 3, 2025)
+  const [sessions, setSessions] = useState<Session[]>([
+    // Today's sessions
     {
       id: '1',
       clientName: 'Sarah Johnson',
-      date: '2025-07-03',
+      date: todayString,
       time: '10:00',
       duration: 60,
       status: 'confirmed'
@@ -48,189 +87,102 @@ const CounsellorCalendar: React.FC = () => {
     {
       id: '2',
       clientName: 'Mike Chen',
-      date: '2025-07-03',
+      date: todayString,
       time: '14:30',
       duration: 45,
       status: 'confirmed'
     },
     {
-      id: '4',
+      id: '3',
       clientName: 'John Doe',
-      date: '2025-07-03',
+      date: todayString,
       time: '09:00',
       duration: 45,
       status: 'confirmed'
     },
-    {
-      id: '5',
-      clientName: 'Jane Smith',
-      date: '2025-07-03',
-      time: '16:00',
-      duration: 60,
-      status: 'pending'
-    },
-    {
-      id: '6',
-      clientName: 'Bob Wilson',
-      date: '2025-07-03',
-      time: '18:00',
-      duration: 30,
-      status: 'confirmed'
-    },
-    {
-      id: '7',
-      clientName: 'Alice Brown',
-      date: '2025-07-03',
-      time: '20:00',
-      duration: 45,
-      status: 'pending'
-    },
-    {
-      id: '8',
-      clientName: 'Maria Garcia',
-      date: '2025-07-03',
-      time: '11:30',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '9',
-      clientName: 'David Thompson',
-      date: '2025-07-03',
-      time: '13:00',
-      duration: 45,
-      status: 'pending'
-    },
-    {
-      id: '10',
-      clientName: 'Jennifer Lee',
-      date: '2025-07-03',
-      time: '15:00',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '11',
-      clientName: 'Robert Miller',
-      date: '2025-07-03',
-      time: '17:00',
-      duration: 45,
-      status: 'pending'
-    },
-    {
-      id: '12',
-      clientName: 'Lisa Anderson',
-      date: '2025-07-03',
-      time: '19:00',
-      duration: 30,
-      status: 'confirmed'
-    },
     
-    // Other days' sessions
+    // Tomorrow's sessions
     {
-      id: '3',
+      id: '4',
       clientName: 'Emma Wilson',
-      date: '2025-07-05',
+      date: tomorrowString,
       time: '11:00',
       duration: 60,
-      status: 'pending'
+      status: 'confirmed'
     },
     {
-      id: '13',
+      id: '5',
       clientName: 'Tom Williams',
-      date: '2025-07-05',
+      date: tomorrowString,
       time: '14:00',
       duration: 45,
       status: 'confirmed'
     },
+    
+    // Two days later sessions
     {
-      id: '14',
+      id: '6',
       clientName: 'Susan Davis',
-      date: '2025-07-06',
+      date: twoDaysLaterString,
       time: '10:30',
       duration: 60,
       status: 'confirmed'
     },
     {
-      id: '15',
+      id: '7',
       clientName: 'Kevin Brown',
-      date: '2025-07-06',
+      date: twoDaysLaterString,
       time: '15:30',
       duration: 45,
-      status: 'pending'
+      status: 'confirmed'
     },
+    
+    // Three days later sessions
     {
-      id: '16',
+      id: '8',
       clientName: 'Nancy Clark',
-      date: '2025-07-07',
+      date: threeDaysLaterString,
       time: '18:00',
       duration: 60,
       status: 'confirmed'
     },
+    
+    // Four days later sessions
     {
-      id: '17',
+      id: '9',
       clientName: 'Paul Martinez',
-      date: '2025-07-08',
+      date: fourDaysLaterString,
       time: '09:30',
       duration: 45,
-      status: 'pending'
+      status: 'confirmed'
     },
     {
-      id: '18',
+      id: '10',
       clientName: 'Rachel Green',
-      date: '2025-07-08',
+      date: fourDaysLaterString,
       time: '16:30',
       duration: 60,
       status: 'confirmed'
     },
+    
+    // Five days later sessions
     {
-      id: '19',
+      id: '11',
       clientName: 'Steven Hall',
-      date: '2025-07-09',
+      date: fiveDaysLaterString,
       time: '11:00',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '20',
-      clientName: 'Monica White',
-      date: '2025-07-09',
-      time: '14:30',
-      duration: 60,
-      status: 'pending'
-    },
-    {
-      id: '21',
-      clientName: 'James Taylor',
-      date: '2025-07-11',
-      time: '10:00',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '22',
-      clientName: 'Laura Lopez',
-      date: '2025-07-11',
-      time: '17:00',
-      duration: 60,
-      status: 'pending'
-    },
-    {
-      id: '23',
-      clientName: 'Daniel King',
-      date: '2025-07-12',
-      time: '13:00',
       duration: 45,
       status: 'confirmed'
     }
   ]);
 
   // Historical data (sessions and unavailability before today)
-  const [historicalSessions] = useState<Session[]>([
+  const [historicalSessions, setHistoricalSessions] = useState<Session[]>([
+    // Yesterday's sessions
     {
       id: 'h1',
       clientName: 'David Johnson',
-      date: '2025-07-01',
+      date: yesterdayString,
       time: '10:00',
       duration: 60,
       status: 'completed'
@@ -238,33 +190,65 @@ const CounsellorCalendar: React.FC = () => {
     {
       id: 'h2',
       clientName: 'Lisa Chen',
-      date: '2025-07-01',
+      date: yesterdayString,
       time: '14:00',
       duration: 45,
       status: 'completed'
     },
+    
+    // Two days ago sessions
     {
       id: 'h3',
       clientName: 'Mark Wilson',
-      date: '2025-07-02',
+      date: twoDaysAgoString,
       time: '09:00',
       duration: 60,
       status: 'completed'
     },
     {
       id: 'h4',
-      clientName: 'Sarah Davis',
-      date: '2025-07-02',
-      time: '11:00',
+      clientName: 'Jennifer Lee',
+      date: twoDaysAgoString,
+      time: '15:00',
+      duration: 45,
+      status: 'completed'
+    },
+    
+    // Three days ago sessions
+    {
+      id: 'h5',
+      clientName: 'Robert Miller',
+      date: threeDaysAgoString,
+      time: '11:30',
+      duration: 60,
+      status: 'completed'
+    },
+    
+    // Four days ago sessions
+    {
+      id: 'h6',
+      clientName: 'Jessica Taylor',
+      date: fourDaysAgoString,
+      time: '13:00',
       duration: 45,
       status: 'completed'
     },
     {
-      id: 'h5',
-      clientName: 'Tom Brown',
-      date: '2025-06-30',
-      time: '16:00',
-      duration: 30,
+      id: 'h7',
+      clientName: 'Daniel King',
+      date: fourDaysAgoString,
+      time: '16:30',
+      duration: 60,
+      status: 'completed'
+    },
+    
+    // Five days ago sessions
+    {
+      id: 'h8',
+      clientName: 'Amanda White',
+      date: fiveDaysAgoString,
+      time: '10:00',
+      duration: 45,
       status: 'completed'
     }
   ]);
@@ -343,34 +327,34 @@ const CounsellorCalendar: React.FC = () => {
     }
   ]);
 
-  const [timeSlots] = useState<TimeSlot[]>([
-    { id: '1', time: '00:00', isBooked: false, isAvailable: true },
-    { id: '2', time: '01:00', isBooked: false, isAvailable: true },
-    { id: '3', time: '02:00', isBooked: false, isAvailable: true },
-    { id: '4', time: '03:00', isBooked: false, isAvailable: true },
-    { id: '5', time: '04:00', isBooked: false, isAvailable: true },
-    { id: '6', time: '05:00', isBooked: false, isAvailable: true },
-    { id: '7', time: '06:00', isBooked: false, isAvailable: true },
-    { id: '8', time: '07:00', isBooked: false, isAvailable: true },
-    { id: '9', time: '08:00', isBooked: false, isAvailable: true },
-    { id: '10', time: '09:00', isBooked: false, isAvailable: true },
-    { id: '11', time: '10:00', isBooked: true, isAvailable: true, client: { name: 'Sarah Johnson', duration: 60 } },
-    { id: '12', time: '11:00', isBooked: false, isAvailable: true },
-    { id: '13', time: '12:00', isBooked: false, isAvailable: true },
-    { id: '14', time: '13:00', isBooked: false, isAvailable: true },
-    { id: '15', time: '14:00', isBooked: false, isAvailable: true },
-    { id: '16', time: '14:30', isBooked: true, isAvailable: true, client: { name: 'Mike Chen', duration: 45 } },
-    { id: '17', time: '15:00', isBooked: false, isAvailable: true },
-    { id: '18', time: '15:30', isBooked: false, isAvailable: true },
-    { id: '19', time: '16:00', isBooked: false, isAvailable: true },
-    { id: '20', time: '17:00', isBooked: false, isAvailable: true },
-    { id: '21', time: '18:00', isBooked: false, isAvailable: true },
-    { id: '22', time: '19:00', isBooked: false, isAvailable: true },
-    { id: '23', time: '20:00', isBooked: false, isAvailable: true },
-    { id: '24', time: '21:00', isBooked: false, isAvailable: true },
-    { id: '25', time: '22:00', isBooked: false, isAvailable: true },
-    { id: '26', time: '23:00', isBooked: false, isAvailable: true }
-  ]);
+  // Mock time slots data
+  const generateTimeSlots = (date: Date) => {
+    const timeSlots = [];
+    const dateString = date.toISOString().split('T')[0];
+    const sessionsForDate = sessions.filter(session => session.date === dateString);
+    
+    // Generate time slots from 9:00 to 17:00 (9 AM to 5 PM)
+    for (let hour = 9; hour <= 17; hour++) {
+      const time = `${hour.toString().padStart(2, '0')}:00`;
+      const sessionAtTime = sessionsForDate.find(session => session.time === time);
+      
+      timeSlots.push({
+        id: `slot-${dateString}-${time}`,
+        time,
+        isBooked: !!sessionAtTime,
+        isAvailable: true,
+        client: sessionAtTime ? {
+          name: sessionAtTime.clientName,
+          duration: sessionAtTime.duration
+        } : undefined
+      });
+    }
+    
+    return timeSlots;
+  };
+
+  // Mock time slots
+  const timeSlots = selectedDate ? generateTimeSlots(selectedDate) : [];
 
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -379,69 +363,68 @@ const CounsellorCalendar: React.FC = () => {
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+  // Track available dates
+  const [availableDates, setAvailableDates] = useState<string[]>([
+    tomorrowString, // Make tomorrow available by default
+    threeDaysLaterString, // Make three days later available by default
+    fiveDaysLaterString // Make five days later available by default
+  ]);
+
+  // Function to check if a date is unavailable
+  const isDateUnavailable = (date: Date) => {
+    // By default, all days are unavailable
+    const dateString = date.toISOString().split('T')[0];
+    
+    // If the date is in availableDates, it's available (not unavailable)
+    return !availableDates.includes(dateString);
+  };
+
+  // Function to get calendar days for current month view
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDay = firstDay.getDay();
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date();
 
-    // Helper to compare local dates
     const isSameDay = (d1: Date, d2: Date) =>
       d1.getDate() === d2.getDate() &&
       d1.getMonth() === d2.getMonth() &&
       d1.getFullYear() === d2.getFullYear();
 
-    const days = [];
-
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < startingDay; i++) {
-      days.push(null);
-    }
-
-    // Add days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const currentDay = new Date(year, month, day);
-      const dateString = currentDay.toISOString().split('T')[0];
-      // const todayString = today.toISOString().split('T')[0];
-      // const isPastDay = dateString < todayString;
-      // Use local comparison for isPastDay:
-      let isPastDay = false;
-      if (currentDay < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
-        isPastDay = true;
-      }
-      // Get data based on whether it's a past day or not
-      const daysSessions = isPastDay 
-        ? historicalSessions.filter(session => session.date === dateString)
-        : sessions.filter(session => session.date === dateString);
+    // Create calendar days - use 35 days (5 weeks) instead of 42 days (6 weeks)
+    // This will remove the extra block line at the bottom
+    const days: (CalendarDay | null)[] = Array(35).fill(null);
+    
+    for (let i = 0; i < daysInMonth; i++) {
+      const currentDate = new Date(year, month, i + 1);
+      const dateString = currentDate.toISOString().split('T')[0];
       
-      const unavailableEntry = isPastDay
-        ? historicalUnavailableDates.find(unavailable => unavailable.date === dateString)
-        : unavailableDates.find(unavailable => unavailable.date === dateString);
-        
-      const isFullDayUnavailable = unavailableEntry?.isFullDay || false;
+      // Get sessions for this date
+      const dateSessions = sessions.filter(session => session.date === dateString);
       
-      // Create unavailable slots for partial unavailability
-      const unavailableSlots = [];
-      if (unavailableEntry && !unavailableEntry.isFullDay && unavailableEntry.timeRange) {
-        unavailableSlots.push({
-          id: `unavailable-${unavailableEntry.id}`,
-          time: `${unavailableEntry.timeRange.start}-${unavailableEntry.timeRange.end}`,
-          status: 'unavailable'
-        });
-      }
-      days.push({
-        date: currentDay,
-        sessions: daysSessions,
-        unavailableSlots: unavailableSlots,
-        isToday: isSameDay(currentDay, today),
-        isPastDay: isPastDay,
-        isUnavailable: isFullDayUnavailable,
-        unavailableDetails: unavailableEntry
-      });
+      // Get unavailable slots for this date
+      const dateUnavailableSlots = unavailableDates.filter(slot => slot.date === dateString);
+      
+      // Check if date is unavailable (default is true)
+      const isUnavailable = isDateUnavailable(currentDate);
+      
+      // Get unavailable details if any
+      const unavailableDetails = unavailableDates.find(
+        unavailable => unavailable.date === dateString
+      );
+      
+      days[firstDayOfMonth + i] = {
+        date: currentDate,
+        sessions: dateSessions,
+        unavailableSlots: dateUnavailableSlots,
+        isToday: isSameDay(currentDate, today),
+        isPastDay: currentDate < today,
+        isUnavailable: isUnavailable,
+        unavailableDetails
+      };
     }
+    
     return days;
   };
 
@@ -457,49 +440,119 @@ const CounsellorCalendar: React.FC = () => {
     });
   };
 
+  // Function to handle clicking on a date
   const handleDateClick = (date: Date) => {
-    const dateString = date.toISOString().split('T')[0];
-    const today = new Date();
-    const todayString = today.toISOString().split('T')[0];
-    const isPastDay = dateString < todayString;
+    setSelectedDate(date);
     
-    if (isPastDay) {
-      // Handle historical date click - show read-only historical details
+    // Check if the date is in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time part for proper comparison
+    
+    if (date < today) {
+      // If the date is in the past, show historical details but don't allow changes
+      const dateString = date.toISOString().split('T')[0];
       const historicalSessionsForDate = historicalSessions.filter(session => session.date === dateString);
-      const historicalUnavailableForDate = historicalUnavailableDates.find(unavailable => unavailable.date === dateString);
-      
-      // Create unavailable slots for historical partial unavailability
-      const historicalUnavailableSlots = [];
-      if (historicalUnavailableForDate && !historicalUnavailableForDate.isFullDay && historicalUnavailableForDate.timeRange) {
-        historicalUnavailableSlots.push({
-          id: `unavailable-${historicalUnavailableForDate.id}`,
-          time: `${historicalUnavailableForDate.timeRange.start}-${historicalUnavailableForDate.timeRange.end}`,
-          status: 'unavailable'
-        });
-      }
       
       setSelectedHistoricalDate({
         date: date,
         sessions: historicalSessionsForDate,
-        unavailableSlots: historicalUnavailableSlots,
-        unavailableDetails: historicalUnavailableForDate
+        unavailableSlots: [],
+        unavailableDetails: undefined
       });
       setShowHistoricalDetails(true);
       return;
     }
     
-    // Handle current/future date click
-    const unavailableDate = unavailableDates.find(unavailable => unavailable.date === dateString && unavailable.isFullDay);
+    // For current or future dates, check availability
+    const isUnavailable = isDateUnavailable(date);
     
-    if (unavailableDate) {
-      // Show unavailable details popup for full day unavailable
+    if (isUnavailable) {
+      // If the date is unavailable (default), show the unavailable day details modal
+      const dateString = date.toISOString().split('T')[0];
+      const unavailableDate = {
+        id: `unavailable-${dateString}`,
+        date: dateString,
+        isFullDay: true
+      };
       setSelectedUnavailableDate(unavailableDate);
       setShowUnavailableDetails(true);
-      return;
+    } else {
+      // If the date is available, show the time slots modal for available day
+      setShowTimeSlots(true);
     }
-    
-    setSelectedDate(date);
-    setShowTimeSlots(true);
+  };
+
+  // Handle marking a date as unavailable
+  const handleMarkAsUnavailable = () => {
+    if (selectedDate) {
+      // Check if the date is in the past
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time part for proper comparison
+      
+      if (selectedDate < today) {
+        console.error("Cannot modify availability for past dates");
+        return;
+      }
+      
+      const dateString = selectedDate.toISOString().split('T')[0];
+      console.log('Marking date as unavailable:', dateString);
+      
+      // Remove the date from availableDates
+      const newAvailableDates = availableDates.filter(date => date !== dateString);
+      setAvailableDates(newAvailableDates);
+      
+      // Close the modal
+      setShowTimeSlots(false);
+    }
+  };
+
+  // Handle marking a date as available - directly mark it without showing another popup
+  const handleMarkAsAvailable = (recurFor4Weeks = false) => {
+    if (selectedUnavailableDate) {
+      const dateStr = selectedUnavailableDate.date;
+      const selectedDate = new Date(dateStr);
+      
+      // Check if the date is in the past
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time part for proper comparison
+      
+      if (selectedDate < today) {
+        console.error("Cannot modify availability for past dates");
+        return;
+      }
+      
+      console.log('Marking date as available:', dateStr);
+      console.log('Recur for 4 weeks:', recurFor4Weeks);
+      
+      // Create a new array of available dates
+      const newAvailableDates = [...availableDates];
+      
+      // Add the selected date if it's not already available
+      if (!newAvailableDates.includes(dateStr)) {
+        newAvailableDates.push(dateStr);
+      }
+      
+      // If recurFor4Weeks is true, mark the next 4 weeks as available as well
+      if (recurFor4Weeks) {
+        for (let i = 1; i <= 4; i++) {
+          const nextWeekDate = new Date(selectedDate);
+          nextWeekDate.setDate(selectedDate.getDate() + (i * 7)); // Add 7 days for each week
+          const nextWeekDateStr = nextWeekDate.toISOString().split('T')[0];
+          
+          // Add the date if it's not already available
+          if (!newAvailableDates.includes(nextWeekDateStr)) {
+            newAvailableDates.push(nextWeekDateStr);
+          }
+        }
+      }
+      
+      // Update the available dates
+      setAvailableDates(newAvailableDates);
+      
+      // Close the modal
+      setShowUnavailableDetails(false);
+      setSelectedUnavailableDate(null);
+    }
   };
 
   const handleUnavailableSlotClick = (date: Date, e: React.MouseEvent) => {
@@ -511,13 +564,6 @@ const CounsellorCalendar: React.FC = () => {
       setSelectedUnavailableDate(unavailableDate);
       setShowUnavailableDetails(true);
     }
-  };
-
-  const handleMarkAsAvailable = () => {
-    // Here you would implement the logic to remove the unavailable date
-    console.log('Mark as available:', selectedUnavailableDate);
-    setShowUnavailableDetails(false);
-    setSelectedUnavailableDate(null);
   };
 
   // Helper function to check if a time slot is unavailable for partial day restrictions
@@ -615,16 +661,17 @@ const CounsellorCalendar: React.FC = () => {
             />
           </div>
 
-          {/* Modals */}
-          {showTimeSlots && selectedDate && (
-            <TimeSlotsModal
-              selectedDate={selectedDate}
-              timeSlots={timeSlots}
-              sessions={sessions}
-              isTimeSlotUnavailable={isTimeSlotUnavailable}
-              onClose={() => setShowTimeSlots(false)}
-            />
-          )}
+                {/* Time Slots Modal */}
+      {showTimeSlots && selectedDate && (
+        <TimeSlotsModal
+          selectedDate={selectedDate}
+          timeSlots={timeSlots}
+          sessions={sessions}
+          isTimeSlotUnavailable={isTimeSlotUnavailable}
+          onClose={() => setShowTimeSlots(false)}
+          onMarkAsUnavailable={handleMarkAsUnavailable}
+        />
+      )}
 
           {showUnavailable && (
             <MarkUnavailableModal
@@ -639,15 +686,15 @@ const CounsellorCalendar: React.FC = () => {
             />
           )}
 
-          <UnavailableDayDetailsModal
-            isOpen={showUnavailableDetails}
-            onClose={() => {
-              setShowUnavailableDetails(false);
-              setSelectedUnavailableDate(null);
-            }}
-            unavailableDate={selectedUnavailableDate}
-            onMarkAsAvailable={handleMarkAsAvailable}
-          />
+          {/* Unavailable Day Details Modal */}
+      {showUnavailableDetails && selectedUnavailableDate && (
+        <UnavailableDayDetailsModal
+          isOpen={showUnavailableDetails}
+          onClose={() => setShowUnavailableDetails(false)}
+          unavailableDate={selectedUnavailableDate}
+          onMarkAsAvailable={handleMarkAsAvailable}
+        />
+      )}
 
           <HistoricalDetailsModal
             isOpen={showHistoricalDetails}
