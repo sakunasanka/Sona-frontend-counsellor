@@ -21,6 +21,8 @@ import PsychiatristChat from './pages/Psychiatrist/PsychiatristChats';
 import PsychiatristSessions from './pages/Psychiatrist/PsychiatristSessions';
 import PsychiatristSessionDetails from './pages/Psychiatrist/PsychiatristSessionDetails';
 import PsychiatristFeedbacks from './pages/Psychiatrist/PsychiatristFeedbacks';
+import PsychiatristPatients from './pages/Psychiatrist/PsychiatristPatients';
+import PatientDetails from './pages/Psychiatrist/PatientDetails';
 
 function App() {
 
@@ -49,6 +51,8 @@ function App() {
         <Route path="/psychiatrist-sessions" element={<PsychiatristSessions />} />
         <Route path="/psychiatrist-session-details" element={<PsychiatristSessionDetails />} />
         <Route path="/psychiatrist-feedbacks" element={<PsychiatristFeedbacks />} />
+        <Route path="/psychiatrist-patients" element={<PsychiatristPatients />} />
+        <Route path="/psychiatrist-patients/:clientId" element={<PatientDetails />} />
       </Routes>
     </Router>
   );
