@@ -661,8 +661,7 @@ const CounsellorCalendar: React.FC = () => {
           <PendingRequestsModal
             isOpen={showPendingRequests}
             onClose={() => setShowPendingRequests(false)}
-            pendingSessions={sessions.filter(s => s.status === 'pending')}
-            onSessionAction={handleSessionAction}
+            pendingSessions={sessions.filter(s => s.status === 'confirmed')}
           />
         </div>
       </div>
