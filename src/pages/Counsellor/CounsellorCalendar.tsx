@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, Clock, Check, X, Settings, CheckCircle, XCircle, CalendarX } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Calendar, Clock, Check, X, Settings, CheckCircle, XCircle, CalendarX, Edit, Plus, AlertCircle } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
 
 interface TimeSlot {
@@ -37,7 +37,7 @@ const CounsellorCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showTimeSlots, setShowTimeSlots] = useState(false);
-  const [showUnavailable, setShowUnavailable] = useState(false);
+  const [showAvailability, setShowAvailability] = useState(false);
   const [showUnavailableDetails, setShowUnavailableDetails] = useState(false);
   const [showHistoricalDetails, setShowHistoricalDetails] = useState(false);
   const [selectedHistoricalDate, setSelectedHistoricalDate] = useState<{
@@ -48,12 +48,32 @@ const CounsellorCalendar: React.FC = () => {
   } | null>(null);
   const [selectedUnavailableDate, setSelectedUnavailableDate] = useState<UnavailableDate | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [unavailabilityType, setUnavailabilityType] = useState('full-day');
+  const [availabilityType, setAvailabilityType] = useState('full-day');
+  const [showRecurring, setShowRecurring] = useState(false);
+  const [recurringPattern, setRecurringPattern] = useState('weekly');
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [selectedStartTime, setSelectedStartTime] = useState('09:00');
+  const [selectedEndTime, setSelectedEndTime] = useState('17:00');
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
 
   // Sample data
+  // State to track available days - by default all days are unavailable
+  const [availableDates, setAvailableDates] = useState<Array<{
+    id: string;
+    date: string;
+    isFullDay: boolean;
+    timeRanges: Array<{
+      id: string;
+      start: string;
+      end: string;
+    }>;
+    isRecurring?: boolean;
+    recurringPattern?: string; // 'daily', 'weekly', 'monthly'
+    recurringDays?: string[]; // days of week for weekly recurring
+  }>>([]);
+  
   const [sessions] = useState<Session[]>([
     // Today's sessions (July 3, 2025)
     {
@@ -417,8 +437,9 @@ const CounsellorCalendar: React.FC = () => {
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDay = new Date(year, month, day);
-      const dateString = currentDay.toISOString().split('T')[0];
-      const todayString = today.toISOString().split('T')[0];
+      // Fix timezone issue by using local date string instead of UTC (ISO)
+      const dateString = `${currentDay.getFullYear()}-${String(currentDay.getMonth() + 1).padStart(2, '0')}-${String(currentDay.getDate()).padStart(2, '0')}`;
+      const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       const isPastDay = dateString < todayString;
       
       // Get data based on whether it's a past day or not
@@ -429,8 +450,19 @@ const CounsellorCalendar: React.FC = () => {
       const unavailableEntry = isPastDay
         ? historicalUnavailableDates.find(unavailable => unavailable.date === dateString)
         : unavailableDates.find(unavailable => unavailable.date === dateString);
-        
+      
+      // Check if this day has an availability entry
+      const availableEntry = availableDates.find(available => available.date === dateString);
+      
+      // Check if there's a recurring availability that matches this day
+      const recurringEntry = availableDates.find(available => 
+        available.isRecurring && 
+        available.recurringPattern === 'weekly' && 
+        available.recurringDays?.includes(daysOfWeek[currentDay.getDay()]));
+      
       const isFullDayUnavailable = unavailableEntry?.isFullDay || false;
+      const isAvailable = !!availableEntry || !!recurringEntry;
+      const isRecurring = !!recurringEntry;
       
       // Create unavailable slots for partial unavailability
       const unavailableSlots = [];
@@ -442,16 +474,45 @@ const CounsellorCalendar: React.FC = () => {
         });
       }
       
+      // Create available time range slots
+      const availableSlots = [];
+      if (availableEntry) {
+        availableEntry.timeRanges.forEach(range => {
+          availableSlots.push({
+            id: `available-${range.id}`,
+            time: `${range.start}-${range.end}`,
+            status: 'available'
+          });
+        });
+      }
+      
+      // Add recurring available slots if applicable
+      if (recurringEntry) {
+        recurringEntry.timeRanges.forEach(range => {
+          availableSlots.push({
+            id: `recurring-${range.id}`,
+            time: `${range.start}-${range.end}`,
+            status: 'recurring'
+          });
+        });
+      }
+      
       days.push({
         date: currentDay,
         sessions: daysSessions,
         unavailableSlots: unavailableSlots,
+        availableSlots: availableSlots,
         isToday: dateString === todayString,
         isPastDay: isPastDay,
-        isUnavailable: isFullDayUnavailable,
-        unavailableDetails: unavailableEntry
+        isUnavailable: !isAvailable, // Default is unavailable if not specifically marked available
+        isAvailable: isAvailable,
+        isRecurringAvailable: isRecurring,
+        unavailableDetails: unavailableEntry,
+        availableDetails: availableEntry || recurringEntry
       });
     }
+
+    return days;
 
     return days;
   };
@@ -469,53 +530,61 @@ const CounsellorCalendar: React.FC = () => {
   };
 
   const handleDateClick = (date: Date) => {
-    const dateString = date.toISOString().split('T')[0];
+    // Fix timezone issue by using local date string instead of UTC (ISO)
+    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     const today = new Date();
-    const todayString = today.toISOString().split('T')[0];
+    const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const isPastDay = dateString < todayString;
     
+    // Don't process clicks on past days - they are now unclickable
     if (isPastDay) {
-      // Handle historical date click - show read-only historical details
-      const historicalSessionsForDate = historicalSessions.filter(session => session.date === dateString);
-      const historicalUnavailableForDate = historicalUnavailableDates.find(unavailable => unavailable.date === dateString);
-      
-      // Create unavailable slots for historical partial unavailability
-      const historicalUnavailableSlots = [];
-      if (historicalUnavailableForDate && !historicalUnavailableForDate.isFullDay && historicalUnavailableForDate.timeRange) {
-        historicalUnavailableSlots.push({
-          id: `unavailable-${historicalUnavailableForDate.id}`,
-          time: `${historicalUnavailableForDate.timeRange.start}-${historicalUnavailableForDate.timeRange.end}`,
-          status: 'unavailable'
-        });
-      }
-      
-      setSelectedHistoricalDate({
-        date: date,
-        sessions: historicalSessionsForDate,
-        unavailableSlots: historicalUnavailableSlots,
-        unavailableDetails: historicalUnavailableForDate
-      });
-      setShowHistoricalDetails(true);
       return;
     }
     
-    // Handle current/future date click
-    const unavailableDate = unavailableDates.find(unavailable => unavailable.date === dateString && unavailable.isFullDay);
-    
-    if (unavailableDate) {
-      // Show unavailable details popup for full day unavailable
-      setSelectedUnavailableDate(unavailableDate);
-      setShowUnavailableDetails(true);
-      return;
-    }
-    
+    // For current/future dates, always open the availability setter dialog
     setSelectedDate(date);
-    setShowTimeSlots(true);
+    setSelectedStartTime('09:00');
+    setSelectedEndTime('17:00');
+    setShowAvailability(true);
+    
+    // Check if this date has an availability entry already
+    const availableEntry = availableDates.find(available => available.date === dateString);
+    
+    // Check if there's a recurring availability for this day of the week
+    const dayOfWeek = daysOfWeek[date.getDay()];
+    const recurringEntry = availableDates.find(available => 
+      available.isRecurring && 
+      available.recurringPattern === 'weekly' && 
+      available.recurringDays?.includes(dayOfWeek));
+    
+    // Pre-fill the form with existing availability data if it exists
+    if (availableEntry) {
+      setAvailabilityType(availableEntry.isFullDay ? 'full-day' : 'specific-hours');
+      if (!availableEntry.isFullDay && availableEntry.timeRanges.length > 0) {
+        setSelectedStartTime(availableEntry.timeRanges[0].start);
+        setSelectedEndTime(availableEntry.timeRanges[0].end);
+      }
+      setShowRecurring(!!availableEntry.isRecurring);
+      if (availableEntry.isRecurring) {
+        setRecurringPattern(availableEntry.recurringPattern || 'weekly');
+        setSelectedDays(availableEntry.recurringDays || []);
+      }
+    } else if (recurringEntry) {
+      setAvailabilityType(recurringEntry.isFullDay ? 'full-day' : 'specific-hours');
+      if (!recurringEntry.isFullDay && recurringEntry.timeRanges.length > 0) {
+        setSelectedStartTime(recurringEntry.timeRanges[0].start);
+        setSelectedEndTime(recurringEntry.timeRanges[0].end);
+      }
+      setShowRecurring(true);
+      setRecurringPattern(recurringEntry.recurringPattern || 'weekly');
+      setSelectedDays(recurringEntry.recurringDays || []);
+    }
   };
 
   const handleUnavailableSlotClick = (date: Date, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering the day click
-    const dateString = date.toISOString().split('T')[0];
+    // Fix timezone issue by using local date string instead of UTC (ISO)
+    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     const unavailableDate = unavailableDates.find(unavailable => unavailable.date === dateString);
     
     if (unavailableDate) {
@@ -533,7 +602,8 @@ const CounsellorCalendar: React.FC = () => {
 
   // Helper function to check if a time slot is unavailable for partial day restrictions
   const isTimeSlotUnavailable = (date: Date, time: string) => {
-    const dateString = date.toISOString().split('T')[0];
+    // Fix timezone issue by using local date string instead of UTC (ISO)
+    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     const unavailableEntry = unavailableDates.find(u => u.date === dateString && !u.isFullDay);
     
     if (!unavailableEntry || !unavailableEntry.timeRange) return false;
@@ -559,7 +629,126 @@ const CounsellorCalendar: React.FC = () => {
     }
   };
 
+  // Helper function to check if a date is available
+  const isDateAvailable = (date: Date) => {
+    // Fix timezone issue by using local date string instead of UTC (ISO)
+    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const dayOfWeek = daysOfWeek[date.getDay()];
+    
+    // Check for specific date availability
+    const hasSpecificAvailability = availableDates.some(avail => avail.date === dateString);
+    
+    // Check for recurring availability
+    const hasRecurringAvailability = availableDates.some(avail => 
+      avail.isRecurring && avail.recurringPattern === 'weekly' && avail.recurringDays?.includes(dayOfWeek)
+    );
+    
+    return hasSpecificAvailability || hasRecurringAvailability;
+  };
+
+  // Helper function to handle saving availability
+  const handleSaveAvailability = () => {
+    if (!selectedDate) return;
+    
+    // Fix timezone issue by using local date string instead of UTC (ISO)
+    const dateString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+    
+    // Check if we already have an entry for this date
+    const existingEntryIndex = availableDates.findIndex(avail => avail.date === dateString && !avail.isRecurring);
+    
+    const availabilityEntry = {
+      id: existingEntryIndex >= 0 ? availableDates[existingEntryIndex].id : `avail-${Date.now()}`,
+      date: dateString,
+      isFullDay: availabilityType === 'full-day',
+      timeRanges: availabilityType === 'full-day' 
+        ? [{ id: `tr-${Date.now()}`, start: '00:00', end: '23:59' }]
+        : [{ id: `tr-${Date.now()}`, start: selectedStartTime, end: selectedEndTime }],
+      isRecurring: showRecurring,
+      recurringPattern: showRecurring ? recurringPattern : undefined,
+      recurringDays: showRecurring && recurringPattern === 'weekly' ? selectedDays : undefined
+    };
+    
+    // Update or add to availableDates state
+    if (existingEntryIndex >= 0) {
+      // Update existing entry
+      setAvailableDates(prev => {
+        const newState = [...prev];
+        newState[existingEntryIndex] = availabilityEntry;
+        return newState;
+      });
+    } else {
+      // Add new entry
+      setAvailableDates(prev => [...prev, availabilityEntry]);
+    }
+    
+    // Close modal
+    setShowAvailability(false);
+    setAvailabilityType('full-day');
+    setShowRecurring(false);
+  };
+
+  // Helper function to get available time ranges for a date
+  const getAvailabilityForDate = (date: Date) => {
+    // Fix timezone issue by using local date string instead of UTC (ISO)
+    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const dayOfWeek = daysOfWeek[date.getDay()];
+    
+    const dateAvailability = availableDates.find(avail => avail.date === dateString);
+    const recurringAvailability = availableDates.find(avail => 
+      avail.isRecurring && 
+      avail.recurringPattern === 'weekly' && 
+      avail.recurringDays?.includes(dayOfWeek)
+    );
+    
+    return {
+      isAvailable: !!dateAvailability || !!recurringAvailability,
+      isRecurring: !!recurringAvailability,
+      isFullDay: dateAvailability?.isFullDay || recurringAvailability?.isFullDay || false,
+      timeRanges: [
+        ...(dateAvailability?.timeRanges || []),
+        ...(recurringAvailability?.timeRanges || [])
+      ],
+      dateSpecific: dateAvailability,
+      recurring: recurringAvailability
+    };
+  };
+
   const days = getDaysInMonth(currentDate);
+
+  // Use helper functions for the UI
+  useEffect(() => {
+    // Initial setup of some example availabilities
+    if (availableDates.length === 0) {
+      // Set example recurring availability for weekdays
+      const weekdayAvailability = {
+        id: 'weekday-avail',
+        date: '2025-07-09', // Any date, will be used for recurring pattern
+        isFullDay: false,
+        timeRanges: [
+          { id: 'morning-hours', start: '09:00', end: '12:00' },
+          { id: 'afternoon-hours', start: '14:00', end: '17:00' }
+        ],
+        isRecurring: true,
+        recurringPattern: 'weekly',
+        recurringDays: ['Mon', 'Wed', 'Fri']
+      };
+      
+      // Set specific availability for next week
+      const nextWeekDate = new Date();
+      nextWeekDate.setDate(nextWeekDate.getDate() + 7);
+      const dateStr = `${nextWeekDate.getFullYear()}-${String(nextWeekDate.getMonth() + 1).padStart(2, '0')}-${String(nextWeekDate.getDate()).padStart(2, '0')}`;
+      
+      const specificAvailability = {
+        id: 'specific-day',
+        date: dateStr,
+        isFullDay: true,
+        timeRanges: [{ id: 'full-day', start: '00:00', end: '23:59' }],
+        isRecurring: false
+      };
+      
+      setAvailableDates([weekdayAvailability, specificAvailability]);
+    }
+  }, []);
 
   return (
     <div className="flex flex-col h-screen">
@@ -590,11 +779,11 @@ const CounsellorCalendar: React.FC = () => {
             </div>
             <div className="flex items-center gap-3">
             <button 
-              onClick={() => setShowUnavailable(true)}
-              className="bg-red-500 hover:bg-red-600 text-white px-3 lg:px-4 py-2 rounded-lg font-medium transition-all shadow-sm flex items-center gap-2"
+              onClick={() => setShowAvailability(true)}
+              className="bg-green-500 hover:bg-green-600 text-white px-3 lg:px-4 py-2 rounded-lg font-medium transition-all shadow-sm flex items-center gap-2"
             >
-              <CalendarX className="w-4 h-4" />
-              <span className="hidden sm:inline text-sm">Mark Unavailable</span>
+              <Calendar className="w-4 h-4" />
+              <span className="hidden sm:inline text-sm">Set Availability</span>
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Settings className="w-4 h-4 text-gray-600" />
@@ -604,7 +793,7 @@ const CounsellorCalendar: React.FC = () => {
 
         {/* Status Legend */}
         <div className="mb-4 bg-white rounded-lg shadow-sm border border-gray-100 p-3">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Session Status Legend</h3>
+          <h3 className="text-sm font-medium text-gray-700 mb-2">Calendar Legend</h3>
           <div className="flex flex-wrap gap-4 text-xs">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-green-100 border border-green-200"></div>
@@ -616,11 +805,15 @@ const CounsellorCalendar: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-blue-50 border border-blue-200"></div>
-              <span className="text-gray-600">Available Slots</span>
+              <span className="text-gray-600">Available Time Slots</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-red-100 border border-red-200"></div>
-              <span className="text-gray-600">Unavailable</span>
+              <div className="w-3 h-3 rounded bg-gray-100 border border-gray-200"></div>
+              <span className="text-gray-600">Unavailable (Default)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded bg-green-50 border-l-2 border border-green-400"></div>
+              <span className="text-gray-600">Available</span>
             </div>
           </div>
         </div>
@@ -672,18 +865,17 @@ const CounsellorCalendar: React.FC = () => {
                 {days.map((day, index) => (
                   <div 
                     key={index}
-                    className={`aspect-square border-b border-r border-gray-100 p-1 transition-colors flex flex-col relative cursor-pointer ${
+                    className={`aspect-square border-b border-r border-gray-100 p-1 transition-colors flex flex-col relative ${
+                      day?.isPastDay ? 'cursor-not-allowed bg-gray-100 opacity-70' : 'cursor-pointer'
+                    } ${
                       day?.isToday ? 'bg-blue-50' : ''
                     } ${
-                      day?.isPastDay ? 'bg-gray-25 opacity-90' : ''
-                    } ${
-                      day?.isUnavailable ? 
-                        'bg-red-100 border-red-300 hover:bg-red-150' : 
-                        day?.sessions.length === 0 && day?.unavailableSlots.length === 0 && day ? 
-                          'bg-blue-25 hover:bg-blue-50' : 
-                          'hover:bg-gray-50'
+                      !day?.isPastDay && day?.isAvailable ? 'bg-green-50 hover:bg-green-100 border-l-2 border-l-green-400' :
+                      !day?.isPastDay && day?.sessions.length === 0 && day?.unavailableSlots.length === 0 && day ? 
+                        'bg-gray-50 hover:bg-gray-100' : 
+                        !day?.isPastDay ? 'hover:bg-gray-50' : ''
                     }`}
-                    onClick={() => day && handleDateClick(day.date)}
+                    onClick={() => day && !day.isPastDay && handleDateClick(day.date)}
                   >
                     {day && (
                       <>
@@ -695,13 +887,13 @@ const CounsellorCalendar: React.FC = () => {
                           day.sessions.length > 2 ? 'mb-0.5' : 'mb-1'
                         } ${
                           day.isToday ? 'text-blue-600' : 
-                          day.isUnavailable ? 'text-red-700' : 
-                          day.isPastDay ? 'text-gray-600' :
+                          day.isPastDay ? 'text-gray-500' :
+                          day.isAvailable ? 'text-green-600' :
                           'text-gray-900'
                         } flex-shrink-0 flex items-center justify-between relative z-10`}>
-                          <span className={day.isUnavailable ? 'line-through' : ''}>{day.date.getDate()}</span>
-                          {day.isUnavailable && (
-                            <CalendarX className="w-3 h-3 text-red-600" />
+                          <span>{day.date.getDate()}</span>
+                          {day.isAvailable && (
+                            <Calendar className="w-3 h-3 text-green-600" />
                           )}
                         </div>
                         <div className={`${
@@ -714,7 +906,7 @@ const CounsellorCalendar: React.FC = () => {
                           ) : (
                             <>
                               {/* Render sessions */}
-                              {day.sessions.slice(0, (day.sessions.length + day.unavailableSlots.length) > 4 ? Math.max(1, 3 - day.unavailableSlots.length) : 4).map(session => (
+                              {day.sessions.slice(0, (day.sessions.length + day.unavailableSlots.length) > 4 ? Math.max(1, 3 - day.unavailableSlots.length) : 4).map((session: any) => (
                                 <div 
                                   key={session.id}
                                   className={`${
@@ -760,7 +952,7 @@ const CounsellorCalendar: React.FC = () => {
                               ))}
                               
                               {/* Render unavailable slots */}
-                              {day.unavailableSlots.slice(0, (day.sessions.length + day.unavailableSlots.length) > 4 ? Math.max(1, 3 - day.sessions.length) : 4).map(slot => (
+                              {day.unavailableSlots.slice(0, (day.sessions.length + day.unavailableSlots.length) > 4 ? Math.max(1, 3 - day.sessions.length) : 4).map((slot: any) => (
                                 <div 
                                   key={slot.id}
                                   className={`${
@@ -802,7 +994,11 @@ const CounsellorCalendar: React.FC = () => {
               </h3>
               <div className="space-y-3">
                 {sessions
-                  .filter(session => session.date === new Date().toISOString().split('T')[0])
+                  .filter(session => {
+                    const today = new Date();
+                    const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    return session.date === todayString;
+                  })
                   .sort((a, b) => a.time.localeCompare(b.time))
                   .map(session => (
                   <div key={session.id} className={`flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 ${
@@ -843,7 +1039,11 @@ const CounsellorCalendar: React.FC = () => {
                     )}
                   </div>
                 ))}
-                {sessions.filter(session => session.date === new Date().toISOString().split('T')[0]).length === 0 && (
+                {(() => {
+                  const today = new Date();
+                  const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                  return sessions.filter(session => session.date === todayString).length === 0;
+                })() && (
                   <p className="text-gray-500 text-center py-4">No sessions today</p>
                 )}
               </div>
@@ -971,13 +1171,14 @@ const CounsellorCalendar: React.FC = () => {
           </div>
         )}
 
-        {/* Mark Unavailable Modal */}
-        {showUnavailable && (
+        {/* Set Availability Modal */}
+        {showAvailability && (
           <div 
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
             onClick={() => {
-              setShowUnavailable(false);
-              setUnavailabilityType('full-day');
+              setShowAvailability(false);
+              setAvailabilityType('full-day');
+              setShowRecurring(false);
             }}
           >
             <div 
@@ -986,11 +1187,12 @@ const CounsellorCalendar: React.FC = () => {
             >
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold text-gray-900">Mark Unavailable</h3>
+                  <h3 className="text-xl font-semibold text-gray-900">Set Availability</h3>
                   <button 
                     onClick={() => {
-                      setShowUnavailable(false);
-                      setUnavailabilityType('full-day');
+                      setShowAvailability(false);
+                      setAvailabilityType('full-day');
+                      setShowRecurring(false);
                     }}
                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
@@ -1004,27 +1206,92 @@ const CounsellorCalendar: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
                   <input 
                     type="date" 
+                    value={selectedDate ? 
+                      `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}` : 
+                      ''}
+                    onChange={(e) => {
+                      // Create date without timezone issues by manually parsing the YYYY-MM-DD string
+                      const [year, month, day] = e.target.value.split('-').map(Number);
+                      const date = new Date(year, month - 1, day);
+                      setSelectedDate(date);
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
                 
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="checkbox" 
+                    id="recurring" 
+                    checked={showRecurring} 
+                    onChange={() => setShowRecurring(!showRecurring)} 
+                    className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+                  <label htmlFor="recurring" className="text-sm font-medium text-gray-700">
+                    Set as recurring availability
+                  </label>
+                </div>
+                
+                {/* Recurring Options */}
+                {showRecurring && (
+                  <div className="space-y-4 bg-purple-50 p-3 rounded-lg border border-purple-100">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Repeat Pattern</label>
+                      <select 
+                        value={recurringPattern}
+                        onChange={(e) => setRecurringPattern(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                      >
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly" disabled>Monthly (Coming Soon)</option>
+                      </select>
+                    </div>
+                    
+                    {recurringPattern === 'weekly' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Days of Week</label>
+                        <div className="grid grid-cols-7 gap-2">
+                          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                            <div
+                              key={day}
+                              onClick={() => {
+                                const newSelectedDays = selectedDays.includes(day)
+                                  ? selectedDays.filter(d => d !== day)
+                                  : [...selectedDays, day];
+                                setSelectedDays(newSelectedDays);
+                              }}
+                              className={`flex items-center justify-center p-2 rounded-lg cursor-pointer text-sm font-medium ${
+                                selectedDays.includes(day)
+                                  ? 'bg-primary text-white'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              {day}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Availability Type</label>
                   <select 
-                    value={unavailabilityType}
-                    onChange={(e) => setUnavailabilityType(e.target.value)}
+                    value={availabilityType}
+                    onChange={(e) => setAvailabilityType(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   >
-                    <option value="full-day">Full Day Unavailable</option>
-                    <option value="partial">Partial Day Unavailable</option>
+                    <option value="full-day">Full Day Available</option>
+                    <option value="partial">Specific Time Range</option>
                   </select>
                 </div>
                 
-                {/* Time Range Fields with Smooth Animation */}
+                {/* Time Range Fields */}
                 <div 
                   className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    unavailabilityType === 'partial' 
-                      ? 'max-h-48 opacity-100' 
+                    availabilityType === 'partial' 
+                      ? 'max-h-96 opacity-100' 
                       : 'max-h-0 opacity-0'
                   }`}
                 >
@@ -1035,6 +1302,8 @@ const CounsellorCalendar: React.FC = () => {
                       </label>
                       <input 
                         type="time" 
+                        value={selectedStartTime}
+                        onChange={(e) => setSelectedStartTime(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                         placeholder="Select start time"
                       />
@@ -1046,6 +1315,8 @@ const CounsellorCalendar: React.FC = () => {
                       </label>
                       <input 
                         type="time" 
+                        value={selectedEndTime}
+                        onChange={(e) => setSelectedEndTime(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                         placeholder="Select end time"
                       />
@@ -1053,18 +1324,26 @@ const CounsellorCalendar: React.FC = () => {
                   </div>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Reason (optional)</label>
-                  <textarea 
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none transition-all"
-                    placeholder="Enter reason for unavailability..."
-                  />
+                {/* Add more time slots */}
+                <div className={availabilityType === 'partial' ? '' : 'hidden'}>
+                  <button 
+                    type="button"
+                    className="flex items-center justify-center w-full border-2 border-dashed border-primary bg-primary/5 p-3 rounded-lg hover:bg-primary/10 transition-all text-primary"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    <span>Add Another Time Range</span>
+                  </button>
                 </div>
                 
-                <div className="pt-4">
-                  <button className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-medium transition-all">
-                    Mark Unavailable
+                <div className="pt-4 flex gap-3">
+                  <button className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg font-medium transition-all">
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleSaveAvailability}
+                    className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition-all"
+                  >
+                    Save Availability
                   </button>
                 </div>
               </div>
