@@ -881,12 +881,7 @@ const CreatePrescription = () => {
                 <p className="text-gray-600">Create, manage and track patient prescriptions</p>
               </div>
               <div className="flex gap-3">
-                <button
-                  onClick={() => navigate("/psychiatrist-dashboard")}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Back to Dashboard
-                </button>
+                
               </div>
             </div>
           </div>
