@@ -23,6 +23,7 @@ export interface UnavailableDate {
   date: string;
   reason?: string;
   isFullDay: boolean;
+  isAvailable?: boolean; // Add this property to indicate if this is an available slot within an unavailable day
   timeRange?: {
     start: string;
     end: string;

@@ -95,10 +95,10 @@ export const UnavailabilitySettingsModal: React.FC<UnavailabilitySettingsModalPr
             <div className="flex items-center gap-3">
               <div>
                 <h3 className="text-xl font-semibold text-gray-900">
-                  Unavailability Settings
+                  Availability Settings
                 </h3>
                 <p className="text-sm text-gray-600 mt-1">
-                  Set up recurring unavailability rules
+                  Set up recurring availability rules
                 </p>
               </div>
             </div>
@@ -246,7 +246,7 @@ export const UnavailabilitySettingsModal: React.FC<UnavailabilitySettingsModalPr
                           type="text"
                           value={rule.reason || ''}
                           onChange={(e) => updateRule(rule.id, { reason: e.target.value })}
-                          placeholder="Enter reason for unavailability"
+                          placeholder="Enter reason for availability"
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                         />
                       </div>

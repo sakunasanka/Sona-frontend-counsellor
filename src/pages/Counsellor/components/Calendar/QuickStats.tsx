@@ -10,7 +10,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({
   sessions,
   onShowPendingRequests
 }) => {
-  const pendingCount = sessions.filter(s => s.status === 'pending').length;
+  const confirmedCount = sessions.filter(s => s.status === 'confirmed').length;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
@@ -22,11 +22,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({
         </div>
         <div className="flex items-center justify-between">
           <span className="text-gray-600">Confirmed</span>
-          <span className="font-semibold text-green-600">8</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-gray-600">Pending Requests</span>
-          <span className="font-semibold text-orange-600">4</span>
+          <span className="font-semibold text-green-600">{confirmedCount}</span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-gray-600">Available Hours</span>
@@ -34,15 +30,15 @@ const QuickStats: React.FC<QuickStatsProps> = ({
         </div>
       </div>
       
-      {/* Quick Action for Pending - Only show if there are pending requests */}
-      {pendingCount > 0 && (
+      {/* Quick Action for Confirmed Sessions */}
+      {confirmedCount > 0 && (
         <div className="mt-4 pt-4 border-t border-gray-100">
-          <p className="text-sm text-gray-600 mb-2">Pending requests need your attention</p>
+          <p className="text-sm text-gray-600 mb-2">View all your confirmed sessions</p>
           <button 
             onClick={onShowPendingRequests}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
+            className="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
           >
-            Review Pending ({pendingCount})
+            View Confirmed ({confirmedCount})
           </button>
         </div>
       )}
