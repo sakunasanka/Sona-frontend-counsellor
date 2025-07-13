@@ -6,7 +6,6 @@ import {
   Users, 
   MessageCircle,
   HandCoins,
-  DollarSign, 
   Clock,
   Star,
   BookOpen,
@@ -138,7 +137,7 @@ const CounsellorDashboard = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 lg:gap-6 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6 mb-8">
             {/* Total Sessions */}
             <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
               <div className="flex items-center gap-3 w-full">
@@ -160,7 +159,7 @@ const CounsellorDashboard = () => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xl lg:text-2xl font-bold text-gray-900">{dashboardStats.upcomingSessions}</p>
-                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">Upcoming Sessions</p>
+                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">Bookings</p>
                 </div>
               </div>
             </div>
@@ -191,19 +190,6 @@ const CounsellorDashboard = () => {
               </div>
             </div>
 
-            {/* Monthly Earnings */}
-            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
-              <div className="flex items-center gap-3 w-full">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <HandCoins className="w-5 h-5 lg:w-6 lg:h-6 text-green-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xl lg:text-2xl font-bold text-gray-900">Rs {dashboardStats.monthlyEarnings}</p>
-                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">This Month</p>
-                </div>
-              </div>
-            </div>
-
             {/* Total Blogs */}
             <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
               <div className="flex items-center gap-3 w-full">
@@ -221,7 +207,7 @@ const CounsellorDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Recent Sessions */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6 h-[400px] flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg lg:text-xl font-semibold text-gray-900">Recent Sessions</h2>
                   <button 
@@ -232,29 +218,29 @@ const CounsellorDashboard = () => {
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3 flex-1 overflow-y-auto">
                   {recentSessions.map((session) => (
-                    <div key={session.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                    <div key={session.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors h-[64px]">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                           {session.anonymous ? (
-                            <Users className="w-5 h-5 text-gray-600" />
+                            <Users className="w-4 h-4 text-gray-600" />
                           ) : (
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                              <span className="text-sm font-medium text-blue-600">
+                            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                              <span className="text-xs font-medium text-blue-600">
                                 {session.clientName.charAt(0)}
                               </span>
                             </div>
                           )}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-gray-900 text-sm">
                             {session.anonymous ? session.clientName : session.clientName}
                           </p>
-                          <p className="text-sm text-gray-600">{session.date} at {session.time}</p>
+                          <p className="text-xs text-gray-600">{session.date} at {session.time}</p>
                         </div>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         session.status === 'upcoming' 
                           ? 'bg-blue-100 text-blue-700' 
                           : 'bg-green-100 text-green-700'
@@ -269,26 +255,26 @@ const CounsellorDashboard = () => {
 
             {/* Quick Actions */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6 h-[400px] flex flex-col">
                 <h2 className="text-lg lg:text-xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
-                <div className="space-y-4">
+                <div className="space-y-3 flex-1">
                   {quickActions.map((action, index) => {
                     const IconComponent = action.icon;
                     return (
                       <button
                         key={index}
                         onClick={action.action}
-                        className={`w-full p-4 ${action.bgColor} rounded-xl hover:shadow-md transition-all group text-left`}
+                        className={`w-full p-3 ${action.bgColor} rounded-xl hover:shadow-md transition-all group text-left h-[64px]`}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 ${action.color} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                            <IconComponent className="w-5 h-5 text-white" />
+                        <div className="flex items-center gap-3 h-full">
+                          <div className={`w-8 h-8 ${action.color} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0`}>
+                            <IconComponent className="w-4 h-4 text-white" />
                           </div>
                           <div className="flex-1">
-                            <h3 className={`font-semibold ${action.textColor} mb-1`}>{action.title}</h3>
-                            <p className="text-gray-600 text-sm">{action.description}</p>
+                            <h3 className={`font-semibold ${action.textColor} mb-1 text-sm`}>{action.title}</h3>
+                            <p className="text-gray-600 text-xs">{action.description}</p>
                           </div>
-                          <ArrowRight className={`w-4 h-4 ${action.textColor} group-hover:translate-x-1 transition-transform`} />
+                          <ArrowRight className={`w-4 h-4 ${action.textColor} group-hover:translate-x-1 transition-transform flex-shrink-0`} />
                         </div>
                       </button>
                     );
