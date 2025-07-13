@@ -23,6 +23,7 @@ import PsychiatristSessionDetails from './pages/Psychiatrist/PsychiatristSession
 import PsychiatristFeedbacks from './pages/Psychiatrist/PsychiatristFeedbacks';
 import PsychiatristPatients from './pages/Psychiatrist/PsychiatristPatients';
 import PatientDetails from './pages/Psychiatrist/PatientDetails';
+import CreatePrescription from './pages/Psychiatrist/CreatePrescription';
 
 function App() {
 
@@ -53,6 +54,7 @@ function App() {
         <Route path="/psychiatrist-feedbacks" element={<PsychiatristFeedbacks />} />
         <Route path="/psychiatrist-patients" element={<PsychiatristPatients />} />
         <Route path="/psychiatrist-patients/:clientId" element={<PatientDetails />} />
+        <Route path="/psychiatrist/create-prescription" element={<CreatePrescription />} />
       </Routes>
     </Router>
   );
