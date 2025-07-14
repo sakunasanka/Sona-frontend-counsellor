@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavBar, Sidebar } from "../../components/layout";
-import {
-  Calendar,
-  Users,
+import { 
+  Calendar, 
+  Users, 
   MessageCircle,
   HandCoins,
   Clock,
@@ -44,7 +44,7 @@ const CounsellorDashboard = () => {
     },
     {
       id: 2,
-      clientName: "OptimusPrime",
+      clientName: "OptimusPrime", 
       date: "Tomorrow",
       time: "10:00 AM",
       status: "upcoming",
@@ -54,7 +54,7 @@ const CounsellorDashboard = () => {
       id: 3,
       clientName: "Sarah Johnson",
       date: "June 20",
-      time: "4:00 PM",
+      time: "4:00 PM", 
       status: "completed",
       anonymous: false
     },
@@ -63,7 +63,7 @@ const CounsellorDashboard = () => {
       clientName: "Boraluoda",
       date: "June 19",
       time: "11:00 AM",
-      status: "completed",
+      status: "completed", 
       anonymous: true
     }
   ];
@@ -84,7 +84,7 @@ const CounsellorDashboard = () => {
       description: "Manage your client relationships",
       icon: Users,
       action: () => navigate("/counsellor-clients"),
-      color: "bg-green-500",
+      color: "bg-green-500", 
       bgColor: "bg-green-50",
       textColor: "text-green-600"
     },
@@ -94,7 +94,7 @@ const CounsellorDashboard = () => {
       icon: PlusCircle,
       action: () => navigate("/counsellor/create-blog"),
       color: "bg-purple-500",
-      bgColor: "bg-purple-50",
+      bgColor: "bg-purple-50", 
       textColor: "text-purple-600"
     },
     {
@@ -116,12 +116,12 @@ const CounsellorDashboard = () => {
         <div className="w-80 bg-white border-r hidden lg:block">
           <Sidebar isOpen={true} onClose={closeSidebar} />
         </div>
-
+        
         {/* Mobile Sidebar */}
         <div className="lg:hidden">
           <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         </div>
-
+        
         {/* Main content */}
         <div className="flex-1 overflow-auto p-4 lg:p-6 bg-gray-50">
           {/* Page Header */}
@@ -210,7 +210,7 @@ const CounsellorDashboard = () => {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6 h-[400px] flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg lg:text-xl font-semibold text-gray-900">Recent Sessions</h2>
-                  <button
+                  <button 
                     onClick={() => navigate("/counsellor-sessions")}
                     className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-2 transition-colors"
                   >
@@ -240,10 +240,11 @@ const CounsellorDashboard = () => {
                           <p className="text-xs text-gray-600">{session.date} at {session.time}</p>
                         </div>
                       </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${session.status === 'upcoming'
-                          ? 'bg-blue-100 text-blue-700'
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        session.status === 'upcoming' 
+                          ? 'bg-blue-100 text-blue-700' 
                           : 'bg-green-100 text-green-700'
-                        }`}>
+                      }`}>
                         {session.status === 'upcoming' ? 'Upcoming' : 'Completed'}
                       </span>
                     </div>
@@ -299,7 +300,7 @@ const CounsellorDashboard = () => {
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div className="bg-green-500 h-2 rounded-full" style={{ width: '96%' }}></div>
                 </div>
-
+                
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Client Satisfaction</span>
                   <span className="font-semibold text-gray-900">4.8/5</span>
@@ -307,7 +308,7 @@ const CounsellorDashboard = () => {
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div className="bg-blue-500 h-2 rounded-full" style={{ width: '96%' }}></div>
                 </div>
-
+                
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Response Time</span>
                   <span className="font-semibold text-gray-900">&lt; 2 hours</span>
@@ -334,7 +335,7 @@ const CounsellorDashboard = () => {
                     <p className="text-xs text-gray-600">2 minutes ago</p>
                   </div>
                 </div>
-
+                
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <Calendar className="w-4 h-4 text-blue-600" />
@@ -344,7 +345,7 @@ const CounsellorDashboard = () => {
                     <p className="text-xs text-gray-600">1 hour ago</p>
                   </div>
                 </div>
-
+                
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <Star className="w-4 h-4 text-purple-600" />
@@ -354,7 +355,7 @@ const CounsellorDashboard = () => {
                     <p className="text-xs text-gray-600">3 hours ago</p>
                   </div>
                 </div>
-
+                
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <BookOpen className="w-4 h-4 text-yellow-600" />
