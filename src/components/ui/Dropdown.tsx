@@ -12,6 +12,7 @@ interface DropdownProps {
   placeholder?: string;
   label?: string;
   onSelect: (value: string) => void;
+  className?: string;
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -20,6 +21,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   placeholder = 'Select an option',
   label,
   onSelect,
+  className,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -43,10 +45,20 @@ const Dropdown: React.FC<DropdownProps> = ({
     setIsOpen(false);
   };
 
+  useEffect(() => {
+    const handleClose = () => setIsOpen(false);
+    window.addEventListener('scroll', handleClose);
+    window.addEventListener('resize', handleClose);
+    return () => {
+      window.removeEventListener('scroll', handleClose);
+      window.removeEventListener('resize', handleClose);
+    };
+  }, []);
+
   const selectedLabel = options.find((opt) => opt.value === selected)?.label;
 
   return (
-    <div className="mb-2 p-2" ref={dropdownRef}>
+    <div className={`mb-2 p-2 ${className || ''}`} ref={dropdownRef}>
       {label && (
         <label className="block mb-1 text-sm font-medium text-text">
           {label}
@@ -73,7 +85,7 @@ const Dropdown: React.FC<DropdownProps> = ({
               <li
                 key={option.value}
                 onClick={() => handleSelect(option.value)}
-                className="block px-4 py-2 w-full hover:bg-primaryLight cursor-pointer transition-colors duration-200 text-text"
+                className="block px-4 py-2 w-full hover:bg-secondary cursor-pointer transition-colors duration-200 text-text"
               >
                 {option.label}
               </li>
