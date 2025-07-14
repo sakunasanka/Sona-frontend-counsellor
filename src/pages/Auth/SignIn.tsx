@@ -5,6 +5,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Checkbox from '../../components/ui/Checkbox';
+import { signinCounselor } from '../../api/userAPI';
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -114,18 +115,12 @@ const SignIn = () => {
     setErrors({});
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo purposes, accept any valid email/password
-      if (email && password.length >= 6) {
-        if (userType === 'counsellor') {
-          navigate('/counsellor-dashboard');
-        } else {
-          navigate('/psychiatrist-dashboard');
-        }
+      await signinCounselor({ email, password });
+      // Redirect based on user type
+      if (userType === 'counsellor') {
+        navigate('/counsellor-dashboard');
       } else {
-        setErrors({ general: 'Invalid email or password. Please try again.' });
+        navigate('/psychiatrist/dashboard');
       }
     } catch {
       setErrors({ general: 'An error occurred. Please try again later.' });
