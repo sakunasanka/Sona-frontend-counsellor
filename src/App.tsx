@@ -2,6 +2,7 @@ import Home from './pages/Home';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignUp from "./pages/Auth/SignUp";
 import SignIn from './pages/Auth/SignIn';
+import GeneralUserSignIn from './pages/Auth/GeneralUserSignIn';
 import CounsellorDashboard from './pages/Counsellor/CounsellorDashboard';
 import ExampleUse from './pages/ExampleUse';
 import CounsellorFeedbacks from './pages/Counsellor/CounsellorFeedbacks';
@@ -25,6 +26,7 @@ import PsychiatristPatients from './pages/Psychiatrist/PsychiatristPatients';
 import PatientDetails from './pages/Psychiatrist/PatientDetails';
 import CreatePrescription from './pages/Psychiatrist/CreatePrescription';
 
+
 function App() {
 
   return (
@@ -34,6 +36,7 @@ function App() {
         <Route path="/example-use" element={<ExampleUse />} />
         <Route path="/signup" element={<SignUp/>} ></Route>
         <Route path="/signin" element={<SignIn />} />
+        <Route path="/generalusersignin" element={<GeneralUserSignIn />} />
         <Route path="/counsellor-dashboard" element={<CounsellorDashboard />} />
         <Route path="/psychiatrist-dashboard" element={<PsychiatristDashboard />} />
         <Route path="/counsellor-feedbacks" element={<CounsellorFeedbacks />} />
@@ -55,6 +58,7 @@ function App() {
         <Route path="/psychiatrist-patients" element={<PsychiatristPatients />} />
         <Route path="/psychiatrist-patients/:clientId" element={<PatientDetails />} />
         <Route path="/psychiatrist/create-prescription" element={<CreatePrescription />} />
+        
       </Routes>
     </Router>
   );
