@@ -124,7 +124,7 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
 
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-100 relative z-30">
+    <header className="bg-slate-200 shadow-sm border-b border-gray-100 relative z-30">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center space-x-4">
           <button onClick={onMenuClick} className="p-1 hover:bg-gray-100 rounded-md transition-colors lg:hidden">

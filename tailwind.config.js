@@ -29,7 +29,7 @@ export default {
           500: '#F09E54',
         },
         buttonBlue: {
-          500: '#AEAFF7'
+          500: '#468CF7'
         },
         buttonGreen: {
           500: '#A0E3E2'

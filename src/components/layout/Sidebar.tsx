@@ -65,7 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar */}
       <div className={`
-        h-full bg-[#FFE9EF] flex flex-col transition-all duration-500 ease-in-out
+        h-full bg-buttonBlue-500 flex flex-col transition-all duration-500 ease-in-out
         fixed top-0 left-0 z-50 lg:relative lg:z-auto
         ${isMinimized 
           ? 'w-16 lg:w-16' 
@@ -103,9 +103,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <button
                     onClick={() => handleItemClick(item)}
                     className={`
-                      flex items-center text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300 ease-in-out group w-full
+                      flex items-center text-slate-100 hover:bg-gray-50 rounded-lg text-xl mt-3 transition-all duration-300 ease-in-out group w-full
                       ${isMinimized 
-                        ? 'px-3 py-3 justify-center' 
+                        ? 'px-3 py-3 justify-center hover:bg-gray-50 ' 
                         : 'px-4 py-3 space-x-4'
                       }
                       ${isActive ? 'bg-white shadow-sm' : ''}
@@ -115,7 +115,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <IconComponent 
                       size={20} 
                       className={`
-                        text-gray-600 group-hover:text-gray-800 transition-colors duration-200
+                        text-slate-100 group-hover:text-gray-400 transition-colors duration-200
                         ${isActive ? 'text-gray-800' : ''}
                       `} 
                     />
