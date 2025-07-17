@@ -22,8 +22,9 @@ export default {
           600: '#15803d',
           700: '#166534',
         },
-        buttonPink: {
-          500: '#EF5DA8',
+        slateButton: {
+          100: '#40576b',
+          200: '#52708A'
         },
         buttonOrange: {
           500: '#F09E54',

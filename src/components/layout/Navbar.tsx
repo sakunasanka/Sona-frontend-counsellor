@@ -131,9 +131,9 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
             <Menu size={24} className="text-gray-700" />
           </button>
           
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <img src="/assets/images/Sona-logo.png" alt="SONA" className="w-20" />
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center space-x-3 relative">

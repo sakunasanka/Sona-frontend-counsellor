@@ -224,7 +224,7 @@ const CounsellorClients: React.FC = () => {
   return (
     <div className="flex flex-col h-screen">
       {/* Top Navbar */}
-      <NavBar onMenuClick={toggleSidebar} />
+      {/* <NavBar onMenuClick={toggleSidebar} /> */}
 
       {/* Bottom section: Sidebar + Content */}
       <div className="flex flex-1 overflow-hidden">

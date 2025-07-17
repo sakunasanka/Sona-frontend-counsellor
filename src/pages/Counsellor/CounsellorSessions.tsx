@@ -60,7 +60,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
             <h3 className="font-semibold text-gray-900 text-lg mb-1">
               {session.fullName}
             </h3>
-            <p className="text-sm text-primary font-medium">@{session.username}</p>
+            <p className="text-sm text-slate-400 font-medium">@{session.username}</p>
           </div>
           <div className="flex flex-col items-end gap-2">
             <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(session.status)}`}>
@@ -161,7 +161,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
         <div className="pt-2 border-t border-gray-100">
           <button
             onClick={() => onViewDetails(session.id)}
-            className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary hover:bg-opacity-90 transition-all duration-200 font-medium text-sm"
+            className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-slateButton-100 text-white rounded-xl hover:bg-primary hover:bg-opacity-90 transition-all duration-200 font-medium text-sm"
           >
             <Eye className="w-4 h-4" />
             View Details
@@ -330,7 +330,7 @@ const CounsellorSessions = () => {
 
     return (
         <div className="flex flex-col h-screen">
-            <NavBar onMenuClick={toggleSidebar} />
+            {/* <NavBar onMenuClick={toggleSidebar} /> */}
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar - Let the Sidebar component handle its own positioning */}
                 <div className="w-80 bg-white border-r hidden lg:block">
@@ -350,9 +350,9 @@ const CounsellorSessions = () => {
                             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Session History</h1>
                             <button
                                 onClick={() => navigate('/counsellor-calendar')}
-                                className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
+                                className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-slateButton-100 text-white rounded-xl hover:bg-primary/90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
                             >
-                                <Calendar className="w-4 h-4" />
+                                <Calendar className="w-4 h-4 " />
                                 <span className="hidden sm:inline">View Calendar</span>
                             </button>
                         </div>
@@ -428,7 +428,7 @@ const CounsellorSessions = () => {
                                         placeholder="Search by client name, username, or date..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white focus:border-primary focus:border-opacity-50 focus:ring-2 focus:ring-primary focus:ring-opacity-20 transition-all duration-200 outline-none shadow-sm"
+                                        className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white focus:border-primary f ocus:border-opacity-50 focus:ring-2 focus:ring-primary focus:ring-opacity-20 transition-all duration-200 outline-none shadow-sm"
                                     />
                                     {searchTerm && (
                                         <button

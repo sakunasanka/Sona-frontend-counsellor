@@ -65,7 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar */}
       <div className={`
-        h-full bg-buttonBlue-500 flex flex-col transition-all duration-500 ease-in-out
+        h-full bg-slate-800 flex flex-col transition-all duration-500 ease-in-out
         fixed top-0 left-0 z-50 lg:relative lg:z-auto
         ${isMinimized 
           ? 'w-16 lg:w-16' 
@@ -74,6 +74,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         ${isOpen || isMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         
+        <div className="items-center justify-center max-w-xl mx-auto p-4 border-b lg:border-none mt-5">
+            <img src="/assets/images/Sona-logo-light.png" alt="SONA" className='w-52' />
+          </div>
         {/* Sidebar Header - Only show on mobile when not minimized */}
         {!isMinimized && (
           <div className="flex items-center p-4 border-b lg:hidden">

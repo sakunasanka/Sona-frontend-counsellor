@@ -311,7 +311,7 @@ const CounsellorDashboard = () => {
                 
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Response Time</span>
-                  <span className="font-semibold text-gray-900">&lt; 2 hours</span>
+                  <span className="font-semibold text-gray-900">2 hours</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div className="bg-purple-500 h-2 rounded-full" style={{ width: '85%' }}></div>
