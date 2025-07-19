@@ -334,172 +334,174 @@ Mindfulness isn't about emptying your mind—it's about filling your life with i
 
   return (
     <div className="flex flex-col h-screen">
-      <NavBar onMenuClick={toggleSidebar} />
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar - Let the Sidebar component handle its own positioning */}
-        <div className="hidden lg:block w-80 flex-shrink-0">
-          <Sidebar isOpen={true} onClose={closeSidebar}/>
-        </div>
-        
-        {/* Mobile Sidebar - Handled entirely by Sidebar component */}
-        <div className="lg:hidden">
-          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar}/>
-        </div>
+          <div className="hidden lg:block">
+            <Sidebar isOpen={true} onClose={closeSidebar} />
+          </div>
+          
+          {/* Mobile Sidebar */}
+          <div className="lg:hidden">
+            <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+          </div>
         
         {/* Main content */}
-        <div className="flex-1 overflow-auto p-4 lg:p-6">
-          {/* Page Header */}
-          <div className="flex items-center justify-between gap-4 mb-6 lg:mb-8">
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Your Blogs</h1>
-            <button 
-              onClick={handleCreateNewBlog}
-              className="bg-primary from-pink-500 to-purple-500 hover:bg-primaryLight text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-medium transition-all shadow-sm flex items-center gap-2 flex-shrink-0"
-            >
-              <PenTool className="w-4 lg:w-5 h-4 lg:h-5" />
-              <span className="hidden sm:inline">New Blog</span>
-            </button>
-          </div>
-
-          {/* Stats Cards - Desktop Only */}
-          <div className="hidden lg:grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-secondary/30 rounded-xl flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{blogs.length}</p>
-                  <p className="text-gray-600 text-sm">Total Posts</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-orange-100/30 rounded-xl flex items-center justify-center">
-                  <Eye className="w-6 h-6 text-orange-700" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{totalViews}</p>
-                  <p className="text-gray-600 text-sm">Total Views</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-primary/30 rounded-xl flex items-center justify-center">
-                  <Heart className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{totalLikes}</p>
-                  <p className="text-gray-600 text-sm">Total Likes</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-400/80 rounded-xl flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{publishedCount}</p>
-                  <p className="text-gray-600 text-sm">Published</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Filter Tabs - All Devices */}
-          <div className="flex items-center gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
-            <button 
-              onClick={() => setActiveFilter('all')}
-              className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeFilter === 'all' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              All Posts
-            </button>
-            <button 
-              onClick={() => setActiveFilter('pinned')}
-              className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeFilter === 'pinned' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Pinned
-            </button>
-            <button 
-              onClick={() => setActiveFilter('published')}
-              className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeFilter === 'published' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Published
-            </button>
-            <button 
-              onClick={() => setActiveFilter('drafts')}
-              className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeFilter === 'drafts' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Drafts
-            </button>
-          </div>
-
-          {/* Blog Cards */}
-          <div className="space-y-4 lg:space-y-6">
-            {filteredBlogs.map((blog) => (
-              <BlogCard 
-                key={blog.id} 
-                blog={blog} 
-                onLike={handleLike}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onShare={handleShare}
-                onPin={handlePin}
-              />
-            ))}
-          </div>
-
-          {/* Empty State */}
-          {filteredBlogs.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">
-                <MessageCircle className="w-16 h-16 mx-auto" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No posts found</h3>
-              <p className="text-gray-600 mb-6">
-                {activeFilter === 'drafts' 
-                  ? "You don't have any draft posts yet." 
-                  : activeFilter === 'pinned'
-                  ? "You don't have any pinned posts yet. Pin important posts to highlight them."
-                  : "Start sharing your thoughts and insights with your audience."
-                }
-              </p>
+        <div className="flex-1 overflow-auto">
+          <NavBar onMenuClick={toggleSidebar} />
+          <div className="p-4 lg:p-6">
+            {/* Page Header */}
+            <div className="flex items-center justify-between gap-4 mb-6 lg:mb-8">
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Your Blogs</h1>
               <button 
                 onClick={handleCreateNewBlog}
-                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 mx-auto"
+                className="bg-primary from-pink-500 to-purple-500 hover:bg-primaryLight text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-medium transition-all shadow-sm flex items-center gap-2 flex-shrink-0"
               >
-                <PenTool className="w-5 h-5" />
-                Write your first post
+                <PenTool className="w-4 lg:w-5 h-4 lg:h-5" />
+                <span className="hidden sm:inline">New Blog</span>
               </button>
             </div>
-          )}
 
-          {/* Load More Button */}
-          {filteredBlogs.length > 0 && (
-            <div className="text-center mt-8">
-              <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">
-                Load More Posts
+            {/* Stats Cards - Desktop Only */}
+            <div className="hidden lg:grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-secondary/30 rounded-xl flex items-center justify-center">
+                    <FileText className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{blogs.length}</p>
+                    <p className="text-gray-600 text-sm">Total Posts</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-orange-100/30 rounded-xl flex items-center justify-center">
+                    <Eye className="w-6 h-6 text-orange-700" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{totalViews}</p>
+                    <p className="text-gray-600 text-sm">Total Views</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary/30 rounded-xl flex items-center justify-center">
+                    <Heart className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{totalLikes}</p>
+                    <p className="text-gray-600 text-sm">Total Likes</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-green-400/80 rounded-xl flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{publishedCount}</p>
+                    <p className="text-gray-600 text-sm">Published</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Filter Tabs - All Devices */}
+            <div className="flex items-center gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
+              <button 
+                onClick={() => setActiveFilter('all')}
+                className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeFilter === 'all' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                All Posts
+              </button>
+              <button 
+                onClick={() => setActiveFilter('pinned')}
+                className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeFilter === 'pinned' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Pinned
+              </button>
+              <button 
+                onClick={() => setActiveFilter('published')}
+                className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeFilter === 'published' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Published
+              </button>
+              <button 
+                onClick={() => setActiveFilter('drafts')}
+                className={`px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeFilter === 'drafts' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Drafts
               </button>
             </div>
-          )}
+
+            {/* Blog Cards */}
+            <div className="space-y-4 lg:space-y-6">
+              {filteredBlogs.map((blog) => (
+                <BlogCard 
+                  key={blog.id} 
+                  blog={blog} 
+                  onLike={handleLike}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onShare={handleShare}
+                  onPin={handlePin}
+                />
+              ))}
+            </div>
+
+            {/* Empty State */}
+            {filteredBlogs.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-4">
+                  <MessageCircle className="w-16 h-16 mx-auto" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No posts found</h3>
+                <p className="text-gray-600 mb-6">
+                  {activeFilter === 'drafts' 
+                    ? "You don't have any draft posts yet." 
+                    : activeFilter === 'pinned'
+                    ? "You don't have any pinned posts yet. Pin important posts to highlight them."
+                    : "Start sharing your thoughts and insights with your audience."
+                  }
+                </p>
+                <button 
+                  onClick={handleCreateNewBlog}
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 mx-auto"
+                >
+                  <PenTool className="w-5 h-5" />
+                  Write your first post
+                </button>
+              </div>
+            )}
+
+            {/* Load More Button */}
+            {filteredBlogs.length > 0 && (
+              <div className="text-center mt-8">
+                <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                  Load More Posts
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -1,5 +1,7 @@
 import React from 'react';
 import { Calendar, MessageCircle, Phone, Clock } from 'lucide-react';
+import { Button } from '../../../components/ui';
+import { useNavigate } from 'react-router-dom';
 
 export interface Client {
   id: number;
@@ -25,8 +27,8 @@ interface ClientCardProps {
   client: Client;
   onViewDetails: (clientId: number) => void;
 }
-
 const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
+  const navigate = useNavigate();
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-[rgb(174,175,247)] hover:border-opacity-50 transition-all hover:shadow-md overflow-hidden">
       <div className="p-4 sm:p-6">
@@ -84,13 +86,13 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onViewDetails }) => {
               
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-2 mt-3">
-                <button 
-                  className="flex-1 px-4 py-2.5 bg-primary hover:bg-primaryLight text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 touch-manipulation"
-                  onClick={() => window.location.href = `/counsellor/chats?clientId=${client.id}`}
+                <Button 
+                    variant="calendar" 
+                    onClick={() => navigate(`/counsellor/chats?clientId=${client.id}`)} 
+                    icon={<MessageCircle className="w-4 h-4" />}
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  Message
-                </button>
+                    <span className="hidden sm:inline">Message</span>
+                </Button>
                 <button 
                   className="flex-1 px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-800 text-sm font-medium rounded-lg border border-gray-300 transition-colors flex items-center justify-center touch-manipulation"
                   onClick={() => onViewDetails(client.id)}

@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#EF5DA8", 
-        primaryLight: "rgba(239, 93, 168, 0.9)",
+        primary: "#64748b", /* slate-500 */
+        primaryLight: "rgba(100, 116, 139, 0.9)", /* slate-500 with opacity */
         secondary: 'rgba(174, 175, 247, 0.6)',
         secondaryDark: 'rgba(174, 175, 247, 0.8)',
         secondaryDarker: 'rgba(125, 126, 202, 0.95)',
@@ -24,7 +24,10 @@ export default {
         },
         slateButton: {
           100: '#40576b',
-          200: '#52708A'
+          200: '#52708A',
+          300: '#475f76',
+          400: '#334c64',
+          500: '#213d57',
         },
         buttonOrange: {
           500: '#F09E54',
@@ -41,7 +44,7 @@ export default {
         },
         orange: {
           100: '#FFB1A7'
-        }
+        },
       },
       keyframes: {
         typewriter: {

@@ -223,13 +223,11 @@ const CounsellorClients: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Top Navbar */}
-      {/* <NavBar onMenuClick={toggleSidebar} /> */}
 
       {/* Bottom section: Sidebar + Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <div className="w-80 bg-white border-r hidden lg:block">
+        <div>
           <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         </div>
 
@@ -239,9 +237,11 @@ const CounsellorClients: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto p-4 lg:p-6">
+        <div className="flex-1 overflow-auto">
           {/* Header */}
-          <div className="mb-6 lg:mb-8">
+          <NavBar onMenuClick={toggleSidebar} />
+          <div className="p-4 lg:p-6">
+            <div className="mb-6 lg:mb-8">
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Your Clients</h1>
           </div>
 
@@ -276,7 +276,6 @@ const CounsellorClients: React.FC = () => {
               onStudentFilterChange={setStudentFilter}
             />
           </div>
-
           {/* Client Count */}
           <ClientStats filteredClients={filteredClients} />
 
@@ -287,6 +286,7 @@ const CounsellorClients: React.FC = () => {
             onViewDetails={handleViewClientDetails}
             onClearSearch={() => setSearchQuery('')}
           />
+          </div>
         </div>
       </div>
     </div>

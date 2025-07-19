@@ -75,7 +75,7 @@ const ClientFilters: React.FC<ClientFiltersProps> = ({
           <span className="text-sm text-gray-700 mr-1">Status:</span>
           <button 
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              activeFilter === 'all' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              activeFilter === 'all' ? 'bg-primary bg-opacity-50 text-black' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             onClick={() => onActiveFilterChange('all')}
           >
@@ -83,7 +83,7 @@ const ClientFilters: React.FC<ClientFiltersProps> = ({
           </button>
           <button 
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              activeFilter === 'active' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              activeFilter === 'active' ? 'bg-primary bg-opacity-50 text-black' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             onClick={() => onActiveFilterChange('active')}
           >
@@ -91,7 +91,7 @@ const ClientFilters: React.FC<ClientFiltersProps> = ({
           </button>
           <button 
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              activeFilter === 'new' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              activeFilter === 'new' ? 'bg-primary bg-opacity-50 text-black' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             onClick={() => onActiveFilterChange('new')}
           >
@@ -99,7 +99,7 @@ const ClientFilters: React.FC<ClientFiltersProps> = ({
           </button>
           <button 
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              activeFilter === 'inactive' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              activeFilter === 'inactive' ? 'bg-primary bg-opacity-50 text-black' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             onClick={() => onActiveFilterChange('inactive')}
           >
@@ -113,7 +113,7 @@ const ClientFilters: React.FC<ClientFiltersProps> = ({
           <span className="text-sm text-gray-700 mr-1">Privacy:</span>
           <button 
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              anonymousFilter === 'all' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              anonymousFilter === 'all' ? 'bg-primary bg-opacity-50 text-black' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             onClick={() => onAnonymousFilterChange('all')}
           >
@@ -121,7 +121,7 @@ const ClientFilters: React.FC<ClientFiltersProps> = ({
           </button>
           <button 
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              anonymousFilter === 'anonymous' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              anonymousFilter === 'anonymous' ? 'bg-primary bg-opacity-50 text-black' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             onClick={() => onAnonymousFilterChange('anonymous')}
           >
@@ -129,7 +129,7 @@ const ClientFilters: React.FC<ClientFiltersProps> = ({
           </button>
           <button 
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              anonymousFilter === 'identified' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              anonymousFilter === 'identified' ? 'bg-primary bg-opacity-50 text-black' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             onClick={() => onAnonymousFilterChange('identified')}
           >
@@ -143,7 +143,7 @@ const ClientFilters: React.FC<ClientFiltersProps> = ({
           <span className="text-sm text-gray-700 mr-1">Type:</span>
           <button 
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              studentFilter === 'all' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              studentFilter === 'all' ? 'bg-primary bg-opacity-50 text-black' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             onClick={() => onStudentFilterChange('all')}
           >
@@ -151,7 +151,7 @@ const ClientFilters: React.FC<ClientFiltersProps> = ({
           </button>
           <button 
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              studentFilter === 'student' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              studentFilter === 'student' ? 'bg-primary bg-opacity-50 text-black' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             onClick={() => onStudentFilterChange('student')}
           >
@@ -159,7 +159,7 @@ const ClientFilters: React.FC<ClientFiltersProps> = ({
           </button>
           <button 
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              studentFilter === 'non-student' ? 'bg-primary bg-opacity-50 text-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              studentFilter === 'non-student' ? 'bg-primary bg-opacity-50 text-black' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             onClick={() => onStudentFilterChange('non-student')}
           >

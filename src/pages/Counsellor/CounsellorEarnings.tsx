@@ -154,26 +154,22 @@ const CounsellorEarnings: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Top Navbar */}
-      <NavBar onMenuClick={toggleSidebar} />
-
-      {/* Bottom section: Sidebar + Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-80 bg-white border-r hidden lg:block">
+        {/* Sidebar - Let the Sidebar component handle its own positioning */}
+        <div className="hidden lg:block">
           <Sidebar isOpen={true} onClose={closeSidebar} />
         </div>
-
+        
         {/* Mobile Sidebar */}
         <div className="lg:hidden">
           <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto p-4 lg:p-6">
-          {/* Header */}
-          <div className="mb-6 lg:mb-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex-1 overflow-auto">
+          <NavBar onMenuClick={toggleSidebar} />
+          <div className="p-4 lg:p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                   Your Earnings
@@ -196,216 +192,216 @@ const CounsellorEarnings: React.FC = () => {
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
-            {/* Total Earnings */}
-            <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-3 lg:mb-4">
-                <div className="p-2 lg:p-3 bg-primary/20 rounded-lg lg:rounded-xl">
-                  <HandCoins className="w-4 h-4 lg:w-6 lg:h-6 text-primary" />
-                </div>
-                <div className="text-right">
-                  <div className="text-xs lg:text-sm text-gray-600 mb-1">Total Earnings</div>
-                  <div className="text-sm lg:text-2xl font-bold text-gray-900">Rs {stats.totalEarnings.toLocaleString()}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
-                <ArrowUpRight className="w-3 h-3 lg:w-4 lg:h-4 text-green-500" />
-                <span className="text-green-600 font-medium">+12.5%</span>
-                <span className="text-gray-500 hidden sm:inline">from last month</span>
-              </div>
-            </div>
-
-            {/* This Month */}
-            <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-3 lg:mb-4">
-                <div className="p-2 lg:p-3 bg-buttonBlue-500/20 rounded-lg lg:rounded-xl">
-                  <Calendar className="w-4 h-4 lg:w-6 lg:h-6 text-buttonBlue-500" />
-                </div>
-                <div className="text-right">
-                  <div className="text-xs lg:text-sm text-gray-600 mb-1">This Month</div>
-                  <div className="text-sm lg:text-2xl font-bold text-gray-900">Rs {stats.thisMonth.toLocaleString()}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
-                <ArrowUpRight className="w-3 h-3 lg:w-4 lg:h-4 text-green-500" />
-                <span className="text-green-600 font-medium">+16.7%</span>
-                <span className="text-gray-500 hidden sm:inline">vs last month</span>
-              </div>
-            </div>
-
-            {/* Total Sessions */}
-            <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-3 lg:mb-4">
-                <div className="p-2 lg:p-3 bg-buttonGreen-500/20 rounded-lg lg:rounded-xl">
-                  <Users className="w-4 h-4 lg:w-6 lg:h-6 text-buttonGreen-500" />
-                </div>
-                <div className="text-right">
-                  <div className="text-xs lg:text-sm text-gray-600 mb-1">Total Sessions</div>
-                  <div className="text-sm lg:text-2xl font-bold text-gray-900">{stats.totalSessions}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
-                <TrendingUp className="w-3 h-3 lg:w-4 lg:h-4 text-green-500" />
-                <span className="text-green-600 font-medium">35 this month</span>
-              </div>
-            </div>
-
-            {/* Average per Session */}
-            <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-3 lg:mb-4">
-                <div className="p-2 lg:p-3 bg-buttonOrange-500/20 rounded-lg lg:rounded-xl">
-                  <TrendingUp className="w-4 h-4 lg:w-6 lg:h-6 text-buttonOrange-500" />
-                </div>
-                <div className="text-right">
-                  <div className="text-xs lg:text-sm text-gray-600 mb-1">Avg per Session</div>
-                  <div className="text-sm lg:text-2xl font-bold text-gray-900">Rs {stats.avgPerSession.toFixed(2)}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
-                <ArrowUpRight className="w-3 h-3 lg:w-4 lg:h-4 text-green-500" />
-                <span className="text-green-600 font-medium">+5.2%</span>
-                <span className="text-gray-500 hidden sm:inline">improvement</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            {/* Monthly Earnings Chart */}
-            <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Monthly Earnings</h3>
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">Last 7 months</span>
-                </div>
-              </div>
-              <div className="h-64 flex items-end justify-between gap-4">
-                {monthlyData.map((data, index) => (
-                  <div key={index} className="flex-1 flex flex-col items-center">
-                    <div 
-                      className="w-full bg-gradient-to-t from-primary/40 to-primary/30 rounded-t-lg mb-2 min-h-[20px] transition-all hover:from-primary/50 hover:to-primary/40"
-                      style={{ height: `${(data.earnings / 3000) * 200}px` }}
-                    ></div>
-                    <span className="text-xs text-gray-500 font-medium">{data.month}</span>
-                    <span className="text-xs text-gray-400">Rs {data.earnings}</span>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
+              {/* Total Earnings */}
+              <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
+                <div className="flex items-center justify-between mb-3 lg:mb-4">
+                  <div className="p-2 lg:p-3 bg-primary/20 rounded-lg lg:rounded-xl">
+                    <HandCoins className="w-4 h-4 lg:w-6 lg:h-6 text-primary" />
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Pending Payments */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Pending</h3>
-                <Clock className="w-5 h-5 text-yellow-500" />
-              </div>
-              <div className="space-y-4">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-yellow-600 mb-2">
-                    Rs {stats.pendingAmount.toFixed(2)}
-                  </div>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Awaiting payment processing
-                  </p>
-                  <div className="bg-yellow-50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-sm text-yellow-700">
-                      <Clock className="w-4 h-4" />
-                      <span>Usually processed within 2-3 business days</span>
-                    </div>
+                  <div className="text-right">
+                    <div className="text-xs lg:text-sm text-gray-600 mb-1">Total Earnings</div>
+                    <div className="text-sm lg:text-2xl font-bold text-gray-900">Rs {stats.totalEarnings.toLocaleString()}</div>
                   </div>
                 </div>
+                <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                  <ArrowUpRight className="w-3 h-3 lg:w-4 lg:h-4 text-green-500" />
+                  <span className="text-green-600 font-medium">+12.5%</span>
+                  <span className="text-gray-500 hidden sm:inline">from last month</span>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Transaction History */}
-          <div className="bg-white rounded-2xl border border-gray-100">
-            <div className="p-6 border-b border-gray-100">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <h3 className="text-lg font-semibold text-gray-900">Recent Transactions</h3>
-                <div className="flex items-center gap-3">
-                  <select 
-                    value={filterType} 
-                    onChange={(e) => setFilterType(e.target.value)}
-                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  >
-                    <option value="all">All Types</option>
-                    <option value="session">Sessions</option>
-                    <option value="bonus">Bonuses</option>
-                    <option value="withdrawal">Withdrawals</option>
-                    <option value="refund">Refunds</option>
-                  </select>
-                  <button className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors">
-                    <Filter className="w-4 h-4" />
-                    <span className="text-sm">Filter</span>
-                  </button>
+              {/* This Month */}
+              <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
+                <div className="flex items-center justify-between mb-3 lg:mb-4">
+                  <div className="p-2 lg:p-3 bg-buttonBlue-500/20 rounded-lg lg:rounded-xl">
+                    <Calendar className="w-4 h-4 lg:w-6 lg:h-6 text-buttonBlue-500" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs lg:text-sm text-gray-600 mb-1">This Month</div>
+                    <div className="text-sm lg:text-2xl font-bold text-gray-900">Rs {stats.thisMonth.toLocaleString()}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                  <ArrowUpRight className="w-3 h-3 lg:w-4 lg:h-4 text-green-500" />
+                  <span className="text-green-600 font-medium">+16.7%</span>
+                  <span className="text-gray-500 hidden sm:inline">vs last month</span>
+                </div>
+              </div>
+
+              {/* Total Sessions */}
+              <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
+                <div className="flex items-center justify-between mb-3 lg:mb-4">
+                  <div className="p-2 lg:p-3 bg-buttonGreen-500/20 rounded-lg lg:rounded-xl">
+                    <Users className="w-4 h-4 lg:w-6 lg:h-6 text-buttonGreen-500" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs lg:text-sm text-gray-600 mb-1">Total Sessions</div>
+                    <div className="text-sm lg:text-2xl font-bold text-gray-900">{stats.totalSessions}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                  <TrendingUp className="w-3 h-3 lg:w-4 lg:h-4 text-green-500" />
+                  <span className="text-green-600 font-medium">35 this month</span>
+                </div>
+              </div>
+
+              {/* Average per Session */}
+              <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
+                <div className="flex items-center justify-between mb-3 lg:mb-4">
+                  <div className="p-2 lg:p-3 bg-buttonOrange-500/20 rounded-lg lg:rounded-xl">
+                    <TrendingUp className="w-4 h-4 lg:w-6 lg:h-6 text-buttonOrange-500" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs lg:text-sm text-gray-600 mb-1">Avg per Session</div>
+                    <div className="text-sm lg:text-2xl font-bold text-gray-900">Rs {stats.avgPerSession.toFixed(2)}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                  <ArrowUpRight className="w-3 h-3 lg:w-4 lg:h-4 text-green-500" />
+                  <span className="text-green-600 font-medium">+5.2%</span>
+                  <span className="text-gray-500 hidden sm:inline">improvement</span>
                 </div>
               </div>
             </div>
 
-            <div className="divide-y divide-gray-100">
-              {filteredTransactions.map((transaction) => (
-                <div key={transaction.id} className="p-6 hover:bg-gray-50/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-xl ${
-                      transaction.type === 'session' ? 'bg-primary/10' :
-                      transaction.type === 'bonus' ? 'bg-green-100' :
-                      transaction.type === 'withdrawal' ? 'bg-red-100' :
-                      'bg-gray-100'
-                    }`}>
-                      <div className={`${
-                        transaction.type === 'session' ? 'text-primary' :
-                        transaction.type === 'bonus' ? 'text-green-600' :
-                        transaction.type === 'withdrawal' ? 'text-red-600' :
-                        'text-gray-600'
-                      }`}>
-                        {getTransactionIcon(transaction.type)}
-                      </div>
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {/* Monthly Earnings Chart */}
+              <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900">Monthly Earnings</h3>
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-500">Last 7 months</span>
+                  </div>
+                </div>
+                <div className="h-64 flex items-end justify-between gap-4">
+                  {monthlyData.map((data, index) => (
+                    <div key={index} className="flex-1 flex flex-col items-center">
+                      <div 
+                        className="w-full bg-gradient-to-t from-primary/40 to-primary/30 rounded-t-lg mb-2 min-h-[20px] transition-all hover:from-primary/50 hover:to-primary/40"
+                        style={{ height: `${(data.earnings / 3000) * 200}px` }}
+                      ></div>
+                      <span className="text-xs text-gray-500 font-medium">{data.month}</span>
+                      <span className="text-xs text-gray-400">Rs {data.earnings}</span>
                     </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-gray-900 truncate">
-                          {transaction.client}
-                        </h4>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
-                          {transaction.status}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600">{transaction.sessionType}</p>
-                      <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
-                        <span>{transaction.date}</span>
-                        <span>{transaction.time}</span>
-                        {transaction.duration && (
-                          <span>{transaction.duration} mins</span>
-                        )}
-                      </div>
-                    </div>
+                  ))}
+                </div>
+              </div>
 
-                    <div className="text-right">
-                      <div className={`text-lg font-semibold ${
-                        transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {transaction.amount > 0 ? '+' : ''}Rs {Math.abs(transaction.amount).toFixed(2)}
+              {/* Pending Payments */}
+              <div className="bg-white rounded-2xl border border-gray-100 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900">Pending</h3>
+                  <Clock className="w-5 h-5 text-yellow-500" />
+                </div>
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-yellow-600 mb-2">
+                      Rs {stats.pendingAmount.toFixed(2)}
+                    </div>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Awaiting payment processing
+                    </p>
+                    <div className="bg-yellow-50 rounded-xl p-4">
+                      <div className="flex items-center gap-2 text-sm text-yellow-700">
+                        <Clock className="w-4 h-4" />
+                        <span>Usually processed within 2-3 business days</span>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                      <MoreHorizontal className="w-4 h-4 text-gray-400" />
+            {/* Transaction History */}
+            <div className="bg-white rounded-2xl border border-gray-100">
+              <div className="p-6 border-b border-gray-100">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Recent Transactions</h3>
+                  <div className="flex items-center gap-3">
+                    <select 
+                      value={filterType} 
+                      onChange={(e) => setFilterType(e.target.value)}
+                      className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    >
+                      <option value="all">All Types</option>
+                      <option value="session">Sessions</option>
+                      <option value="bonus">Bonuses</option>
+                      <option value="withdrawal">Withdrawals</option>
+                      <option value="refund">Refunds</option>
+                    </select>
+                    <button className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors">
+                      <Filter className="w-4 h-4" />
+                      <span className="text-sm">Filter</span>
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
 
-            <div className="p-6 border-t border-gray-100 text-center">
-              <button className="text-primary hover:text-primary/80 font-medium transition-colors">
-                View All Transactions
-              </button>
+              <div className="divide-y divide-gray-100">
+                {filteredTransactions.map((transaction) => (
+                  <div key={transaction.id} className="p-6 hover:bg-gray-50/50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className={`p-3 rounded-xl ${
+                        transaction.type === 'session' ? 'bg-primary/10' :
+                        transaction.type === 'bonus' ? 'bg-green-100' :
+                        transaction.type === 'withdrawal' ? 'bg-red-100' :
+                        'bg-gray-100'
+                      }`}>
+                        <div className={`${
+                          transaction.type === 'session' ? 'text-primary' :
+                          transaction.type === 'bonus' ? 'text-green-600' :
+                          transaction.type === 'withdrawal' ? 'text-red-600' :
+                          'text-gray-600'
+                        }`}>
+                          {getTransactionIcon(transaction.type)}
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium text-gray-900 truncate">
+                            {transaction.client}
+                          </h4>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
+                            {transaction.status}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">{transaction.sessionType}</p>
+                        <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                          <span>{transaction.date}</span>
+                          <span>{transaction.time}</span>
+                          {transaction.duration && (
+                            <span>{transaction.duration} mins</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className={`text-lg font-semibold ${
+                          transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {transaction.amount > 0 ? '+' : ''}Rs {Math.abs(transaction.amount).toFixed(2)}
+                        </div>
+                      </div>
+
+                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <MoreHorizontal className="w-4 h-4 text-gray-400" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-6 border-t border-gray-100 text-center">
+                <button className="text-primary hover:text-primary/80 font-medium transition-colors">
+                  View All Transactions
+                </button>
+              </div>
             </div>
           </div>
         </div>

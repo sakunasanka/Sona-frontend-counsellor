@@ -337,20 +337,21 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
 
   return (
     <div className="flex flex-col h-screen">
-        <NavBar onMenuClick={toggleSidebar} />
         <div className="flex flex-1 overflow-hidden">
             {/* Sidebar - Let the Sidebar component handle its own positioning */}
-            <div className="w-80 bg-white border-r hidden lg:block">
-                <Sidebar isOpen={true} onClose={closeSidebar}/>
+            <div className="hidden lg:block">
+              <Sidebar isOpen={true} onClose={closeSidebar} />
             </div>
             
-            {/* Mobile Sidebar - Handled entirely by Sidebar component */}
+            {/* Mobile Sidebar */}
             <div className="lg:hidden">
-                <Sidebar isOpen={sidebarOpen} onClose={closeSidebar}/>
+              <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
             </div>
             
             {/* Main content */}
-            <div className="flex-1 overflow-auto p-4 lg:p-6">
+            <div className="flex-1 overflow-auto">
+              <NavBar onMenuClick={toggleSidebar} />
+              <div className="p-4 lg:p-6">
                 {/* Page Title */}
                 <div className="mb-6 lg:mb-8">
                     <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Feedbacks</h1>
@@ -392,7 +393,7 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
                         </div>
                     </div>
                 </div>
-
+                
                 {/* Filter Tabs - All Devices */}
                 <div className="flex items-center gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit overflow-x-auto">
                     <button 
@@ -473,6 +474,7 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
                         </button>
                     </div>
                 )}
+              </div>  
             </div>
         </div>
     </div>

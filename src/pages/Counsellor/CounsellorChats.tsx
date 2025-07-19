@@ -444,13 +444,9 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
-      {/* Top Navbar */}
-      <NavBar onMenuClick={toggleSidebar} />
-
-      {/* Bottom section: Sidebar + Chat Content */}
+    <div className="flex flex-col h-screen bg-gray-100">
+      {/* Sidebar */}
       <div className="flex flex-1 overflow-hidden">
-        
         {/* Minimized Sidebar - Always visible on desktop */}
         <div className="hidden lg:block">
           <Sidebar 
@@ -469,45 +465,51 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
           />
         </div>
 
-        {/* Chat Content Area */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Desktop Layout */}
-          <div className="hidden lg:flex flex-1">
-            {/* Chat List */}
-            <ChatList
-              chats={chats}
-              selectedChat={selectedChat}
-              onChatSelect={handleChatSelect}
-              getLastMessage={getLastMessage}
-            />
-            
-            {/* Chat Area */}
-            <ChatArea
-              selectedChat={selectedChat}
-              messages={selectedChat?.id === 1 ? messages : []}
-              onSendMessage={handleSendMessage}
-            />
-          </div>
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Navbar */}
+          <NavBar onMenuClick={toggleSidebar} />
 
-          {/* Mobile Layout */}
-          <div className="lg:hidden flex-1 flex flex-col">
-            {currentView === 'chats' ? (
+          {/* Chat Content */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Desktop Layout */}
+            <div className="hidden lg:flex flex-1">
+              {/* Chat List */}
               <ChatList
                 chats={chats}
                 selectedChat={selectedChat}
                 onChatSelect={handleChatSelect}
                 getLastMessage={getLastMessage}
-                isMobile={true}
               />
-            ) : (
+              
+              {/* Chat Area */}
               <ChatArea
                 selectedChat={selectedChat}
                 messages={selectedChat?.id === 1 ? messages : []}
                 onSendMessage={handleSendMessage}
-                onBack={handleBackToChats}
-                isMobile={true}
               />
-            )}
+            </div>
+
+            {/* Mobile Layout */}
+            <div className="lg:hidden flex-1 flex flex-col">
+              {currentView === 'chats' ? (
+                <ChatList
+                  chats={chats}
+                  selectedChat={selectedChat}
+                  onChatSelect={handleChatSelect}
+                  getLastMessage={getLastMessage}
+                  isMobile={true}
+                />
+              ) : (
+                <ChatArea
+                  selectedChat={selectedChat}
+                  messages={selectedChat?.id === 1 ? messages : []}
+                  onSendMessage={handleSendMessage}
+                  onBack={handleBackToChats}
+                  isMobile={true}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -956,26 +956,23 @@ const ClientDetails: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Top Navbar */}
-      <NavBar onMenuClick={toggleSidebar} />
-
-      {/* Bottom section: Sidebar + Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-80 bg-white border-r hidden lg:block">
-          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+        {/* Sidebar - Let the Sidebar component handle its own positioning */}
+        <div className="hidden lg:block">
+          <Sidebar isOpen={true} onClose={closeSidebar} />
         </div>
-
+        
         {/* Mobile Sidebar */}
         <div className="lg:hidden">
           <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto p-4 lg:p-6">
-          {/* Main content starts here */}
-          
-          {/* Client Profile Header */}
+        <div className="flex-1 overflow-auto">
+          <NavBar onMenuClick={toggleSidebar} />
+
+          <div className="p-4 lg:p-6">
+              {/* Client Profile Header */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div className="flex flex-col md:flex-row md:items-center">
               <div className="flex items-center">
@@ -1221,6 +1218,7 @@ const ClientDetails: React.FC = () => {
               </div>
             </div>
           )}
+          </div>  
         </div>
       </div>
     </div>
