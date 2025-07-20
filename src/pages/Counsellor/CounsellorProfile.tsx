@@ -151,27 +151,23 @@ const CounsellorProfile: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Top Navbar */}
-      <NavBar onMenuClick={toggleSidebar} />
-
-      {/* Bottom section: Sidebar + Content */}
       <div className="flex flex-1 overflow-hidden">
         
         {/* Sidebar */}
-        <div className="w-80 bg-white border-r hidden lg:block">
-          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar}/>
+        <div className="hidden lg:block">
+          <Sidebar isOpen={true} onClose={closeSidebar} />
         </div>
-
+        
         {/* Mobile Sidebar */}
         <div className="lg:hidden">
-          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar}/>
+          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         </div>
         
         {/* Main Content */}
-        <div className="flex-1 overflow-auto lg:ml-0">
-          <div className="p-6">
-            <div className="max-w-4xl mx-auto">
-              
+        <div className="flex-1 overflow-auto">
+          <NavBar onMenuClick={toggleSidebar} />
+          <div className="p-4 lg:p-6 max-w-5xl mx-auto">
+            <div >
               <ProfileHeader
                 profile={profileState.profile}
                 editForm={profileState.editForm}

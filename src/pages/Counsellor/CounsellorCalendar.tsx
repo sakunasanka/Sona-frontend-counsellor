@@ -808,108 +808,107 @@ const CounsellorCalendar: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Top Navbar */}
-      <NavBar onMenuClick={toggleSidebar} />
-
-      {/* Bottom section: Sidebar + Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-80 bg-white border-r hidden lg:block">
+        {/* Sidebar - Let the Sidebar component handle its own positioning */}
+        <div className="hidden lg:block">
           <Sidebar isOpen={true} onClose={closeSidebar} />
         </div>
-
+        
         {/* Mobile Sidebar */}
         <div className="lg:hidden">
           <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto p-4 lg:p-6">
-          {/* Header */}
-          <CalendarHeader 
-            onMarkUnavailable={() => setShowUnavailable(true)} 
-            onSaveUnavailabilityRules={handleSaveUnavailabilityRules}
-            existingRules={unavailabilityRules}
-          />
+        <div className="flex-1 overflow-auto">
+          <NavBar onMenuClick={toggleSidebar} />
+          <div className="p-4 lg:p-6">
+            {/* Header */}
+            <CalendarHeader 
+              onMarkUnavailable={() => setShowUnavailable(true)} 
+              onSaveUnavailabilityRules={handleSaveUnavailabilityRules}
+              existingRules={unavailabilityRules}
+            />
 
-          {/* Status Legend */}
-          <StatusLegend />
+            {/* Status Legend */}
+            <StatusLegend />
 
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 h-full">
-            {/* Calendar */}
-            <div className="xl:col-span-3">
-              <CalendarGrid
-                currentDate={currentDate}
-                days={days}
-                months={months}
-                daysOfWeek={daysOfWeek}
-                onNavigateMonth={navigateMonth}
-                onToday={() => setCurrentDate(new Date())}
-                onDateClick={handleDateClick}
-                onUnavailableSlotClick={handleUnavailableSlotClick}
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 h-full">
+              {/* Calendar */}
+              <div className="xl:col-span-3">
+                <CalendarGrid
+                  currentDate={currentDate}
+                  days={days}
+                  months={months}
+                  daysOfWeek={daysOfWeek}
+                  onNavigateMonth={navigateMonth}
+                  onToday={() => setCurrentDate(new Date())}
+                  onDateClick={handleDateClick}
+                  onUnavailableSlotClick={handleUnavailableSlotClick}
+                  onSessionAction={handleSessionAction}
+                  getStatusColor={getStatusColor}
+                />
+              </div>
+
+              {/* Right Sidebar */}
+              <CalendarSidebar
+                sessions={sessions}
                 onSessionAction={handleSessionAction}
+                onShowPendingRequests={() => setShowPendingRequests(true)}
                 getStatusColor={getStatusColor}
               />
             </div>
 
-            {/* Right Sidebar */}
-            <CalendarSidebar
-              sessions={sessions}
-              onSessionAction={handleSessionAction}
-              onShowPendingRequests={() => setShowPendingRequests(true)}
-              getStatusColor={getStatusColor}
+            {/* Time Slots Modal */}
+            {showTimeSlots && selectedDate && (
+              <TimeSlotsModal
+                selectedDate={selectedDate}
+                timeSlots={timeSlots}
+                sessions={sessions}
+                isTimeSlotUnavailable={isTimeSlotUnavailable}
+                onClose={() => setShowTimeSlots(false)}
+                onMarkAsUnavailable={handleMarkAsUnavailable}
+              />
+            )}
+
+              {showUnavailable && (
+              <MarkUnavailableModal
+                unavailabilityType={unavailabilityType}
+                onUnavailabilityTypeChange={setUnavailabilityType}
+                sessions={sessions}
+                unavailableDates={unavailableDates}
+                onClose={() => {
+                  setShowUnavailable(false);
+                  setUnavailabilityType('full-day');
+                }}
+              />
+            )}
+
+            {/* Unavailable Day Details Modal */}
+            {showUnavailableDetails && selectedUnavailableDate && (
+              <UnavailableDayDetailsModal
+                isOpen={showUnavailableDetails}
+                onClose={() => setShowUnavailableDetails(false)}
+                unavailableDate={selectedUnavailableDate}
+                onMarkAsAvailable={handleMarkAsAvailable}
+              />
+            )}
+
+            <HistoricalDetailsModal
+              isOpen={showHistoricalDetails}
+              onClose={() => {
+                setShowHistoricalDetails(false);
+                setSelectedHistoricalDate(null);
+              }}
+              historicalData={selectedHistoricalDate}
+            />
+
+            <PendingRequestsModal
+              isOpen={showPendingRequests}
+              onClose={() => setShowPendingRequests(false)}
+              pendingSessions={sessions.filter(s => s.status === 'confirmed')}
             />
           </div>
-
-                {/* Time Slots Modal */}
-      {showTimeSlots && selectedDate && (
-        <TimeSlotsModal
-          selectedDate={selectedDate}
-          timeSlots={timeSlots}
-          sessions={sessions}
-          isTimeSlotUnavailable={isTimeSlotUnavailable}
-          onClose={() => setShowTimeSlots(false)}
-          onMarkAsUnavailable={handleMarkAsUnavailable}
-        />
-      )}
-
-          {showUnavailable && (
-            <MarkUnavailableModal
-              unavailabilityType={unavailabilityType}
-              onUnavailabilityTypeChange={setUnavailabilityType}
-              sessions={sessions}
-              unavailableDates={unavailableDates}
-              onClose={() => {
-                setShowUnavailable(false);
-                setUnavailabilityType('full-day');
-              }}
-            />
-          )}
-
-          {/* Unavailable Day Details Modal */}
-      {showUnavailableDetails && selectedUnavailableDate && (
-        <UnavailableDayDetailsModal
-          isOpen={showUnavailableDetails}
-          onClose={() => setShowUnavailableDetails(false)}
-          unavailableDate={selectedUnavailableDate}
-          onMarkAsAvailable={handleMarkAsAvailable}
-        />
-      )}
-
-          <HistoricalDetailsModal
-            isOpen={showHistoricalDetails}
-            onClose={() => {
-              setShowHistoricalDetails(false);
-              setSelectedHistoricalDate(null);
-            }}
-            historicalData={selectedHistoricalDate}
-          />
-
-          <PendingRequestsModal
-            isOpen={showPendingRequests}
-            onClose={() => setShowPendingRequests(false)}
-            pendingSessions={sessions.filter(s => s.status === 'confirmed')}
-          />
         </div>
       </div>
     </div>

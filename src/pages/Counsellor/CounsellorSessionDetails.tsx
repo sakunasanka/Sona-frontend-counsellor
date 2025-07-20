@@ -189,19 +189,20 @@ const CounsellorSessionDetails: React.FC = () => {
 
     return (
         <div className="flex flex-col h-screen">
-            <NavBar onMenuClick={toggleSidebar} />
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
-                <div className="w-80 bg-white border-r hidden lg:block">
+                <div className="hidden lg:block">
                     <Sidebar isOpen={true} onClose={closeSidebar} />
                 </div>
                 
+                {/* Mobile Sidebar */}
                 <div className="lg:hidden">
                     <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
                 </div>
                 
                 {/* Main content */}
-                <div className="flex-1 overflow-auto bg-gray-50">
+                <div className="flex-1 overflow-auto">
+                    <NavBar onMenuClick={toggleSidebar} />
                     <div className="p-3 sm:p-4 lg:p-6">
                         {/* Client Overview Card */}
                         <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 mb-4 sm:mb-6 overflow-hidden">

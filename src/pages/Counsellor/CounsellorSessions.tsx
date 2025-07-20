@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { NavBar, Sidebar } from "../../components/layout";
 import { Search, Calendar, Clock, User, Eye, ChevronDown, CheckCircle2, Video, MapPin, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "../../components/ui";
 
 interface Session {
   id: string;
@@ -25,6 +26,8 @@ interface SessionCardProps {
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => {
+  const navigate = useNavigate();
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -159,13 +162,13 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
 
         {/* Action Button */}
         <div className="pt-2 border-t border-gray-100">
-          <button
-            onClick={() => onViewDetails(session.id)}
-            className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-slateButton-100 text-white rounded-xl hover:bg-primary hover:bg-opacity-90 transition-all duration-200 font-medium text-sm"
+          <Button 
+              variant="calendar" 
+              onClick={() => onViewDetails(session.id)}
+              icon={<Eye className="w-4 h-4" />}
           >
-            <Eye className="w-4 h-4" />
-            View Details
-          </button>
+              <span className="hidden sm:inline">View Details</span>
+          </Button>
         </div>
       </div>
     </div>
@@ -330,31 +333,31 @@ const CounsellorSessions = () => {
 
     return (
         <div className="flex flex-col h-screen">
-            {/* <NavBar onMenuClick={toggleSidebar} /> */}
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar - Let the Sidebar component handle its own positioning */}
-                <div className="w-80 bg-white border-r hidden lg:block">
-                    <Sidebar isOpen={true} onClose={closeSidebar} />
+                <div className="hidden lg:block">
+                  <Sidebar isOpen={true} onClose={closeSidebar} />
                 </div>
                 
-                {/* Mobile Sidebar - Handled entirely by Sidebar component */}
+                {/* Mobile Sidebar */}
                 <div className="lg:hidden">
-                    <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+                  <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
                 </div>
                 
                 {/* Main content */}
                 <div className="flex-1 overflow-auto">
+                  <NavBar onMenuClick={toggleSidebar} />
                     <div className="p-4 lg:p-6">
                         {/* Page Title */}
                         <div className="mb-6 lg:mb-8 flex items-center justify-between">
                             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Session History</h1>
-                            <button
-                                onClick={() => navigate('/counsellor-calendar')}
-                                className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-slateButton-100 text-white rounded-xl hover:bg-primary/90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
+                            <Button 
+                                variant="calendar" 
+                                onClick={() => navigate('/counsellor-calendar')} 
+                                icon={<Calendar className="w-4 h-4" />}
                             >
-                                <Calendar className="w-4 h-4 " />
                                 <span className="hidden sm:inline">View Calendar</span>
-                            </button>
+                            </Button>
                         </div>
 
                         {/* Stats Cards - Desktop Only */}
@@ -428,7 +431,7 @@ const CounsellorSessions = () => {
                                         placeholder="Search by client name, username, or date..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white focus:border-primary f ocus:border-opacity-50 focus:ring-2 focus:ring-primary focus:ring-opacity-20 transition-all duration-200 outline-none shadow-sm"
+                                        className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white focus:border-slate-500 f ocus:border-opacity-50 focus:ring-2 focus:ring-slate-500 focus:ring-opacity-20 transition-all duration-200 outline-none shadow-sm"
                                     />
                                     {searchTerm && (
                                         <button
@@ -447,7 +450,7 @@ const CounsellorSessions = () => {
                                     <select
                                         value={filterBy}
                                         onChange={(e) => setFilterBy(e.target.value)}
-                                        className="appearance-none w-full pl-4 pr-10 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 hover:bg-white focus:bg-white focus:border-primary focus:border-opacity-50 focus:ring-2 focus:ring-primary focus:ring-opacity-20 transition-all duration-200 outline-none cursor-pointer shadow-sm font-medium"
+                                        className="appearance-none w-full pl-4 pr-10 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 hover:bg-white focus:bg-white focus:border-slate-500 focus:border-opacity-50 focus:ring-2 focus:ring-slate-500 focus:ring-opacity-20 transition-all duration-200 outline-none cursor-pointer shadow-sm font-medium"
                                     >
                                         <option value="All">All Status</option>
                                         <option value="completed">Completed</option>
@@ -461,7 +464,7 @@ const CounsellorSessions = () => {
                                     <select
                                         value={sortBy}
                                         onChange={(e) => setSortBy(e.target.value)}
-                                        className="appearance-none w-full pl-4 pr-10 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 hover:bg-white focus:bg-white focus:border-primary focus:border-opacity-50 focus:ring-2 focus:ring-primary focus:ring-opacity-20 transition-all duration-200 outline-none cursor-pointer shadow-sm font-medium"
+                                        className="appearance-none w-full pl-4 pr-10 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 hover:bg-white focus:bg-white focus:border-slate-500 focus:border-opacity-50 focus:ring-2 focus:ring-slate-500 focus:ring-opacity-20 transition-all duration-200 outline-none cursor-pointer shadow-sm font-medium"
                                     >
                                         <option value="Newest">Newest First</option>
                                         <option value="Oldest">Oldest First</option>
