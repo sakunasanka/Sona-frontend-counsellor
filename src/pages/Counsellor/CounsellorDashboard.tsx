@@ -36,7 +36,7 @@ const CounsellorDashboard = () => {
   const recentSessions = [
     {
       id: 1,
-      clientName: "JuniusIsMe",
+      clientName: "Suneera Sumanga",
       date: "Today",
       time: "2:00 PM",
       status: "upcoming",
@@ -44,7 +44,7 @@ const CounsellorDashboard = () => {
     },
     {
       id: 2,
-      clientName: "OptimusPrime", 
+      clientName: "Nadeera Jayasinghe", 
       date: "Tomorrow",
       time: "10:00 AM",
       status: "upcoming",
@@ -52,7 +52,7 @@ const CounsellorDashboard = () => {
     },
     {
       id: 3,
-      clientName: "Sarah Johnson",
+      clientName: "Uddika Premaratne",
       date: "June 20",
       time: "4:00 PM", 
       status: "completed",
@@ -60,7 +60,7 @@ const CounsellorDashboard = () => {
     },
     {
       id: 4,
-      clientName: "Boraluoda",
+      clientName: "Sajith Premadasa",
       date: "June 19",
       time: "11:00 AM",
       status: "completed", 
@@ -328,7 +328,7 @@ const CounsellorDashboard = () => {
                       <MessageCircle className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">New message from JuniusIsMe</p>
+                      <p className="text-sm font-medium text-gray-900">New message from Sajith Premadasa</p>
                       <p className="text-xs text-gray-600">2 minutes ago</p>
                     </div>
                   </div>
@@ -338,7 +338,7 @@ const CounsellorDashboard = () => {
                       <Calendar className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">Session completed with Sarah Johnson</p>
+                      <p className="text-sm font-medium text-gray-900">Session completed with Anura Kumara</p>
                       <p className="text-xs text-gray-600">1 hour ago</p>
                     </div>
                   </div>
