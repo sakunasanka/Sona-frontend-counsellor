@@ -37,6 +37,7 @@ export interface CalendarDay {
   isToday: boolean;
   isPastDay: boolean;
   isUnavailable: boolean;
+  isClickable: boolean; // New property to track if the day is within the clickable window
   unavailableDetails?: UnavailableDate;
 }
 
@@ -45,4 +46,16 @@ export interface HistoricalDate {
   sessions: Session[];
   unavailableSlots: any[];
   unavailableDetails?: UnavailableDate;
+}
+
+export interface UnavailabilityRule {
+  id: string;
+  type: 'weekly' | 'monthly' | 'specific';
+  day?: number; // 0-6 for weekly (Sunday-Saturday), 1-31 for monthly
+  dates?: string[]; // ISO date strings for specific dates
+  timeRange?: {
+    start: string;
+    end: string;
+  };
+  isFullDay: boolean;
 }

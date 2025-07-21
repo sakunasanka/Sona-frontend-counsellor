@@ -60,80 +60,95 @@ const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
   // Check if the day has any available time slots
   const hasAvailableSlots = day.unavailableSlots.some(slot => slot.isAvailable);
 
+  // Determine cell styling based on the new rules
+  const getCellStyles = () => {
+    // Base styles
+    let styles = "aspect-square border-b border-r border-gray-100 p-1 transition-colors flex flex-col relative";
+    
+    // If the day is today, add today styling
+    if (day.isToday) {
+      styles += " bg-blue-100 ring-2 ring-primary ring-inset";
+    }
+    
+    // If the day is in the past, style it as past but make it clickable
+    if (day.isPastDay) {
+      styles += " bg-gray-50 opacity-80 cursor-pointer hover:bg-gray-100";
+    } 
+    // If the day is not clickable (outside the 2-week window), style it as unclickable
+    else if (!day.isClickable) {
+      styles += " bg-gray-100 cursor-default";
+    }
+    // If the day is clickable (within the 2-week window)
+    else {
+      // If the day is fully available
+      if (!day.isUnavailable) {
+        styles += " bg-blue-100 border-blue-300 hover:bg-blue-150 cursor-pointer";
+      }
+      // If the day has some available slots (partially available)
+      else if (hasAvailableSlots) {
+        styles += " bg-green-50 border-green-200 hover:bg-green-100 cursor-pointer";
+      }
+      // If the day is unavailable but clickable
+      else {
+        styles += " bg-gray-200 hover:bg-gray-300 cursor-pointer";
+      }
+    }
+    
+    return styles;
+  };
+
+  // Determine text styling for the date number
+  const getDateNumberStyles = () => {
+    let styles = "text-xs lg:text-sm font-medium mb-1 flex items-center justify-between relative z-10";
+    
+    if (day.isToday) {
+      styles += " text-primary font-bold";
+    } else if (!day.isClickable) {
+      styles += " text-gray-500"; // Unclickable days
+    } else if (!day.isUnavailable) {
+      styles += " text-blue-700"; // Available days
+    } else if (hasAvailableSlots) {
+      styles += " text-green-700"; // Partially available days - changed from blue to green
+    } else if (day.isPastDay) {
+      styles += " text-gray-600"; // Past days
+    } else {
+      styles += " text-gray-900"; // Default
+    }
+    
+    return styles;
+  };
+
   return (
     <div 
-      className={`aspect-square border-b border-r border-gray-100 p-1 transition-colors flex flex-col relative ${
-        day.isPastDay ? 'cursor-default' : 'cursor-pointer'
-      } ${
-        day.isToday ? 'bg-blue-100 ring-2 ring-primary ring-inset' : ''
-      } ${
-        day.isPastDay ? 'bg-gray-50 opacity-80' : ''
-      } ${
-        !day.isUnavailable ? 
-          'bg-blue-100 border-blue-300 hover:bg-blue-150' : 
-          hasAvailableSlots ?
-            'bg-blue-50 border-blue-200 hover:bg-blue-100' :
-          day.sessions.length === 0 && day.unavailableSlots.length === 0 ? 
-            'bg-red-25 hover:bg-red-50' : 
-            'hover:bg-gray-50'
-      }`}
-      onClick={() => onDateClick(day.date)}
+      className={getCellStyles()}
+      onClick={() => onDateClick(day.date)} // Make all days clickable, including past days
     >
       {/* Date number and availability indicator */}
-      <div className={`
-        text-xs lg:text-sm font-medium mb-1
-        ${day.isToday ? 'text-primary font-bold' : 
-          !day.isUnavailable || hasAvailableSlots ? 'text-blue-700' : 
-          day.isPastDay ? 'text-gray-600' :
-          'text-gray-900'
-        } flex items-center justify-between relative z-10`}>
-        <span className={!day.isUnavailable || hasAvailableSlots ? '' : 'line-through'}>{day.date.getDate()}</span>
-        {!day.isPastDay && (!day.isUnavailable || hasAvailableSlots) && (
+      <div className={getDateNumberStyles()}>
+        <span className={!day.isUnavailable || hasAvailableSlots ? '' : 'line-through'}>
+          {day.date.getDate()}
+        </span>
+        {(day.isClickable || day.isPastDay) && (!day.isUnavailable || hasAvailableSlots) && (
           <Calendar className="w-3 h-3 text-blue-600" />
         )}
       </div>
       
-      {/* Availability status label - only show "Unavailable" for fully unavailable days */}
-      {day.isUnavailable && !hasAvailableSlots && !day.isPastDay && (
-        <div className="text-xs text-red-600 font-medium px-1 py-0.5 bg-red-200/50 rounded-sm mb-1">
-          Unavailable
-        </div>
-      )}
-      
       {/* Partial day slots - show if there are any */}
       {day.unavailableSlots.length > 0 && (
-        <div className="flex-1 overflow-hidden mb-1">
-          {day.unavailableSlots.slice(0, 2).map(renderPartialDaySlot)}
-          {day.unavailableSlots.length > 2 && (
-            <div className="text-xs text-gray-500 px-0.5 truncate">
-              +{day.unavailableSlots.length - 2} more
-            </div>
-          )}
+        <div className="space-y-0.5 mb-1">
+          {day.unavailableSlots.map(renderPartialDaySlot)}
         </div>
       )}
       
-      {/* Sessions list - Show if day is available, has available slots, OR it's a past day */}
-      {(!day.isUnavailable || hasAvailableSlots || day.isPastDay) && day.sessions.length > 0 && (
-        <div className="flex-1 overflow-hidden">
-          {/* Desktop view: Show up to 3 sessions */}
-          <div className="hidden lg:block">
-            {day.sessions.slice(0, maxSessionsDesktop).map(renderSession)}
-            {day.sessions.length > maxSessionsDesktop && (
-              <div className="text-xs text-gray-500 px-0.5 truncate">
-                +{day.sessions.length - maxSessionsDesktop} more
-              </div>
-            )}
-          </div>
-          
-          {/* Mobile view: Show up to 2 sessions */}
-          <div className="lg:hidden">
-            {day.sessions.slice(0, maxSessionsMobile).map(renderSession)}
-            {day.sessions.length > maxSessionsMobile && (
-              <div className="text-xs text-gray-500 px-0.5 truncate">
-                +{day.sessions.length - maxSessionsMobile} more
-              </div>
-            )}
-          </div>
+      {/* Sessions - show up to the limit */}
+      {day.sessions.length > 0 && (
+        <div className="space-y-0.5">
+          {day.sessions.slice(0, maxSessionsDesktop).map(renderSession)}
+          {day.sessions.length > maxSessionsDesktop && (
+            <div className="text-xs text-gray-600 font-medium">
+              +{day.sessions.length - maxSessionsDesktop} more
+            </div>
+          )}
         </div>
       )}
     </div>
