@@ -126,7 +126,7 @@ const CounsellorDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
-                      Welcome back, Dr. Sakuna! 👋
+                      Welcome back, Dr. Hiruni! 👋
                     </h1>
                     <p className="text-gray-600">Here's what's happening with your practice today.</p>
                   </div>

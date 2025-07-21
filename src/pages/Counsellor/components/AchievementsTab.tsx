@@ -46,12 +46,12 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Star className="w-5 h-5 text-purple-600" />
+            <Star className="w-5 h-5 text-buttonBlue-500" />
             Achievements & Awards
           </h3>
           <button
             onClick={() => setShowAddAchievement(!showAddAchievement)}
-            className="bg-pink-500 hover:bg-pink-600 text-white px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1"
+            className="bg-buttonBlue-500 hover:bg-buttonBlue-700 text-white px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1"
           >
             + Add Achievement
           </button>
@@ -67,13 +67,13 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({
                 placeholder="Achievement Title"
                 value={newAchievementData.title}
                 onChange={(e) => setNewAchievementData(prev => ({ ...prev, title: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-transparent text-sm"
               />
               <textarea
                 placeholder="Achievement Description"
                 value={newAchievementData.description}
                 onChange={(e) => setNewAchievementData(prev => ({ ...prev, description: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm resize-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-transparent text-sm resize-none"
                 rows={3}
               />
               <input
@@ -83,7 +83,7 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({
                 max={new Date().getFullYear() + 1}
                 value={newAchievementData.date}
                 onChange={(e) => setNewAchievementData(prev => ({ ...prev, date: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-pink-500 focus:border-transparent text-sm ${
                   newAchievementData.date && !isValidYear(newAchievementData.date) 
                     ? 'border-red-300 bg-red-50' 
                     : 'border-gray-300'
@@ -121,7 +121,7 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({
 
         <div className="space-y-4">
           {editingAchievements.filter(achievement => achievement.status === 'approved').map((achievement) => (
-            <div key={achievement.id} className="border-l-4 border-purple-500 pl-4 py-2 relative group">
+            <div key={achievement.id} className="border-l-4 border-buttonBlue-500 pl-4 py-2 relative group">
               {editingAchievement === achievement.id ? (
                 <div className="space-y-2">
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-2">

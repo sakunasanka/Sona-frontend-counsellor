@@ -18,16 +18,16 @@ const CounsellorProfile: React.FC = () => {
   // Initial profile data
   const initialProfile: CounsellorProfileType = {
     id: 1,
-    firstName: "Sarah",
-    lastName: "Mitchell",
-    profileImage: "/assets/images/profile-photo1.webp",
-    coverImage: "/assets/images/bg-trans.jpeg",
+    firstName: "Hiruni",
+    lastName: "Chandradasa",
+    profileImage: "/assets/images/doctor__circle_2.png",
+    coverImage: "/assets/images/counsellor-banner.jpg",
     bio: "Passionate mental health counselor with 8+ years of experience helping individuals overcome anxiety, depression, and life transitions. I believe in creating a safe, non-judgmental space where healing can begin. 🌱",
     location: "Colombo, Sri Lanka",
-    website: "www.sarahmitchelltherapy.com",
-    email: "sarah.mitchell@therapy.com",
-    phone: "+1 (555) 123-4567",
-    joinDate: "January 2018",
+    website: "www.hirunichandradasatherapy.com",
+    email: "hiruni.chandradasa@therapy.com",
+    phone: "(071) 123-4567",
+    joinDate: "January 2022",
     specializations: ["Anxiety Disorders", "Depression", "Trauma Therapy", "Relationship Counseling", "Mindfulness-Based Therapy"],
     languages: [...AVAILABLE_LANGUAGES],
     experience: 8,
@@ -38,9 +38,9 @@ const CounsellorProfile: React.FC = () => {
     status: 'available',
     lastActiveAt: new Date().toISOString(),
     socialLinks: {
-      instagram: "sarahmitchelltherapy",
-      linkedin: "sarah-mitchell-therapy",
-      x: "sarahtherapy"
+      instagram: "hirunichandradasatherapy",
+      linkedin: "hiruni-chandradasa-therapy",
+      x: "hirunitherapy"
     },
     credentials: [
       {
