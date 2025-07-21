@@ -16,7 +16,7 @@ const initialNotifications = [
   {
     id: 2,
     title: "Had an amazing time, feeling an immense relief! ",
-    description: "Aline Joseph posted a feedback",
+    description: "Suneera Sumanga posted a feedback",
     read: true,
     type: "feedback",
     timestamp: "2025-06-23T08:00:00"
@@ -31,8 +31,8 @@ const initialNotifications = [
   },
   {
     id: 4,
-    title: "John commented: 'Nice post!'",
-    description: "John Dawson commented on your blog post",
+    title: "Sajith commented: 'Nice post!'",
+    description: "Sajith Premadasa commented on your blog post",
     read: false,
     type: 'comment',
     timestamp: "2025-06-26T03:00:00"
