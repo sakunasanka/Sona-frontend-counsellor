@@ -57,10 +57,10 @@ const SignUp = () => {
   const scrollToFirstError = () => {
     const firstErrorElement = document.querySelector('.error-field');
     if (firstErrorElement) {
-      firstErrorElement.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
-      });
+        firstErrorElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
     }
   };
 
@@ -237,193 +237,193 @@ const SignUp = () => {
             {/* Personal Information */}
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">Personal Information</h3>
-              
+            
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Input
+              <Input 
                     type="text"
                     placeholder="Enter your full name"
                     label="Full Name"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  {getRequiredFieldMessage('fullName')}
-                  {errors.fullName && (
+                name="fullName" 
+                value={formData.fullName} 
+                onChange={handleChange}
+                onBlur={handleBlur}
+              />
+              {getRequiredFieldMessage('fullName')}
+              {errors.fullName && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
                       {errors.fullName}
-                    </p>
-                  )}
-                </div>
-
+                </p>
+              )}
+            </div>
+            
                 <div>
-                  <Input
+                <Input 
                     type="email"
                     placeholder="you@example.com"
                     label="Email Address"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  {getRequiredFieldMessage('email')}
-                  {errors.email && (
+                  name="email" 
+                  value={formData.email} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                {getRequiredFieldMessage('email')}
+                {errors.email && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
                       {errors.email}
-                    </p>
-                  )}
-                </div>
+                  </p>
+                )}
+              </div>
 
                 <div>
-                  <Input
+                <Input 
                     type="tel"
                     placeholder="+94 71 234 5678"
                     label="Mobile Number"
-                    name="mobile"
-                    value={formData.mobile}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  {getRequiredFieldMessage('mobile')}
-                  {errors.mobile && (
+                  name="mobile" 
+                  value={formData.mobile} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                {getRequiredFieldMessage('mobile')}
+                {errors.mobile && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
                       {errors.mobile}
-                    </p>
-                  )}
-                </div>
-
+                  </p>
+                )}
+            </div>
+            
                 <div>
-                  <Input
+                <Input 
                     type="password"
                     placeholder="••••••••"
                     label="Password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  {errors.password && (
+                  name="password" 
+                  value={formData.password} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                {errors.password && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
                       {errors.password}
-                    </p>
-                  )}
-                </div>
+                  </p>
+                )}
+              </div>
 
                 <div>
-                  <Input
+                <Input 
                     type="password"
                     placeholder="••••••••"
                     label="Confirm Password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  {errors.confirmPassword && (
+                  name="confirmPassword" 
+                  value={formData.confirmPassword} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                {errors.confirmPassword && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
                       {errors.confirmPassword}
-                    </p>
-                  )}
-                </div>
+                  </p>
+                )}
               </div>
             </div>
+          </div>
 
             {/* Professional Information */}
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">Professional Information</h3>
-              
+            
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Input
+                <Input 
                     type="text"
                     placeholder="e.g., PhD in Psychology"
                     label="Highest Qualification"
-                    name="qualification"
-                    value={formData.qualification}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  {getRequiredFieldMessage('qualification')}
-                  {errors.qualification && (
+                  name="qualification" 
+                  value={formData.qualification} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                {getRequiredFieldMessage('qualification')}
+                {errors.qualification && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
                       {errors.qualification}
-                    </p>
-                  )}
-                </div>
+                  </p>
+                )}
+              </div>
 
                 <div>
-                  <Input
+                <Input 
                     type="text"
                     placeholder="e.g., SLPSY001234"
                     label="License / Registration Number"
-                    name="license"
-                    value={formData.license}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  {getRequiredFieldMessage('license')}
-                  {errors.license && (
+                  name="license" 
+                  value={formData.license} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                {getRequiredFieldMessage('license')}
+                {errors.license && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
                       {errors.license}
-                    </p>
-                  )}
-                </div>
-
+                  </p>
+                )}
+            </div>
+            
                 <div>
-                  <Input
+                <Input 
                     type="text"
                     placeholder="e.g., 5 years"
                     label="Years of Experience"
-                    name="experience"
-                    value={formData.experience}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  {getRequiredFieldMessage('experience')}
-                  {errors.experience && (
+                  name="experience" 
+                  value={formData.experience} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                {getRequiredFieldMessage('experience')}
+                {errors.experience && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
                       {errors.experience}
-                    </p>
-                  )}
-                </div>
+                  </p>
+                )}
+              </div>
 
                 <div>
-                  <Input
+                <Input 
                     type="text"
                     placeholder="e.g., Cognitive Behavioral Therapy"
                     label="Area of Specialization"
-                    name="specialization"
-                    value={formData.specialization}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  {getRequiredFieldMessage('specialization')}
-                  {errors.specialization && (
+                  name="specialization" 
+                  value={formData.specialization} 
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                {getRequiredFieldMessage('specialization')}
+                {errors.specialization && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
                       {errors.specialization}
-                    </p>
-                  )}
-                </div>
+                  </p>
+                )}
+              </div>
 
-                <div>
-                  <Input
+              <div>
+                <Input 
                     type="text"
                     placeholder="e.g., University of Colombo"
                     label="Institution"
-                    name="institution"
-                    value={formData.institution}
-                    onChange={handleChange}
-                  />
+                  name="institution" 
+                  value={formData.institution} 
+                  onChange={handleChange}
+                />
                 </div>
 
                 <div>
@@ -461,28 +461,28 @@ const SignUp = () => {
                   </p>
                 )}
               </div>
-
-              <div>
+            
+            <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700">
                   Bio
                 </label>
-                <textarea
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleChange}
-                  rows={4}
+              <textarea
+                name="bio"
+                value={formData.bio}
+                onChange={handleChange}
+                rows={4}
                   className="w-full px-3 py-2 border border-gray-400 rounded-3xl shadow-sm bg-white text-gray-700
                     hover:border-pink-500 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20
                     focus:outline-none transition-all duration-150 ease-in-out
                     placeholder:text-gray-400 placeholder:font-normal"
                   placeholder="Tell us about your experience and approach..."
-                />
-              </div>
+              />
+            </div>
 
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700">
                   Upload Documents
-                </label>
+              </label>
                 <input
                   type="file"
                   onChange={handleFileChange}
@@ -494,22 +494,22 @@ const SignUp = () => {
                     file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700
                     hover:file:bg-pink-100"
                 />
-                {errors.documents && (
+              {errors.documents && (
                   <p className="text-red-600 text-sm mt-2 flex items-center">
                     <AlertCircle className="w-4 h-4 mr-2" />
                     {errors.documents}
-                  </p>
-                )}
-              </div>
+                </p>
+              )}
             </div>
+          </div>
 
             {/* Terms and Conditions */}
             <div className="space-y-4">
-              <Checkbox
+                <Checkbox
                 label="I agree to the terms and conditions"
-                checked={formData.agreed}
+                  checked={formData.agreed}
                 onChange={(e) => setFormData(prev => ({ ...prev, agreed: e.target.checked }))}
-              />
+                />
               {errors.agreed && (
                 <p className="text-red-600 text-sm flex items-center">
                   <AlertCircle className="w-4 h-4 mr-2" />
@@ -518,36 +518,36 @@ const SignUp = () => {
               )}
             </div>
 
-            {errors.general && (
+              {errors.general && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <p className="text-red-700 text-sm flex items-center">
                   <AlertCircle className="w-4 h-4 mr-2" />
                   {errors.general}
                 </p>
               </div>
-            )}
+              )}
 
-            <Button 
-              type="submit" 
+                <Button 
+                  type="submit" 
               variant="primary" 
               className="w-full py-3 font-semibold"
-              disabled={isLoading}
-            >
+                  disabled={isLoading}
+                >
               {isLoading ? 'Creating Account...' : 'Create Account'}
-            </Button>
+                </Button>
           </form>
 
           <div className="text-center mt-8">
             <p className="text-gray-600 text-sm">
-              Already have an account?{' '}
-              <button
-                onClick={() => navigate('/signin')}
+            Already have an account?{' '}
+            <button
+              onClick={() => navigate('/signin')}
                 className="text-pink-500 font-medium hover:text-pink-600 hover:underline"
-              >
+            >
                 Sign in here
-              </button>
-            </p>
-          </div>
+            </button>
+          </p>
+        </div>
         </Card>
       </div>
 
@@ -557,12 +557,12 @@ const SignUp = () => {
           <div className="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
+              </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Account Created Successfully!</h3>
             <p className="text-gray-600 mb-6">Your account has been created and is pending approval. You'll receive an email once your account is approved.</p>
             <Button onClick={handleOverlayClose} variant="primary" className="w-full">
-              Continue to Sign In
-            </Button>
+                Continue to Sign In
+              </Button>
           </div>
         </div>
       )}

@@ -13,11 +13,10 @@ const SignIn = () => {
   
   // Get the selected role from navigation state if available
   const passedRole = location.state?.selectedRole;
-  const initialUserType = (passedRole === 'counsellor' || passedRole === 'psychiatrist') 
+  const userType = (passedRole === 'counsellor' || passedRole === 'psychiatrist') 
     ? passedRole as 'counsellor' | 'psychiatrist'
     : 'counsellor';
   
-  const [userType, setUserType] = useState<'counsellor' | 'psychiatrist'>(initialUserType);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -75,37 +74,6 @@ const SignIn = () => {
             <p className="text-gray-600">Sign in to access your account</p>
           </div>
 
-          {/* Role Toggle */}
-          <div className="flex items-center justify-center mb-8">
-            <div className="relative bg-gray-100 rounded-full p-1 w-full max-w-sm">
-              <div
-                className={`absolute top-1 left-1 h-10 bg-pink-500 rounded-full transition-all duration-300 ease-in-out ${
-                  userType === 'psychiatrist' ? 'w-1/2 transform translate-x-[calc(100%-0.5rem)]' : 'w-1/2'
-                }`}
-              />
-              <div className="relative flex">
-                <button
-                  type="button"
-                  className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-full transition-colors duration-300 z-10 focus:outline-none ${
-                    userType === 'counsellor' ? 'text-white' : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                  onClick={() => setUserType('counsellor')}
-                >
-                  Counsellor
-                </button>
-                <button
-                  type="button"
-                  className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-full transition-colors duration-300 z-10 focus:outline-none ${
-                    userType === 'psychiatrist' ? 'text-white' : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                  onClick={() => setUserType('psychiatrist')}
-                >
-                  Psychiatrist
-                </button>
-              </div>
-            </div>
-          </div>
-
           <form onSubmit={handleSignIn} className="space-y-6">
             <div>
               <Input
@@ -158,10 +126,10 @@ const SignIn = () => {
 
             {errors.general && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-700 text-sm flex items-center">
+              <p className="text-red-700 text-sm flex items-center">
                   <AlertCircle className="w-4 h-4 mr-2" />
                   {errors.general}
-                </p>
+              </p>
               </div>
             )}
 
@@ -181,13 +149,13 @@ const SignIn = () => {
               <button
                 onClick={() => navigate('/signup')}
                 className="text-pink-500 font-medium hover:text-pink-600 hover:underline"
-              >
+            >
                 Sign up here
-              </button>
-            </p>
+            </button>
+          </p>
           </div>
         </Card>
-      </div>
+        </div>
     </div>
   );
 };
