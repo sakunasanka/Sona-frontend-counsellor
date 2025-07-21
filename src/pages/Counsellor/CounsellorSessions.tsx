@@ -193,7 +193,7 @@ const CounsellorSessions = () => {
     const sessions: Session[] = [
         {
             id: "1",
-            username: "JuniusIsMe",
+            username: "samank",
             fullName: "Saman Kumara",
             date: "2025-06-20",
             time: "7:00 PM",
@@ -208,7 +208,7 @@ const CounsellorSessions = () => {
         },
         {
             id: "2",
-            username: "Unknown124",
+            username: "s-perera",
             fullName: "Shanuka Perera",
             date: "2025-06-24",
             time: "2:00 PM",
@@ -222,7 +222,7 @@ const CounsellorSessions = () => {
         },
         {
             id: "3",
-            username: "HarryPotter",
+            username: "ramesha123",
             fullName: "Ramesha Fernando",
             date: "2025-04-10",
             time: "7:00 PM",
@@ -236,7 +236,7 @@ const CounsellorSessions = () => {
         },
         {
             id: "4",
-            username: "Thanos125",
+            username: "nehara_wick",
             fullName: "Nehara Wickramasinghe",
             date: "2025-05-03",
             time: "7:00 PM",
@@ -249,7 +249,7 @@ const CounsellorSessions = () => {
         },
         {
             id: "5",
-            username: "Bavuma125",
+            username: "rona_ko",
             fullName: "Ronath Konara",
             date: "2025-06-25",
             time: "7:00 PM",
@@ -264,7 +264,7 @@ const CounsellorSessions = () => {
         },
         {
             id: "6",
-            username: "CoolCat22",
+            username: "sampath_jay",
             fullName: "Sampath Jayasinghe",
             date: "2025-06-18",
             time: "1:30 PM",
