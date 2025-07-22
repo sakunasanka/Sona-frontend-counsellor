@@ -512,7 +512,7 @@ const ClientDetails: React.FC = () => {
         ></textarea>
         
         <div className="flex justify-between mt-3">
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <input
               type="checkbox"
               id="privateNote"
@@ -524,7 +524,7 @@ const ClientDetails: React.FC = () => {
               <Shield className="w-3.5 h-3.5 mr-1 text-red-500" />
               Mark as private note (only visible to you)
             </label>
-          </div>
+          </div> */}
           
           <button
             className={`px-4 py-2 ${!newNote.trim() ? 'bg-gray-300 cursor-not-allowed opacity-50' : 'bg-primary hover:bg-opacity-90'} text-white rounded-md text-sm font-medium flex items-center transition-all`}

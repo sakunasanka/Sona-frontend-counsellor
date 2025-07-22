@@ -24,6 +24,7 @@ interface Session {
   createdAt: string;
   updatedAt: string;
   user: User;
+  isStudent: boolean;
 }
 
 // JWT token payload interface
@@ -83,12 +84,28 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
             <h3 className="font-semibold text-gray-900 text-lg mb-1">
               {session.user.name}
             </h3>
-            <p className="text-sm text-slate-400 font-medium">Client ID: {session.userId}</p>
+            <p className="text-sm text-slate-400 font-medium">
+              Booked Date: {new Date(session.createdAt).toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+              })}
+            </p>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(session.status)}`}>
-              {formatStatus(session.status)}
-            </span>
+          <div className="gap-2 flex items-center">
+            <div className="flex flex-col items-end gap-2">
+              <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor('completed')}`}>
+                {formatStatus(session.isStudent ? 'student' : 'Regular User')}
+              </span>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(session.status)}`}>
+                {formatStatus(session.status)}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -353,8 +370,8 @@ const CounsellorSessions = () => {
       return sessions.filter(s => s.status === 'cancelled').length;
     };
 
-    const getNoShowCount = () => {
-      return sessions.filter(s => s.status === 'no-show').length;
+    const getScheduledCount = () => {
+      return sessions.filter(s => s.status === 'scheduled').length;
     };
 
     const getTotalMinutes = () => {
@@ -384,7 +401,7 @@ const CounsellorSessions = () => {
                     <div className="p-4 lg:p-6">
                         {/* Page Title */}
                         <div className="mb-6 lg:mb-8 flex items-center justify-between">
-                            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Session History</h1>
+                            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Recent Sessions</h1>
                             <Button 
                                 variant="calendar" 
                                 onClick={() => navigate('/counsellor-calendar')} 
@@ -431,9 +448,9 @@ const CounsellorSessions = () => {
                                 </div>
                                 <div>
                                     <p className="text-2xl font-bold text-gray-900">
-                                        {getNoShowCount()}
+                                        {getScheduledCount()}
                                     </p>
-                                    <p className="text-sm text-gray-600">No Shows</p>
+                                    <p className="text-sm text-gray-600">Scheduled</p>
                                 </div>
                             </div>
                         </div>
@@ -490,7 +507,6 @@ const CounsellorSessions = () => {
                                         <option value="scheduled">Scheduled</option>
                                         <option value="completed">Completed</option>
                                         <option value="cancelled">Cancelled</option>
-                                        <option value="no-show">No Show</option>
                                     </select>
                                     <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                                 </div>
