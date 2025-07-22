@@ -71,7 +71,7 @@ const ClientDetails: React.FC = () => {
       content: "Client mentioned difficulty with workplace stress. Recommended journaling and provided worksheet for cognitive restructuring.",
       createdAt: "June 20, 2025",
       createdBy: "Dr. SHiruni Chandradasa",
-      isPrivate: true
+      isPrivate: false
     },
     {
       id: 3,
