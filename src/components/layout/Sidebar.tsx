@@ -36,15 +36,19 @@ const Sidebar: React.FC<SidebarProps> = ({
     if (item.id === 'chats' && onChatClick) {
       onChatClick();
     } else {
+      // Handle other navigation with expansion animation if minimized
       if (item.href !== '#') {
         if (isMinimized && onExpandBeforeNavigation) {
+          // Trigger expansion animation before navigation
           onExpandBeforeNavigation(item.href);
         } else {
+          // Direct navigation if not minimized
           window.location.href = item.href;
         }
       }
     }
     
+    // Close sidebar on mobile
     if (window.innerWidth < 1024) {
       onClose();
     }
@@ -55,60 +59,44 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Mobile Overlay */}
       {isOpen && !isMinimized && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
       <div className={`
-        h-full bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col transition-all duration-300 ease-out shadow-2xl
-        fixed top-0 left-0 z-50 lg:relative lg:z-auto border-r border-slate-700/50
+        h-full bg-slate-800 flex flex-col transition-all duration-500 ease-in-out
+        fixed top-0 left-0 z-50 lg:relative lg:z-auto
         ${isMinimized 
-          ? 'w-20 lg:w-20' 
-          : 'w-80 lg:w-80'
+          ? 'w-16 lg:w-16' 
+          : 'w-72 lg:w-72'
         }
         ${isOpen || isMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         
-        {/* Mobile Header - Back button and logo for mobile */}
+        <div className="items-center justify-center max-w-xl mx-4 p-4 border-b lg:border-none mt-5">
+            <img src="/assets/images/Sona-logo-light.png" alt="SONA" className='w-32' />
+          </div>
+        {/* Sidebar Header - Only show on mobile when not minimized */}
         {!isMinimized && (
-          <div className="flex items-center justify-between p-4 lg:hidden border-b border-slate-700/30">
+          <div className="flex items-center p-4 border-b lg:hidden">
             <button
               onClick={onClose}
-              className="p-2 hover:bg-slate-700/50 rounded-lg transition-all duration-200 text-slate-300 hover:text-white"
+              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={20} className="text-gray-600" />
             </button>
-            <img 
-              src="/assets/images/Sona-logo-light.png" 
-              alt="SONA" 
-              className="h-8 w-auto"
+            <img
+              src="/assets/images/Sona-logo.png"
+              alt="Sona Logo"
+              className="h-8 w-auto ml-3"
             />
-            <div className="w-9" /> {/* Spacer for centering */}
           </div>
         )}
 
-        {/* Logo Section - Hidden on mobile, visible on desktop */}
-        <div className={`
-          hidden lg:flex items-center py-6 border-b border-slate-700/30
-          ${isMinimized ? 'px-2 justify-center' : 'px-6 pl-7'}
-        `}>
-          <img 
-            src="/assets/images/Sona-logo-light.png" 
-            alt="SONA" 
-            className={`
-              transition-all duration-300 ease-out
-              ${isMinimized ? 'w-10 h-10 object-contain' : 'w-36 h-auto'}
-            `}
-          />
-        </div>
-
-        {/* Navigation Menu */}
-        <nav className={`
-          flex-1 py-6 transition-all duration-300 ease-out
-          ${isMinimized ? 'px-3' : 'px-6'}
-        `}>
+        {/* Menu Items */}
+        <nav className={`py-6 ${isMinimized ? 'px-2' : 'px-4'} flex-1 flex flex-col transition-all duration-500 ease-in-out`}>
           <ul className="space-y-2">
             {menuItems.map((item, index) => {
               const IconComponent = item.icon;
@@ -119,107 +107,64 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <button
                     onClick={() => handleItemClick(item)}
                     className={`
-                      w-full flex items-center rounded-xl transition-all duration-200 ease-out group relative
+                      flex items-center text-slate-100 hover:bg-gray-50 rounded-lg text-l mt-0 transition-all duration-300 ease-in-out group w-full
                       ${isMinimized 
-                        ? 'px-3 py-4 justify-center' 
-                        : 'px-4 py-3 space-x-3'
+                        ? 'px-3 py-3 justify-center hover:bg-gray-50 ' 
+                        : 'px-4 py-3 space-x-4'
                       }
-                      ${isActive 
-                        ? 'bg-white/10 text-white shadow-lg border border-white/20' 
-                        : 'text-slate-300 hover:bg-white/5 hover:text-white'
-                      }
+                      ${isActive ? 'bg-white shadow-sm' : ''}
                     `}
                     title={isMinimized ? item.label : undefined}
                   >
-                    <div className={`
-                      flex items-center justify-center transition-transform duration-200
-                      ${isActive ? 'scale-110' : 'group-hover:scale-105'}
-                      ${isMinimized ? 'w-6 h-6' : 'w-5 h-5'}
-                    `}>
-                      <IconComponent 
-                        size={isMinimized ? 24 : 20} 
-                        className="transition-colors duration-200" 
-                      />
-                    </div>
-                    
+                    <IconComponent 
+                      size={20} 
+                      className={`
+                        text-slate-100 group-hover:text-gray-400 transition-colors duration-200
+                        ${isActive ? 'text-gray-800' : ''}
+                      `} 
+                    />
                     <span className={`
-                      font-medium text-sm transition-all duration-300 ease-out whitespace-nowrap
+                      font-medium group-hover:text-gray-800 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap
+                      ${isActive ? 'text-gray-800' : ''}
                       ${isMinimized 
-                        ? 'opacity-0 w-0 overflow-hidden transform translate-x-2' 
-                        : 'opacity-100 w-auto transform translate-x-0'
+                        ? 'opacity-0 w-0 transform scale-0' 
+                        : 'opacity-100 w-auto transform scale-100'
                       }
                     `}>
                       {item.label}
                     </span>
-
-                    {/* Active indicator */}
-                    {isActive && (
-                      <div className={`
-                        absolute right-0 w-1 bg-gradient-to-b from-blue-400 to-blue-600 rounded-l-full transition-all duration-200
-                        ${isMinimized ? 'h-8 -mr-3' : 'h-8 -mr-6'}
-                      `} />
-                    )}
-
-                    {/* Tooltip for minimized state */}
-                    {isMinimized && (
-                      <div className="absolute left-full ml-4 px-3 py-2 bg-slate-800 text-white text-sm rounded-lg shadow-lg border border-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                        {item.label}
-                        <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45" />
-                      </div>
-                    )}
                   </button>
                 </li>
               );
             })}
           </ul>
-        </nav>
-
-        {/* Logout Button */}
-        <div className={`
-          border-t border-slate-700/30 p-4 transition-all duration-300
-          ${isMinimized ? 'px-3' : 'px-6'}
-        `}>
-          <button
-            onClick={() => {
-              console.log('Logout clicked');
-              navigate('/signin');
-              onClose();
-            }}
-            className={`
-              w-full flex items-center text-slate-300 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-200 group relative border border-transparent hover:border-red-500/20
-              ${isMinimized 
-                ? 'px-3 py-4 justify-center' 
-                : 'px-4 py-3 space-x-3'
-              }
-            `}
-            title={isMinimized ? 'Log out' : undefined}
-          >
-            <div className={`
-              flex items-center justify-center transition-transform duration-200 group-hover:scale-105
-              ${isMinimized ? 'w-6 h-6' : 'w-5 h-5'}
-            `}>
-              <LogOut size={isMinimized ? 24 : 20} />
-            </div>
-            
-            <span className={`
-              font-medium text-sm transition-all duration-300 ease-out whitespace-nowrap
-              ${isMinimized 
-                ? 'opacity-0 w-0 overflow-hidden transform translate-x-2' 
-                : 'opacity-100 w-auto transform translate-x-0'
-              }
-            `}>
-              Log out
-            </span>
-
-            {/* Tooltip for minimized logout */}
-            {isMinimized && (
-              <div className="absolute left-full ml-4 px-3 py-2 bg-slate-800 text-white text-sm rounded-lg shadow-lg border border-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+          
+          <div className="flex-1"></div>
+          
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <Button
+              variant="logout"
+              isMinimized={isMinimized}
+              title={isMinimized ? 'Log out' : undefined}
+              icon={<LogOut size={20} className="text-gray-600 group-hover:text-red-600 transition-colors duration-200" />}
+              onClick={() => {
+                console.log('Logout clicked');
+                navigate('/signin');
+                onClose();
+              }}
+            >
+              <span className={`
+                font-medium transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap
+                ${isMinimized 
+                  ? 'opacity-0 w-0 transform scale-0' 
+                  : 'opacity-100 w-auto transform scale-100'
+                }
+              `}>
                 Log out
-                <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45" />
-              </div>
-            )}
-          </button>
-        </div>
+              </span>
+            </Button>
+          </div>
+        </nav>
       </div>
     </>
   );
