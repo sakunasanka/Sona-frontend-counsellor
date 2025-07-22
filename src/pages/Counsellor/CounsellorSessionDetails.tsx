@@ -60,7 +60,7 @@ const CounsellorSessionDetails: React.FC = () => {
     const sessionData: SessionDetails = {
         id: "1",
         clientName: "Ronath Konara",
-        username: "Bavuma125",
+        username: "rona_ko",
         date: "2025-06-25",
         time: "7:00 PM",
         duration: 30,

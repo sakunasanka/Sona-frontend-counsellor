@@ -49,7 +49,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   return (
     <div className="relative mb-6">
       {/* Cover Image */}
-      <div className="relative h-28 md:h-40 rounded-2xl overflow-hidden bg-pink-500">
+      <div className="relative h-28 md:h-40 rounded-2xl overflow-hidden bg-slate-100">
         <img 
           src={isEditing ? editForm.coverImage || profile.coverImage : profile.coverImage} 
           alt="Cover" 
@@ -127,7 +127,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           {isEditing && (
             <button 
               onClick={() => setShowProfileImageOptions(!showProfileImageOptions)}
-              className="absolute bottom-2 right-2 bg-pink-500 hover:bg-pink-600 text-white p-2 rounded-full transition-colors shadow-lg profile-image-button"
+              className="absolute bottom-2 right-2 bg-slate-400 hover:bg-primary text-white p-2 rounded-full transition-colors shadow-lg profile-image-button"
             >
               <Camera className="w-4 h-4" />
             </button>
@@ -204,7 +204,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           </button>
           <button 
             onClick={onSave}
-            className="bg-pink-500 hover:bg-pink-600 text-white p-2 rounded-full transition-all shadow-lg"
+            className="bg-slate-400 hover:bg-primary text-white p-2 rounded-full transition-all shadow-lg"
           >
             <Check className="w-5 h-5" />
           </button>

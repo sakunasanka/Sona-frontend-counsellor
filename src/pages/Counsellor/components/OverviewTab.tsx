@@ -35,13 +35,13 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
       {/* Specializations */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-pink-600" />
+          <BookOpen className="w-5 h-5 text-primary" />
           Specializations
         </h3>
         {!isEditing ? (
           <div className="flex flex-wrap gap-2">
             {profile.specializations.map((spec, index) => (
-              <span key={index} className="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-sm font-medium">
+              <span key={index} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
                 {spec}
               </span>
             ))}
@@ -85,7 +85,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
       {/* Languages */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Globe className="w-5 h-5 text-purple-600" />
+          <Globe className="w-5 h-5 text-primary" />
           Languages
         </h3>
         {!isEditing ? (

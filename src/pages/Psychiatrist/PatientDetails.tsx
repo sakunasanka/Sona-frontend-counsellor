@@ -63,21 +63,21 @@ const PatientDetails: React.FC = () => {
             id: 1,
             content: "Client showed significant progress in anxiety management techniques. Will focus on breathing exercises next session.",
             createdAt: "June 28, 2025",
-            createdBy: "Dr. Sarah Wilson",
+            createdBy: "Dr. Hiruni Chandradasa",
             isPrivate: false
         },
         {
             id: 2,
             content: "Client mentioned difficulty with workplace stress. Recommended journaling and provided worksheet for cognitive restructuring.",
             createdAt: "June 20, 2025",
-            createdBy: "Dr. Sarah Wilson",
+            createdBy: "Dr. Hiruni Chandradasa",
             isPrivate: true
         },
         {
             id: 3,
             content: "First session went well. Client is open to therapy but hesitant about homework activities. Will introduce small, manageable tasks.",
             createdAt: "June 12, 2025",
-            createdBy: "Dr. Sarah Wilson",
+            createdBy: "Dr. Hiruni Chandradasa",
             isPrivate: false
         }
     ]);
@@ -165,13 +165,13 @@ const PatientDetails: React.FC = () => {
     const clients: Client[] = [
         {
             id: 1,
-            name: "Sarah Johnson",
+            name: "Tharindu Deepaloka",
             profileImage: "/assets/images/student-photo.png",
             age: 22,
             gender: "Female",
-            email: "sarah.johnson@example.com",
-            phone: "+1 (555) 123-4567",
-            address: "123 University Ave, Stanford, CA 94305",
+            email: "tharindu.deepaloka@example.com",
+            phone: "(078) 123-4567",
+            address: "123, Temple Street, Colombo 7",
             sessionCount: 8,
             lastSession: "2 days ago",
             nextSession: "July 10, 10:00 AM",
@@ -179,15 +179,15 @@ const PatientDetails: React.FC = () => {
             status: 'active',
             anonymous: false,
             student: true,
-            institution: "Stanford University",
+            institution: "Colombo University",
             program: "Computer Science",
             year: "3rd Year",
             joinDate: "May 15, 2025",
             referredBy: "University Counseling Center",
             emergencyContact: {
-                name: "Robert Johnson",
+                name: "Ramesh Deepaloka",
                 relationship: "Father",
-                phone: "+1 (555) 987-6543"
+                phone: "(078) 987-6543"
             }
         },
         {
@@ -224,7 +224,7 @@ const PatientDetails: React.FC = () => {
                 id: notes.length + 1,
                 content: newNote,
                 createdAt: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-                createdBy: "Dr. Sarah Wilson",
+                createdBy: "Dr. Hiruni Chandradasa",
                 isPrivate: isPrivateNote
             };
 

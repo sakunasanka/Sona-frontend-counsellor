@@ -78,7 +78,7 @@ const CounsellorCalendar: React.FC = () => {
     // Today's sessions - more than 3 to test the limit
     {
       id: '1',
-      clientName: 'Sarah Johnson',
+      clientName: 'Oshadhi Perera',
       date: todayString,
       time: '09:00',
       duration: 60,
@@ -86,7 +86,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '2',
-      clientName: 'Mike Chen',
+      clientName: 'Naduni Perera',
       date: todayString,
       time: '10:30',
       duration: 45,
@@ -94,7 +94,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '3',
-      clientName: 'John Doe',
+      clientName: 'Nethmi Gunasekara',
       date: todayString,
       time: '13:00',
       duration: 45,
@@ -102,7 +102,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '3a',
-      clientName: 'Emma Wilson',
+      clientName: 'Rashika Perera',
       date: todayString,
       time: '14:30',
       duration: 60,
@@ -110,7 +110,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '3b',
-      clientName: 'Alex Smith',
+      clientName: 'Bavindu Thathsara',
       date: todayString,
       time: '16:00',
       duration: 45,
@@ -120,7 +120,7 @@ const CounsellorCalendar: React.FC = () => {
     // Tomorrow's sessions - more than 3 to test the limit
     {
       id: '4',
-      clientName: 'Emma Wilson',
+      clientName: 'Rashika Perera',
       date: tomorrowString,
       time: '09:30',
       duration: 60,
@@ -128,7 +128,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '5',
-      clientName: 'Tom Williams',
+      clientName: 'Naduni Perera',
       date: tomorrowString,
       time: '11:00',
       duration: 45,
@@ -136,7 +136,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '5a',
-      clientName: 'Linda Brown',
+      clientName: 'Suren Rasika',
       date: tomorrowString,
       time: '13:30',
       duration: 60,
@@ -144,7 +144,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '5b',
-      clientName: 'Robert Garcia',
+      clientName: 'Gamindu Welikanna',
       date: tomorrowString,
       time: '15:00',
       duration: 45,
@@ -154,7 +154,7 @@ const CounsellorCalendar: React.FC = () => {
     // Two days later sessions
     {
       id: '6',
-      clientName: 'Susan Davis',
+      clientName: 'Ramesh Diaz',
       date: twoDaysLaterString,
       time: '10:30',
       duration: 60,
@@ -162,7 +162,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '7',
-      clientName: 'Kevin Brown',
+      clientName: 'Sadeera Saminda',
       date: twoDaysLaterString,
       time: '14:00',
       duration: 45,
@@ -170,7 +170,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '7a',
-      clientName: 'Patricia Lee',
+      clientName: 'Sudika Perera',
       date: twoDaysLaterString,
       time: '15:30',
       duration: 60,
@@ -180,7 +180,7 @@ const CounsellorCalendar: React.FC = () => {
     // Three days later sessions
     {
       id: '8',
-      clientName: 'Nancy Clark',
+      clientName: 'Kalunika Fernando',
       date: threeDaysLaterString,
       time: '09:00',
       duration: 60,
@@ -188,7 +188,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '8a',
-      clientName: 'David Miller',
+      clientName: 'Gagana Thathsara',
       date: threeDaysLaterString,
       time: '11:30',
       duration: 45,
@@ -196,7 +196,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '8b',
-      clientName: 'Jennifer White',
+      clientName: 'Oshadha Rashendra',
       date: threeDaysLaterString,
       time: '14:00',
       duration: 60,
@@ -204,7 +204,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '8c',
-      clientName: 'Michael Taylor',
+      clientName: 'Bagasha Perera',
       date: threeDaysLaterString,
       time: '16:30',
       duration: 45,
@@ -214,7 +214,7 @@ const CounsellorCalendar: React.FC = () => {
     // Four days later sessions
     {
       id: '9',
-      clientName: 'Paul Martinez',
+      clientName: 'Sathsara Perera',
       date: fourDaysLaterString,
       time: '09:30',
       duration: 45,
@@ -222,7 +222,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: '10',
-      clientName: 'Rachel Green',
+      clientName: 'Namal Perera',
       date: fourDaysLaterString,
       time: '11:00',
       duration: 60,
@@ -232,7 +232,7 @@ const CounsellorCalendar: React.FC = () => {
     // Five days later sessions
     {
       id: '11',
-      clientName: 'Steven Hall',
+      clientName: 'Gayantha Udawatte',
       date: fiveDaysLaterString,
       time: '10:00',
       duration: 45,
@@ -245,7 +245,7 @@ const CounsellorCalendar: React.FC = () => {
     // Yesterday's sessions
     {
       id: 'h1',
-      clientName: 'David Johnson',
+      clientName: 'Sadeera Kalum',
       date: yesterdayString,
       time: '10:00',
       duration: 60,
@@ -253,7 +253,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: 'h2',
-      clientName: 'Lisa Chen',
+      clientName: 'Manusha Niroshan',
       date: yesterdayString,
       time: '14:00',
       duration: 45,
@@ -263,7 +263,7 @@ const CounsellorCalendar: React.FC = () => {
     // Two days ago sessions
     {
       id: 'h3',
-      clientName: 'Mark Wilson',
+      clientName: 'Niroshan Dikwella',
       date: twoDaysAgoString,
       time: '09:00',
       duration: 60,
@@ -271,7 +271,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: 'h4',
-      clientName: 'Jennifer Lee',
+      clientName: 'Sudira Perera',
       date: twoDaysAgoString,
       time: '15:00',
       duration: 45,
@@ -281,7 +281,7 @@ const CounsellorCalendar: React.FC = () => {
     // Three days ago sessions
     {
       id: 'h5',
-      clientName: 'Robert Miller',
+      clientName: 'Namesha Silva',
       date: threeDaysAgoString,
       time: '11:30',
       duration: 60,
@@ -291,7 +291,7 @@ const CounsellorCalendar: React.FC = () => {
     // Four days ago sessions
     {
       id: 'h6',
-      clientName: 'Jessica Taylor',
+      clientName: 'Nethmi Nimesha',
       date: fourDaysAgoString,
       time: '13:00',
       duration: 45,
@@ -299,7 +299,7 @@ const CounsellorCalendar: React.FC = () => {
     },
     {
       id: 'h7',
-      clientName: 'Daniel King',
+      clientName: 'Sudeera Saminda',
       date: fourDaysAgoString,
       time: '16:30',
       duration: 60,
@@ -309,7 +309,7 @@ const CounsellorCalendar: React.FC = () => {
     // Five days ago sessions
     {
       id: 'h8',
-      clientName: 'Amanda White',
+      clientName: 'Rashika Perera',
       date: fiveDaysAgoString,
       time: '10:00',
       duration: 45,

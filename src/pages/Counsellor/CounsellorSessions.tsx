@@ -191,7 +191,7 @@ const CounsellorSessions = () => {
     const [counselorId, setCounselorId] = useState<number | null>(null);
 
     const loaderRef = useRef(null);
-
+  
     // First, ensure token is set in apiClient before making requests
     useEffect(() => {
       const token = localStorage.getItem('auth_token');
