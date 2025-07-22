@@ -126,10 +126,10 @@ const SignIn = () => {
 
             {errors.general && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-700 text-sm flex items-center">
+              <p className="text-red-700 text-sm flex items-center">
                   <AlertCircle className="w-4 h-4 mr-2" />
                   {errors.general}
-                </p>
+              </p>
               </div>
             )}
 
@@ -149,13 +149,13 @@ const SignIn = () => {
               <button
                 onClick={() => navigate('/signup')}
                 className="text-pink-500 font-medium hover:text-pink-600 hover:underline"
-              >
+            >
                 Sign up here
-              </button>
-            </p>
+            </button>
+          </p>
           </div>
         </Card>
-      </div>
+        </div>
     </div>
   );
 };

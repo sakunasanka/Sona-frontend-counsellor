@@ -1,28 +1,43 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavBar, Sidebar } from "../../components/layout";
-import { Search, Calendar, Clock, User, Eye, ChevronDown, CheckCircle2, Video, MapPin, X } from "lucide-react";
+import { Search, Calendar, Clock, User, Eye, ChevronDown, CheckCircle2, Video, MapPin, X, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui";
+import { apiClient } from "../../api/apiBase";
+
+interface User {
+  id: number;
+  name: string;
+  avatar: string | null;
+}
 
 interface Session {
-  id: string;
-  username: string;
-  fullName: string;
+  id: number;
+  userId: number;
+  counselorId: number;
   date: string;
-  time: string;
-  identity: string;
-  verified: boolean;
-  sessionType: 'individual' | 'group' | 'emergency';
-  status: 'completed' | 'cancelled' | 'no-show';
+  timeSlot: string;
   duration: number;
-  notes?: string;
-  mood?: 'positive' | 'neutral' | 'concerned';
-  followUpRequired?: boolean;
+  price: number;
+  notes: string | null;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'no-show';
+  createdAt: string;
+  updatedAt: string;
+  user: User;
+}
+
+// JWT token payload interface
+interface TokenPayload {
+  id: number;
+  email?: string;
+  role?: string;
+  iat: number;
+  exp: number;
 }
 
 interface SessionCardProps {
   session: Session;
-  onViewDetails: (sessionId: string) => void;
+  onViewDetails: (sessionId: number) => void;
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => {
@@ -36,22 +51,27 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
         return 'bg-red-50 text-red-700 border-red-200';
       case 'no-show':
         return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      case 'scheduled':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
-  const getSessionTypeIcon = (type: string) => {
-    switch (type) {
-      case 'individual':
-        return <User className="w-4 h-4" />;
-      case 'group':
-        return <User className="w-4 h-4" />;
-      case 'emergency':
-        return <Video className="w-4 h-4" />;
-      default:
-        return <User className="w-4 h-4" />;
-    }
+  const getSessionTypeIcon = () => {
+    return <User className="w-4 h-4" />;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
+
+  const formatStatus = (status: string) => {
+    return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   return (
@@ -61,21 +81,14 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <h3 className="font-semibold text-gray-900 text-lg mb-1">
-              {session.fullName}
+              {session.user.name}
             </h3>
-            <p className="text-sm text-slate-400 font-medium">@{session.username}</p>
+            <p className="text-sm text-slate-400 font-medium">Client ID: {session.userId}</p>
           </div>
           <div className="flex flex-col items-end gap-2">
             <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(session.status)}`}>
-              {session.status === 'completed' ? 'Completed' : 
-               session.status === 'cancelled' ? 'Cancelled' : 
-               'No Show'}
+              {formatStatus(session.status)}
             </span>
-            {session.followUpRequired && (
-              <span className="px-2 py-1 bg-orange-50 text-orange-600 text-xs rounded-full border border-orange-200">
-                Follow-up needed
-              </span>
-            )}
           </div>
         </div>
 
@@ -89,11 +102,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
               <div>
                 <p className="text-xs text-gray-500 font-medium">Date</p>
                 <p className="text-sm font-semibold text-gray-900">
-                  {new Date(session.date).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric', 
-                    year: 'numeric' 
-                  })}
+                  {formatDate(session.date)}
                 </p>
               </div>
             </div>
@@ -104,17 +113,17 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Time</p>
-                <p className="text-sm font-semibold text-gray-900">{session.time}</p>
+                <p className="text-sm font-semibold text-gray-900">{session.timeSlot}</p>
               </div>
             </div>
             
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white rounded-lg">
-                {getSessionTypeIcon(session.sessionType)}
+                {getSessionTypeIcon()}
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Type</p>
-                <p className="text-sm font-semibold text-gray-900 capitalize">{session.sessionType}</p>
+                <p className="text-sm font-semibold text-gray-900">Individual</p>
               </div>
             </div>
             
@@ -134,18 +143,8 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
         <div className="flex flex-wrap items-center gap-4 mb-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <MapPin className="w-4 h-4 text-gray-400" />
-            <span>Identity: {session.identity}</span>
+            <span>Price: {session.price} LKR</span>
           </div>
-          {session.mood && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <div className={`w-3 h-3 rounded-full ${
-                session.mood === 'positive' ? 'bg-green-400' :
-                session.mood === 'neutral' ? 'bg-yellow-400' :
-                'bg-red-400'
-              }`} />
-              <span className="capitalize">Mood: {session.mood}</span>
-            </div>
-          )}
         </div>
 
         {/* Notes Section */}
@@ -187,102 +186,118 @@ const CounsellorSessions = () => {
     const [visibleCount, setVisibleCount] = useState(6);
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const [sessions, setSessions] = useState<Session[]>([]);
+    const [error, setError] = useState<string | null>(null);
+    const [counselorId, setCounselorId] = useState<number | null>(null);
 
     const loaderRef = useRef(null);
+  
+    // First, ensure token is set in apiClient before making requests
+    useEffect(() => {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        apiClient.setAuthToken(token);
+      } else {
+        setError('Authentication token not found. Please log in again.');
+      }
+    }, []);
 
-    const sessions: Session[] = [
-        {
-            id: "1",
-            username: "samank",
-            fullName: "Saman Kumara",
-            date: "2025-06-20",
-            time: "7:00 PM",
-            identity: "Undisclosed",
-            verified: true,
-            sessionType: 'individual',
-            status: 'completed',
-            duration: 60,
-            notes: "Client showed significant improvement in managing anxiety. Discussed coping strategies and homework assignments for the coming week.",
-            mood: 'positive',
-            followUpRequired: false
-        },
-        {
-            id: "2",
-            username: "s-perera",
-            fullName: "Shanuka Perera",
-            date: "2025-06-24",
-            time: "2:00 PM",
-            identity: "Undisclosed",
-            verified: true,
-            sessionType: 'individual',
-            status: 'completed',
-            duration: 45,
-            notes: "Discussed work-life balance issues. Client is implementing new time management techniques.",
-            mood: 'neutral'
-        },
-        {
-            id: "3",
-            username: "ramesha123",
-            fullName: "Ramesha Fernando",
-            date: "2025-04-10",
-            time: "7:00 PM",
-            identity: "Undisclosed",
-            verified: true,
-            sessionType: 'group',
-            status: 'completed',
-            duration: 90,
-            notes: "Group therapy session focused on communication skills. Good participation from all members.",
-            mood: 'positive'
-        },
-        {
-            id: "4",
-            username: "nehara_wick",
-            fullName: "Nehara Wickramasinghe",
-            date: "2025-05-03",
-            time: "7:00 PM",
-            identity: "Undisclosed",
-            verified: true,
-            sessionType: 'individual',
-            status: 'no-show',
-            duration: 0,
-            followUpRequired: true
-        },
-        {
-            id: "5",
-            username: "rona_ko",
-            fullName: "Ronath Konara",
-            date: "2025-06-25",
-            time: "7:00 PM",
-            identity: "Undisclosed",
-            verified: true,
-            sessionType: 'emergency',
-            status: 'completed',
-            duration: 30,
-            notes: "Emergency session due to panic attack. Client was stabilized and provided with immediate coping techniques.",
-            mood: 'concerned',
-            followUpRequired: true
-        },
-        {
-            id: "6",
-            username: "sampath_jay",
-            fullName: "Sampath Jayasinghe",
-            date: "2025-06-18",
-            time: "1:30 PM",
-            identity: "Undisclosed",
-            verified: true,
-            sessionType: 'individual',
-            status: 'cancelled',
-            duration: 0,
-            notes: "Client cancelled due to family emergency. Rescheduled for next week."
-        },
-    ];
+    // Get the logged-in counselor's ID from the token
+    useEffect(() => {
+      const getUserIdFromToken = () => {
+        try {
+          const token = localStorage.getItem('auth_token');
+          if (!token) {
+            setError('Authentication token not found. Please log in again.');
+            return;
+          }
+          
+          // Decode the token to get the user ID
+          try {
+            // Simple JWT decode (no verification)
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            
+            const payload = JSON.parse(jsonPayload) as TokenPayload;
+            
+            if (payload && payload.id) {
+              console.log('Using counselor ID from token:', payload.id);
+              setCounselorId(payload.id);
+            } else {
+              setError('Invalid token format: user ID not found');
+              console.error('Invalid token payload:', payload);
+            }
+          } catch (decodeError) {
+            console.error('Error decoding token:', decodeError);
+            setError('Error decoding authentication token');
+          }
+        } catch (err) {
+          setError('Error retrieving user data');
+          console.error('Error getting user data:', err);
+        }
+      };
+
+      getUserIdFromToken();
+    }, []);
+
+    // Then, fetch sessions once we have the counselor ID
+    useEffect(() => {
+      if (!counselorId) return;
+
+      const fetchSessions = async () => {
+        setIsLoading(true);
+        setError(null);
+        
+        try {
+          // Ensure we're using the token for this request
+          const token = localStorage.getItem('auth_token');
+          if (!token) {
+            setError('Authentication token not found. Please log in again.');
+            setIsLoading(false);
+            return;
+          }
+
+          // Make the API request with authentication
+          const response = await apiClient.get<{data: Session[]}>(`/sessions/counselor/${counselorId}`, undefined, token, true);
+          
+          if (response.success && response.data) {
+            setSessions(response.data.data || []);
+          } else {
+            setError('Failed to fetch sessions data');
+          }
+        } catch (err: any) {
+          if (err.code === 'NETWORK_ERROR') {
+            setError('Network error: Unable to connect to the server. Please check your internet connection.');
+          } else if (err.status === 401) {
+            setError('Authentication error: Your session has expired. Please log in again.');
+            // Clear invalid token
+            localStorage.removeItem('auth_token');
+            // Redirect to login page after a delay
+            setTimeout(() => navigate('/signin'), 3000);
+          } else if (err.status === 404) {
+            setError('No sessions found for this counselor.');
+            setSessions([]);
+          } else {
+            setError(`Error: ${err.message || 'Unknown error occurred'}`);
+          }
+          console.error('Error fetching sessions:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchSessions();
+    }, [counselorId, navigate]);
 
     const filteredSessions = [...sessions]
         .filter((s) => {
             const matchesSearch = 
-                s.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                s.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                new Date(s.date).toLocaleDateString().includes(searchTerm);
+                s.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                s.date.includes(searchTerm) ||
+                s.timeSlot.includes(searchTerm);
             
             const matchesFilter = filterBy === "All" || s.status === filterBy.toLowerCase();
             
@@ -296,7 +311,7 @@ const CounsellorSessions = () => {
 
     const visibleSessions = filteredSessions.slice(0, visibleCount);
 
-    const handleViewDetails = (sessionId: string) => {
+    const handleViewDetails = (sessionId: number) => {
         navigate(`/counsellor-session-details?id=${sessionId}`);
     };
 
@@ -330,6 +345,25 @@ const CounsellorSessions = () => {
         };
       }, [filteredSessions.length, isLoading, hasMore]);
       
+    const getCompletedCount = () => {
+      return sessions.filter(s => s.status === 'completed').length;
+    };
+
+    const getCancelledCount = () => {
+      return sessions.filter(s => s.status === 'cancelled').length;
+    };
+
+    const getNoShowCount = () => {
+      return sessions.filter(s => s.status === 'no-show').length;
+    };
+
+    const getTotalMinutes = () => {
+      return sessions.reduce((total, s) => total + s.duration, 0);
+    };
+
+    const handleSignIn = () => {
+      navigate('/signin');
+    };
 
     return (
         <div className="flex flex-col h-screen">
@@ -369,7 +403,7 @@ const CounsellorSessions = () => {
                                     </div>
                                     <div>
                                         <p className="text-2xl font-bold text-gray-900">
-                                            {sessions.filter(s => s.status === 'completed').length}
+                                            {getCompletedCount()}
                                         </p>
                                         <p className="text-sm text-gray-600">Completed</p>
                                     </div>
@@ -383,7 +417,7 @@ const CounsellorSessions = () => {
                                 </div>
                                 <div>
                                     <p className="text-2xl font-bold text-gray-900">
-                                        {sessions.filter(s => s.status === 'cancelled').length}
+                                        {getCancelledCount()}
                                     </p>
                                     <p className="text-sm text-gray-600">Cancelled</p>
                                 </div>
@@ -397,7 +431,7 @@ const CounsellorSessions = () => {
                                 </div>
                                 <div>
                                     <p className="text-2xl font-bold text-gray-900">
-                                        {sessions.filter(s => s.status === 'no-show').length}
+                                        {getNoShowCount()}
                                     </p>
                                     <p className="text-sm text-gray-600">No Shows</p>
                                 </div>
@@ -411,7 +445,7 @@ const CounsellorSessions = () => {
                                 </div>
                                 <div>
                                     <p className="text-2xl font-bold text-gray-900">
-                                        {sessions.reduce((total, s) => total + s.duration, 0)}
+                                        {getTotalMinutes()}
                                     </p>
                                     <p className="text-sm text-gray-600">Total Minutes</p>
                                 </div>
@@ -428,7 +462,7 @@ const CounsellorSessions = () => {
                                     <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                                     <input
                                         type="text"
-                                        placeholder="Search by client name, username, or date..."
+                                        placeholder="Search by client name, date, or time..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white focus:border-slate-500 f ocus:border-opacity-50 focus:ring-2 focus:ring-slate-500 focus:ring-opacity-20 transition-all duration-200 outline-none shadow-sm"
@@ -453,6 +487,7 @@ const CounsellorSessions = () => {
                                         className="appearance-none w-full pl-4 pr-10 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 hover:bg-white focus:bg-white focus:border-slate-500 focus:border-opacity-50 focus:ring-2 focus:ring-slate-500 focus:ring-opacity-20 transition-all duration-200 outline-none cursor-pointer shadow-sm font-medium"
                                     >
                                         <option value="All">All Status</option>
+                                        <option value="scheduled">Scheduled</option>
                                         <option value="completed">Completed</option>
                                         <option value="cancelled">Cancelled</option>
                                         <option value="no-show">No Show</option>
@@ -477,15 +512,31 @@ const CounsellorSessions = () => {
 
                         {/* Session List */}
                         <div className="space-y-6">
-                            {visibleSessions.length > 0 ? (
-                                visibleSessions.map((session) => (
-                                    <SessionCard 
-                                        key={session.id} 
-                                        session={session} 
-                                        onViewDetails={handleViewDetails}
-                                    />
-                                ))
-                            ) : (
+                            {error && (
+                                <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+                                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Error</h3>
+                                    <p className="text-red-600">{error}</p>
+                                    {error.includes('log in') && (
+                                        <Button 
+                                            variant="primary" 
+                                            className="mt-4"
+                                            onClick={handleSignIn}
+                                        >
+                                            Go to Sign In
+                                        </Button>
+                                    )}
+                                </div>
+                            )}
+                            
+                            {!error && isLoading && sessions.length === 0 && (
+                                <div className="flex items-center justify-center py-12">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(174,175,247)]"></div>
+                                    <span className="ml-3 text-gray-600">Loading sessions...</span>
+                                </div>
+                            )}
+
+                            {!error && !isLoading && visibleSessions.length === 0 && (
                                 <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
                                     <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                                     <h3 className="text-xl font-semibold text-gray-900 mb-2">No sessions found</h3>
@@ -498,8 +549,18 @@ const CounsellorSessions = () => {
                                 </div>
                             )}
 
-                            {/* Loading State */}
-                            {isLoading && (
+                            {!error && visibleSessions.length > 0 && (
+                                visibleSessions.map((session) => (
+                                    <SessionCard 
+                                        key={session.id} 
+                                        session={session} 
+                                        onViewDetails={handleViewDetails}
+                                    />
+                                ))
+                            )}
+
+                            {/* Loading More State */}
+                            {!error && isLoading && sessions.length > 0 && (
                                 <div className="flex items-center justify-center py-8">
                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[rgb(174,175,247)]"></div>
                                     <span className="ml-3 text-gray-600">Loading more sessions...</span>
@@ -507,7 +568,7 @@ const CounsellorSessions = () => {
                             )}
 
                             {/* End of Results */}
-                            {!hasMore && !isLoading && visibleSessions.length > 0 && (
+                            {!error && !isLoading && !hasMore && visibleSessions.length > 0 && (
                                 <div className="text-center py-8">
                                     <p className="text-gray-500">You've reached the end of your session history</p>
                                 </div>
