@@ -56,7 +56,7 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({
                   type="text"
                   value={editForm.firstName || ''}
                   onChange={(e) => onInputChange('firstName', e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary"
                   placeholder="First Name"
                 />
                 <input
@@ -64,7 +64,7 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({
                   type="text"
                   value={editForm.lastName || ''}
                   onChange={(e) => onInputChange('lastName', e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary"
                   placeholder="Last Name"
                 />
               </div>
@@ -72,7 +72,7 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({
                 key="bio"
                 value={editForm.bio || ''}
                 onChange={(e) => onInputChange('bio', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 resize-none"
                 rows={3}
                 placeholder="Bio"
               />
@@ -103,7 +103,7 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({
             <div className="flex items-center gap-1">
               <Globe className="w-4 h-4" />
               {!isEditing ? (
-                <a href={`https://${profile.website}`} className="hover:text-pink-600 transition-colors">
+                <a href={`https://${profile.website}`} className="hover:text-primary transition-colors">
                   {profile.website}
                 </a>
               ) : (

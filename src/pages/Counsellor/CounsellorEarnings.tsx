@@ -22,7 +22,6 @@ interface Transaction {
   date: string;
   time: string;
   status: 'completed' | 'pending' | 'failed';
-  sessionType: string;
   duration?: number;
 }
 
@@ -62,50 +61,27 @@ const CounsellorEarnings: React.FC = () => {
       date: 'July 4, 2025',
       time: '2:30 PM',
       status: 'completed',
-      sessionType: 'Individual Therapy',
       duration: 60
     },
     {
       id: 2,
       type: 'session',
-      client: 'Sarah Johnson',
+      client: 'Kasun Mendis',
       amount: 90.00,
       date: 'July 3, 2025',
       time: '10:00 AM',
       status: 'completed',
-      sessionType: 'Couple Therapy',
       duration: 90
     },
     {
       id: 3,
-      type: 'bonus',
-      client: 'Platform Bonus',
-      amount: 50.00,
-      date: 'July 2, 2025',
-      time: '11:45 AM',
-      status: 'completed',
-      sessionType: 'Performance Bonus'
-    },
-    {
-      id: 4,
       type: 'session',
       client: 'Anonymous User #5678',
       amount: 75.00,
       date: 'July 1, 2025',
       time: '4:15 PM',
       status: 'pending',
-      sessionType: 'Individual Therapy',
       duration: 60
-    },
-    {
-      id: 5,
-      type: 'withdrawal',
-      client: 'Bank Transfer',
-      amount: -500.00,
-      date: 'June 30, 2025',
-      time: '9:00 AM',
-      status: 'completed',
-      sessionType: 'Withdrawal'
     }
   ];
 
@@ -118,21 +94,6 @@ const CounsellorEarnings: React.FC = () => {
     { month: 'Jun', earnings: 2600 },
     { month: 'Jul', earnings: 2800 }
   ];
-
-  const getTransactionIcon = (type: string) => {
-    switch (type) {
-      case 'session':
-        return <Users className="w-4 h-4" />;
-      case 'bonus':
-        return <TrendingUp className="w-4 h-4" />;
-      case 'withdrawal':
-        return <ArrowDownRight className="w-4 h-4" />;
-      case 'refund':
-        return <ArrowUpRight className="w-4 h-4" />;
-      default:
-        return <HandCoins className="w-4 h-4" />;
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -149,7 +110,7 @@ const CounsellorEarnings: React.FC = () => {
 
   const filteredTransactions = transactions.filter(transaction => {
     if (filterType === 'all') return true;
-    return transaction.type === filterType;
+    return transaction.status === filterType;
   });
 
   return (
@@ -329,10 +290,8 @@ const CounsellorEarnings: React.FC = () => {
                       className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     >
                       <option value="all">All Types</option>
-                      <option value="session">Sessions</option>
-                      <option value="bonus">Bonuses</option>
-                      <option value="withdrawal">Withdrawals</option>
-                      <option value="refund">Refunds</option>
+                      <option value="pending">Pending</option>
+                      <option value="completed">Completed</option>
                     </select>
                     <button className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors">
                       <Filter className="w-4 h-4" />
@@ -358,7 +317,6 @@ const CounsellorEarnings: React.FC = () => {
                           transaction.type === 'withdrawal' ? 'text-red-600' :
                           'text-gray-600'
                         }`}>
-                          {getTransactionIcon(transaction.type)}
                         </div>
                       </div>
                       
@@ -371,7 +329,6 @@ const CounsellorEarnings: React.FC = () => {
                             {transaction.status}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600">{transaction.sessionType}</p>
                         <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
                           <span>{transaction.date}</span>
                           <span>{transaction.time}</span>

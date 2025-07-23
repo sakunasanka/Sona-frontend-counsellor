@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, Heart, MessageCircle, Send, MoreHorizontal } from 'lucide-react';
+import { Star, Heart, MessageCircle, Send, MoreHorizontal, ThumbsUp, Clock } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
 
 interface Feedback {
@@ -32,7 +32,7 @@ const CounsellorFeedbacks: React.FC = () => {
     const [feedbacks, setFeedbacks] = useState<Feedback[]>([
     {
       id: 1,
-      name: "Uzumaki Naruto",
+      name: "Samiru Nuwanaka",
       status: "Student",
       timeAgo: "2 hours ago",
       rating: 4,
@@ -43,15 +43,15 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
 
 Sometimes, little comforts like this help me keep going. 🍜`,
       reply: {
-        name: "Dr Sarina",
-        message: "Thanks Naruto! It means a lot"
+        name: "Dr. Hiruni Chandradasa",
+        message: "Thanks Samiru! It means a lot"
       },
       likes: 12,
       isLiked: false
     },
     {
       id: 2,
-      name: "Naveen Osura",
+      name: "Nadun Piyadasa",
       status: "User",
       timeAgo: "3 hours ago",
       rating: 5,
@@ -77,18 +77,18 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
     },
     {
       id: 4,
-      name: "Sarah Johnson",
+      name: "Piyath Perera",
       status: "Student",
       timeAgo: "1 hour ago",
       rating: 5,
       pic_src: "/assets/images/student-photo.png",
-      content: `Excellent counseling session! Dr. Sarina really helped me work through my anxiety and gave me practical tools to manage stress. Highly recommend!`,
+      content: `Excellent counseling session! Dr. Hiruni really helped me work through my anxiety and gave me practical tools to manage stress. Highly recommend!`,
       likes: 15,
       isLiked: false
     },
     {
       id: 5,
-      name: "Mike Chen",
+      name: "Sameera Nanayakkara",
       status: "User",
       timeAgo: "5 hours ago",
       rating: 5,
@@ -99,7 +99,7 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
     },
     {
       id: 6,
-      name: "Emma Wilson",
+      name: "Kavindu Suranga",
       status: "Student", 
       timeAgo: "1 day ago",
       rating: 4,
@@ -373,7 +373,7 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                                <span className="text-green-600 font-bold text-lg">📝</span>
+                                <ThumbsUp className="w-6 h-6 text-green-600" />
                             </div>
                             <div>
                                 <p className="text-2xl font-bold text-gray-900">{totalReviews}</p>
@@ -383,8 +383,8 @@ Old man Teuchi just laughed and said, "You again?" Luckily, he let me eat on cre
                     </div>
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                                <span className="text-orange-600 font-bold text-lg">⏱️</span>
+                            <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                                <Clock className="w-6 h-6 text-yellow-600" />
                             </div>
                             <div>
                                 <p className="text-2xl font-bold text-gray-900">{pendingReplies}</p>

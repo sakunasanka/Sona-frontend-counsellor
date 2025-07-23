@@ -633,11 +633,11 @@ function Home() {
               <div className="flex items-center">
                 <img
                   src="https://images.pexels.com/photos/5327921/pexels-photo-5327921.jpeg?auto=compress&cs=tinysrgb&w=150"
-                  alt="Sarah M."
+                  alt="Hasini Chandradasa"
                   className="w-12 h-12 rounded-full mr-4 object-cover"
                 />
                 <div>
-                  <div className="font-semibold text-gray-900 text-base">Sarah M.</div>
+                  <div className="font-semibold text-gray-900 text-base">Sameera Silva</div>
                   <div className="text-gray-600 text-sm">Client</div>
                 </div>
               </div>
@@ -660,7 +660,7 @@ function Home() {
                   className="w-12 h-12 rounded-full mr-4 object-cover"
                 />
                 <div>
-                  <div className="font-semibold text-gray-900 text-base">Dr. Michael Chen</div>
+                  <div className="font-semibold text-gray-900 text-base">Dr. Sarath Kothalawala</div>
                   <div className="text-gray-600 text-sm">Psychiatrist</div>
                 </div>
               </div>
@@ -683,7 +683,7 @@ function Home() {
                   className="w-12 h-12 rounded-full mr-4 object-cover"
                 />
                 <div>
-                  <div className="font-semibold text-gray-900 text-base">Dr. Emily Rodriguez</div>
+                  <div className="font-semibold text-gray-900 text-base">Dr. Harindu Ranasinghe</div>
                   <div className="text-gray-600 text-sm">Licensed Counselor</div>
                 </div>
               </div>
@@ -764,7 +764,7 @@ function Home() {
               <ul className="space-y-2 sm:space-y-3 text-gray-400 text-sm sm:text-base">
                 <li className="flex items-center space-x-2 sm:space-x-3">
                   <Phone className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                  <span>+94 (11) 222 7 222</span>
+                  <span>(011) 222 7 222</span>
                 </li>
                 <li className="flex items-center space-x-2 sm:space-x-3">
                   <Mail className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
