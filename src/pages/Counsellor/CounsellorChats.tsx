@@ -91,7 +91,7 @@ const ChatList: React.FC<{
             onClick={() => onChatSelect(chat)}
             className={`
               flex items-center p-4 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50
-              ${selectedChat?.id === chat.id ? 'bg-pink-50 border-pink-100' : ''}
+              ${selectedChat?.id === chat.id ? 'bg-slate-50 border-slate-100' : ''}
             `}
           >
             <div className="relative">
@@ -116,7 +116,7 @@ const ChatList: React.FC<{
             </div>
             
             {chat.unreadCount > 0 && (
-              <div className="ml-2 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              <div className="ml-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {chat.unreadCount}
               </div>
             )}
@@ -136,18 +136,18 @@ const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
       <div className={`
         max-w-xs lg:max-w-md px-4 py-2 rounded-2xl
         ${isMe 
-          ? 'bg-pink-500 text-white rounded-br-md' 
+          ? 'bg-slate-800 text-white rounded-br-md' 
           : 'bg-gray-100 text-gray-900 rounded-bl-md'
         }
       `}>
         <p className="text-sm">{message.text}</p>
-        <div className={`flex items-center justify-end mt-1 ${isMe ? 'text-pink-100' : 'text-gray-500'}`}>
+        <div className={`flex items-center justify-end mt-1 ${isMe ? 'text-slate-100' : 'text-gray-500'}`}>
           <span className="text-xs">{message.time}</span>
           {isMe && message.status && (
             <div className="ml-1">
               {message.status === 'sent' && <span className="text-xs">✓</span>}
               {message.status === 'delivered' && <span className="text-xs">✓✓</span>}
-              {message.status === 'read' && <span className="text-xs text-pink-200">✓✓</span>}
+              {message.status === 'read' && <span className="text-xs text-slate-200">✓✓</span>}
             </div>
           )}
         </div>

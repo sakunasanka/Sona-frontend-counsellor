@@ -48,7 +48,7 @@ const CounsellorEarnings: React.FC = () => {
     totalEarnings: 12500.00,
     thisMonth: 2800.00,
     lastMonth: 2400.00,
-    pendingAmount: 450.00,
+    pendingAmount: 4500.00,
     totalSessions: 156,
     avgPerSession: 80.13
   };
@@ -58,7 +58,7 @@ const CounsellorEarnings: React.FC = () => {
       id: 1,
       type: 'session',
       client: 'Anonymous User #1234',
-      amount: 75.00,
+      amount: 3500.00,
       date: 'July 4, 2025',
       time: '2:30 PM',
       status: 'completed',
@@ -68,8 +68,8 @@ const CounsellorEarnings: React.FC = () => {
     {
       id: 2,
       type: 'session',
-      client: 'Sarah Johnson',
-      amount: 90.00,
+      client: 'Kasun Mendis',
+      amount: 3500.00,
       date: 'July 3, 2025',
       time: '10:00 AM',
       status: 'completed',
@@ -90,7 +90,7 @@ const CounsellorEarnings: React.FC = () => {
       id: 4,
       type: 'session',
       client: 'Anonymous User #5678',
-      amount: 75.00,
+      amount: 3500.00,
       date: 'July 1, 2025',
       time: '4:15 PM',
       status: 'pending',

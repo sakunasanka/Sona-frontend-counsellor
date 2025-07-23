@@ -78,7 +78,7 @@ const CounsellorCalendar: React.FC = () => {
     // Today's sessions - more than 3 to test the limit
     {
       id: '1',
-      clientName: 'Sarah Johnson',
+      clientName: 'Sarath Perera',
       date: todayString,
       time: '09:00',
       duration: 60,

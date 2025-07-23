@@ -3,7 +3,7 @@ import { Client } from '../components';
 export const mockClients: Client[] = [
   {
     id: 1,
-    name: "Sarah Johnson",
+    name: "Sarath Perera",
     profileImage: "/assets/images/student-photo.png",
     age: 22,
     gender: "Female",
