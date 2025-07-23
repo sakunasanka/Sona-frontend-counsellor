@@ -46,12 +46,12 @@ const CredentialsTab: React.FC<CredentialsTabProps> = ({
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Award className="w-5 h-5 text-pink-600" />
+            <Award className="w-5 h-5 text-buttonBlue-500" />
             Professional Credentials
           </h3>
           <button
             onClick={() => setShowAddCredential(!showAddCredential)}
-            className="bg-pink-500 hover:bg-pink-600 text-white px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1"
+            className="bg-buttonBlue-500 hover:bg-buttonBlue-600 text-white px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1"
           >
             + Add Credential
           </button>
@@ -67,14 +67,14 @@ const CredentialsTab: React.FC<CredentialsTabProps> = ({
                 placeholder="Credential Title"
                 value={newCredentialData.title}
                 onChange={(e) => setNewCredentialData(prev => ({ ...prev, title: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-transparent text-sm"
               />
               <input
                 type="text"
                 placeholder="Institution"
                 value={newCredentialData.institution}
                 onChange={(e) => setNewCredentialData(prev => ({ ...prev, institution: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-transparent text-sm"
               />
               <input
                 type="number"
@@ -83,7 +83,7 @@ const CredentialsTab: React.FC<CredentialsTabProps> = ({
                 max={new Date().getFullYear() + 1}
                 value={newCredentialData.year}
                 onChange={(e) => setNewCredentialData(prev => ({ ...prev, year: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-pink-500 focus:border-transparent text-sm ${
                   newCredentialData.year && !isValidYear(newCredentialData.year) 
                     ? 'border-red-300 bg-red-50' 
                     : 'border-gray-300'
@@ -121,7 +121,7 @@ const CredentialsTab: React.FC<CredentialsTabProps> = ({
 
         <div className="space-y-4">
           {editingCredentials.filter(credential => credential.status === 'approved').map((credential) => (
-            <div key={credential.id} className="border-l-4 border-pink-500 pl-4 py-2 relative group">
+            <div key={credential.id} className="border-l-4 border-buttonBlue-500 pl-4 py-2 relative group">
               {editingCredential === credential.id ? (
                 <div className="space-y-2">
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-2">

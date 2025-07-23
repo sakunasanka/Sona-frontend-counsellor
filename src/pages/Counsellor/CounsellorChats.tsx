@@ -316,7 +316,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
   const [chats, setChats] = useState<Chat[]>([
     {
       id: 1,
-      name: 'Sarah Johnson',
+      name: 'Sameera Nuwanaka',
       lastMessage: 'Thank you for the session yesterday. I feel much better now.',
       time: '2m',
       avatar: '/assets/images/profile-photo.png',
@@ -325,7 +325,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
     },
     {
       id: 2,
-      name: 'Michael Chen',
+      name: 'Nadun Piyadasa',
       lastMessage: 'Can we reschedule our appointment for next week?',
       time: '1h',
       avatar: '/assets/images/student-photo.png',
@@ -334,7 +334,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
     },
     {
       id: 3,
-      name: 'Emily Davis',
+      name: 'Naveen Udantha',
       lastMessage: 'The breathing exercises you taught me are really helping!',
       time: '3h',
       avatar: '/assets/images/profile-photo.png',
@@ -343,7 +343,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
     },
     {
       id: 4,
-      name: 'James Wilson',
+      name: 'Kamindu Perera',
       lastMessage: 'Looking forward to our session tomorrow.',
       time: '1d',
       avatar: '/assets/images/student-photo.png',
@@ -355,7 +355,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: 'Hi Sarah! How are you feeling today?',
+      text: 'Hi Sameera! How are you feeling today?',
       sender: 'me',
       time: '10:30 AM',
       status: 'read'

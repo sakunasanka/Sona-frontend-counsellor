@@ -16,7 +16,7 @@ const initialNotifications = [
   {
     id: 2,
     title: "Had an amazing time, feeling an immense relief! ",
-    description: "Aline Joseph posted a feedback",
+    description: "Sarath Kothalawala posted a feedback",
     read: true,
     type: "feedback",
     timestamp: "2025-06-23T08:00:00"
@@ -31,8 +31,8 @@ const initialNotifications = [
   },
   {
     id: 4,
-    title: "John commented: 'Nice post!'",
-    description: "John Dawson commented on your blog post",
+    title: "Kasun commented: 'Nice post!'",
+    description: "Kasun Mendis commented on your blog post",
     read: false,
     type: 'comment',
     timestamp: "2025-06-26T03:00:00"
@@ -223,8 +223,8 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-black-400 text-center py-6 animate-pulse">
-                  You’re all caught up!
+                <p className="text-sm text-gray-400 text-center py-6">
+                  You're all caught up!
                 </p>
               )}
             </div>

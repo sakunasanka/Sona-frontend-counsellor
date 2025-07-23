@@ -63,21 +63,21 @@ const ClientDetails: React.FC = () => {
       id: 1,
       content: "Client showed significant progress in anxiety management techniques. Will focus on breathing exercises next session.",
       createdAt: "June 28, 2025",
-      createdBy: "Dr. Sarah Wilson",
+      createdBy: "Dr. Hiruni Chandradasa",
       isPrivate: false
     },
     {
       id: 2,
       content: "Client mentioned difficulty with workplace stress. Recommended journaling and provided worksheet for cognitive restructuring.",
       createdAt: "June 20, 2025",
-      createdBy: "Dr. Sarah Wilson",
-      isPrivate: true
+      createdBy: "Dr. SHiruni Chandradasa",
+      isPrivate: false
     },
     {
       id: 3,
       content: "First session went well. Client is open to therapy but hesitant about homework activities. Will introduce small, manageable tasks.",
       createdAt: "June 12, 2025",
-      createdBy: "Dr. Sarah Wilson",
+      createdBy: "Dr. Hiruni Chandradasa",
       isPrivate: false
     }
   ]);
@@ -165,13 +165,13 @@ const ClientDetails: React.FC = () => {
   const clients: Client[] = [
     {
       id: 1,
-      name: "Sarah Johnson",
+      name: "Sarath Perera",
       profileImage: "/assets/images/student-photo.png",
       age: 22,
       gender: "Female",
-      email: "sarah.johnson@example.com",
-      phone: "+1 (555) 123-4567",
-      address: "123 University Ave, Stanford, CA 94305",
+      email: "sarath.perera@example.com",
+      phone: "(071) 123-4567",
+      address: "123 Temple Road, Colombo 07",
       sessionCount: 8,
       lastSession: "2 days ago",
       nextSession: "July 10, 10:00 AM",
@@ -179,15 +179,15 @@ const ClientDetails: React.FC = () => {
       status: 'active',
       anonymous: false,
       student: true,
-      institution: "Stanford University",
+      institution: "Colombo University",
       program: "Computer Science",
       year: "3rd Year",
       joinDate: "May 15, 2025",
       referredBy: "University Counseling Center",
       emergencyContact: {
-        name: "Robert Johnson",
+        name: "Ranindu Perera",
         relationship: "Father",
-        phone: "+1 (555) 987-6543"
+        phone: "(071) 987-6543"
       }
     },
     {
@@ -201,7 +201,6 @@ const ClientDetails: React.FC = () => {
       status: 'new',
       anonymous: true,
       student: true,
-      institution: "Berkeley College",
       joinDate: "June 25, 2025"
     }
   ];
@@ -224,7 +223,7 @@ const ClientDetails: React.FC = () => {
         id: notes.length + 1,
         content: newNote,
         createdAt: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-        createdBy: "Dr. Sarah Wilson",
+        createdBy: "Dr. Hasini Chandradasa", // This would be dynamic in a real app
         isPrivate: isPrivateNote
       };
       
@@ -513,7 +512,7 @@ const ClientDetails: React.FC = () => {
         ></textarea>
         
         <div className="flex justify-between mt-3">
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <input
               type="checkbox"
               id="privateNote"
@@ -525,7 +524,7 @@ const ClientDetails: React.FC = () => {
               <Shield className="w-3.5 h-3.5 mr-1 text-red-500" />
               Mark as private note (only visible to you)
             </label>
-          </div>
+          </div> */}
           
           <button
             className={`px-4 py-2 ${!newNote.trim() ? 'bg-gray-300 cursor-not-allowed opacity-50' : 'bg-primary hover:bg-opacity-90'} text-white rounded-md text-sm font-medium flex items-center transition-all`}
