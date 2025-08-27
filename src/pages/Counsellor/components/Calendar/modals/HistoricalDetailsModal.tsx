@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Calendar, CalendarX } from 'lucide-react';
+import { X, Calendar, CalendarX, History } from 'lucide-react';
 import { Session, UnavailableDate } from '../types';
 
 interface HistoricalDetailsModalProps {
@@ -16,9 +16,17 @@ interface HistoricalDetailsModalProps {
 export const HistoricalDetailsModal: React.FC<HistoricalDetailsModalProps> = ({
   isOpen,
   onClose,
-  historicalData,
+  historicalData
 }) => {
   if (!isOpen || !historicalData) return null;
+
+  // Format time to display in 12-hour format
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
 
   return (
     <div 
@@ -26,7 +34,7 @@ export const HistoricalDetailsModal: React.FC<HistoricalDetailsModalProps> = ({
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-screen overflow-y-auto"
+        className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 border-b border-gray-100">
@@ -48,25 +56,32 @@ export const HistoricalDetailsModal: React.FC<HistoricalDetailsModalProps> = ({
           </div>
         </div>
         
-        <div className="p-6">
-          {/* Historical Sessions */}
+        <div className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
           {historicalData.sessions.length > 0 && (
             <div className="mb-6">
-              <h4 className="text-lg font-medium text-gray-900 mb-3">Completed Sessions</h4>
-              <div className="space-y-2">
+              <h4 className="text-lg font-medium text-gray-900 mb-3">Sessions</h4>
+              <div className="space-y-4">
                 {historicalData.sessions.map(session => (
                   <div 
-                    key={session.id}
-                    className="p-3 rounded-lg bg-green-50 border border-green-200"
+                    key={session.id} 
+                    className="p-4 rounded-lg border-2 border-gray-200 bg-gray-50"
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-gray-900">{session.clientName}</p>
-                        <p className="text-sm text-gray-600">{session.time} • {session.duration} minutes</p>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <span className="font-medium text-gray-900">{formatTime(session.time)}</span>
+                        <div className="flex items-center gap-2">
+                          <History className="w-3 h-3 text-gray-500" />
+                          <span className="text-sm text-gray-600">{session.clientName}</span>
+                        </div>
                       </div>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
-                        Completed
-                      </span>
+                      <div className="flex items-center">
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                          Completed
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Duration: {session.duration} minutes
                     </div>
                   </div>
                 ))}
@@ -74,7 +89,6 @@ export const HistoricalDetailsModal: React.FC<HistoricalDetailsModalProps> = ({
             </div>
           )}
 
-          {/* Historical Unavailability */}
           {historicalData.unavailableDetails && (
             <div className="mb-6">
               <h4 className="text-lg font-medium text-gray-900 mb-3">Unavailable slots</h4>
@@ -92,7 +106,7 @@ export const HistoricalDetailsModal: React.FC<HistoricalDetailsModalProps> = ({
                     )}
                     {!historicalData.unavailableDetails.isFullDay && historicalData.unavailableDetails.timeRange && (
                       <p className="text-sm text-red-700">
-                        <strong>Time:</strong> {historicalData.unavailableDetails.timeRange.start} - {historicalData.unavailableDetails.timeRange.end}
+                        <strong>Time:</strong> {formatTime(historicalData.unavailableDetails.timeRange.start)} - {formatTime(historicalData.unavailableDetails.timeRange.end)}
                       </p>
                     )}
                   </div>
@@ -105,7 +119,7 @@ export const HistoricalDetailsModal: React.FC<HistoricalDetailsModalProps> = ({
           {historicalData.sessions.length === 0 && 
            !historicalData.unavailableDetails && (
             <div className="text-center py-8">
-              <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">No sessions or unavailability recorded for this day</p>
             </div>
           )}
@@ -114,3 +128,5 @@ export const HistoricalDetailsModal: React.FC<HistoricalDetailsModalProps> = ({
     </div>
   );
 };
+
+export default HistoricalDetailsModal;

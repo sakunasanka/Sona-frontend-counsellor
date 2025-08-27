@@ -58,329 +58,20 @@ const CounsellorCalendar: React.FC = () => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
 
-  // Sample data
-  // State to track available days - by default all days are unavailable
-  const [availableDates, setAvailableDates] = useState<Array<{
-    id: string;
-    date: string;
-    isFullDay: boolean;
-    timeRanges: Array<{
-      id: string;
-      start: string;
-      end: string;
-    }>;
-    isRecurring?: boolean;
-    recurringPattern?: string; // 'daily', 'weekly', 'monthly'
-    recurringDays?: string[]; // days of week for weekly recurring
-  }>>([]);
+
+  // Get current date and dates for the next two weeks
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
   
-  const [sessions] = useState<Session[]>([
-    // Today's sessions (July 3, 2025)
-    {
-      id: '1',
-      clientName: 'Sarah Johnson',
-      date: '2025-07-03',
-      time: '10:00',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '2',
-      clientName: 'Mike Chen',
-      date: '2025-07-03',
-      time: '14:30',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '4',
-      clientName: 'John Doe',
-      date: '2025-07-03',
-      time: '09:00',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '5',
-      clientName: 'Jane Smith',
-      date: '2025-07-03',
-      time: '16:00',
-      duration: 60,
-      status: 'pending'
-    },
-    {
-      id: '6',
-      clientName: 'Bob Wilson',
-      date: '2025-07-03',
-      time: '18:00',
-      duration: 30,
-      status: 'confirmed'
-    },
-    {
-      id: '7',
-      clientName: 'Alice Brown',
-      date: '2025-07-03',
-      time: '20:00',
-      duration: 45,
-      status: 'pending'
-    },
-    {
-      id: '8',
-      clientName: 'Maria Garcia',
-      date: '2025-07-03',
-      time: '11:30',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '9',
-      clientName: 'David Thompson',
-      date: '2025-07-03',
-      time: '13:00',
-      duration: 45,
-      status: 'pending'
-    },
-    {
-      id: '10',
-      clientName: 'Jennifer Lee',
-      date: '2025-07-03',
-      time: '15:00',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '11',
-      clientName: 'Robert Miller',
-      date: '2025-07-03',
-      time: '17:00',
-      duration: 45,
-      status: 'pending'
-    },
-    {
-      id: '12',
-      clientName: 'Lisa Anderson',
-      date: '2025-07-03',
-      time: '19:00',
-      duration: 30,
-      status: 'confirmed'
-    },
-    
-    // Other days' sessions
-    {
-      id: '3',
-      clientName: 'Emma Wilson',
-      date: '2025-07-05',
-      time: '11:00',
-      duration: 60,
-      status: 'pending'
-    },
-    {
-      id: '13',
-      clientName: 'Tom Williams',
-      date: '2025-07-05',
-      time: '14:00',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '14',
-      clientName: 'Susan Davis',
-      date: '2025-07-06',
-      time: '10:30',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '15',
-      clientName: 'Kevin Brown',
-      date: '2025-07-06',
-      time: '15:30',
-      duration: 45,
-      status: 'pending'
-    },
-    {
-      id: '16',
-      clientName: 'Nancy Clark',
-      date: '2025-07-07',
-      time: '18:00',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '17',
-      clientName: 'Paul Martinez',
-      date: '2025-07-08',
-      time: '09:30',
-      duration: 45,
-      status: 'pending'
-    },
-    {
-      id: '18',
-      clientName: 'Rachel Green',
-      date: '2025-07-08',
-      time: '16:30',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '19',
-      clientName: 'Steven Hall',
-      date: '2025-07-09',
-      time: '11:00',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '20',
-      clientName: 'Monica White',
-      date: '2025-07-09',
-      time: '14:30',
-      duration: 60,
-      status: 'pending'
-    },
-    {
-      id: '21',
-      clientName: 'James Taylor',
-      date: '2025-07-11',
-      time: '10:00',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '22',
-      clientName: 'Laura Lopez',
-      date: '2025-07-11',
-      time: '17:00',
-      duration: 60,
-      status: 'pending'
-    },
-    {
-      id: '23',
-      clientName: 'Daniel King',
-      date: '2025-07-12',
-      time: '13:00',
-      duration: 45,
-      status: 'confirmed'
-    }
-  ]);
+  // Format dates for data
+  const formatDateString = (date: Date) => date.toISOString().split('T')[0];
+  const todayString = formatDateString(today);
 
-  // Historical data (sessions and unavailability before today)
-  const [historicalSessions] = useState<Session[]>([
-    {
-      id: 'h1',
-      clientName: 'David Johnson',
-      date: '2025-07-01',
-      time: '10:00',
-      duration: 60,
-      status: 'completed'
-    },
-    {
-      id: 'h2',
-      clientName: 'Lisa Chen',
-      date: '2025-07-01',
-      time: '14:00',
-      duration: 45,
-      status: 'completed'
-    },
-    {
-      id: 'h3',
-      clientName: 'Mark Wilson',
-      date: '2025-07-02',
-      time: '09:00',
-      duration: 60,
-      status: 'completed'
-    },
-    {
-      id: 'h4',
-      clientName: 'Sarah Davis',
-      date: '2025-07-02',
-      time: '11:00',
-      duration: 45,
-      status: 'completed'
-    },
-    {
-      id: 'h5',
-      clientName: 'Tom Brown',
-      date: '2025-06-30',
-      time: '16:00',
-      duration: 30,
-      status: 'completed'
-    }
-  ]);
-
-  const [historicalUnavailableDates] = useState<UnavailableDate[]>([
-    {
-      id: 'hu1',
-      date: '2025-06-29',
-      reason: 'Medical appointment',
-      isFullDay: true
-    },
-    {
-      id: 'hu2',
-      date: '2025-07-01',
-      reason: 'Training session',
-      isFullDay: false,
-      timeRange: {
-        start: '13:00',
-        end: '15:00'
-      }
-    }
-  ]);
-
-  const [unavailableDates] = useState<UnavailableDate[]>([
-    {
-      id: '1',
-      date: '2025-07-04',
-      reason: 'Personal leave',
-      isFullDay: true
-    },
-    {
-      id: '2',
-      date: '2025-07-07',
-      reason: 'Conference',
-      isFullDay: false,
-      timeRange: {
-        start: '09:00',
-        end: '17:00'
-      }
-    },
-    {
-      id: '3',
-      date: '2025-07-08',
-      reason: 'Training session',
-      isFullDay: false,
-      timeRange: {
-        start: '14:00',
-        end: '16:00'
-      }
-    },
-    {
-      id: '4',
-      date: '2025-07-10',
-      reason: 'Medical appointment',
-      isFullDay: false,
-      timeRange: {
-        start: '10:00',
-        end: '12:00'
-      }
-    },
-    {
-      id: '5',
-      date: '2025-07-15',
-      reason: 'Vacation',
-      isFullDay: true
-    },
-    {
-      id: '6',
-      date: '2025-07-20',
-      reason: 'Team building',
-      isFullDay: false,
-      timeRange: {
-        start: '13:00',
-        end: '18:00'
-      }
-    }
-  ]);
+  // Clear all mock sessions
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [historicalSessions, setHistoricalSessions] = useState<Session[]>([]);
+  const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>([]);
 
   const [timeSlots] = useState<TimeSlot[]>([
     { id: '1', time: '00:00', isBooked: false, isAvailable: true },
@@ -418,14 +109,78 @@ const CounsellorCalendar: React.FC = () => {
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+
+  // Track available dates - initially empty as all days are unavailable by default
+  const [availableDates, setAvailableDates] = useState<string[]>([]);
+
+  // Function to check if a date is within the next two weeks (clickable period)
+  const isWithinTwoWeeks = (date: Date) => {
+    const twoWeeksFromNow = new Date();
+    twoWeeksFromNow.setDate(today.getDate() + 14); // 2 weeks from today
+    
+    // Create normalized versions for comparison
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(0, 0, 0, 0);
+    
+    const normalizedToday = new Date();
+    normalizedToday.setHours(0, 0, 0, 0);
+    
+    const normalizedTwoWeeksFromNow = new Date(twoWeeksFromNow);
+    normalizedTwoWeeksFromNow.setHours(0, 0, 0, 0);
+    
+    // Date is within two weeks if it's today or later, but not after two weeks from now
+    return normalizedDate >= normalizedToday && normalizedDate <= normalizedTwoWeeksFromNow;
+  };
+
+  // Function to check if a date is unavailable
+  const isDateUnavailable = (date: Date) => {
+    // By default, all days are unavailable
+    const dateString = date.toISOString().split('T')[0];
+    
+    // If the date is in availableDates, it's available (not unavailable)
+    return !availableDates.includes(dateString);
+  };
+  
+  // Mock time slots data
+  const generateTimeSlots = (date: Date) => {
+    const timeSlots = [];
+    const dateString = date.toISOString().split('T')[0];
+    
+    // Check if the date is available
+    const isUnavailable = isDateUnavailable(date);
+    
+    // Generate time slots for all days (including past days)
+    const sessionsForDate = sessions.filter(session => session.date === dateString);
+    
+    // Generate time slots for all 24 hours
+    for (let hour = 0; hour < 24; hour++) {
+      const time = `${hour.toString().padStart(2, '0')}:00`;
+      const sessionAtTime = sessionsForDate.find(session => session.time === time);
+      
+      timeSlots.push({
+        id: `slot-${dateString}-${time}`,
+        time,
+        isBooked: !!sessionAtTime,
+        isAvailable: !isUnavailable,
+        client: sessionAtTime ? {
+          name: sessionAtTime.clientName,
+          duration: sessionAtTime.duration
+        } : undefined
+      });
+    }
+    
+    return timeSlots;
+  };
+
+  // Mock time slots
+  const timeSlots = selectedDate ? generateTimeSlots(selectedDate) : [];
+
+  // Function to get calendar days for current month view
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDay = firstDay.getDay();
-    const today = new Date();
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const days = [];
 
@@ -447,9 +202,11 @@ const CounsellorCalendar: React.FC = () => {
         ? historicalSessions.filter(session => session.date === dateString)
         : sessions.filter(session => session.date === dateString);
       
-      const unavailableEntry = isPastDay
-        ? historicalUnavailableDates.find(unavailable => unavailable.date === dateString)
-        : unavailableDates.find(unavailable => unavailable.date === dateString);
+      // Check if date is within the clickable two-week window
+      const isClickable = isWithinTwoWeeks(currentDate);
+      
+      // Get sessions for this date - include both current and historical sessions
+      let allSessions: Session[] = [];
       
       // Check if this day has an availability entry
       const availableEntry = availableDates.find(available => available.date === dateString);
@@ -464,14 +221,11 @@ const CounsellorCalendar: React.FC = () => {
       const isAvailable = !!availableEntry || !!recurringEntry;
       const isRecurring = !!recurringEntry;
       
-      // Create unavailable slots for partial unavailability
-      const unavailableSlots = [];
-      if (unavailableEntry && !unavailableEntry.isFullDay && unavailableEntry.timeRange) {
-        unavailableSlots.push({
-          id: `unavailable-${unavailableEntry.id}`,
-          time: `${unavailableEntry.timeRange.start}-${unavailableEntry.timeRange.end}`,
-          status: 'unavailable'
-        });
+      // Only show sessions if the day is available
+      if (!isUnavailable) {
+        const currentSessions = sessions.filter(session => session.date === dateString);
+        const historicalSessionsForDate = historicalSessions.filter(session => session.date === dateString);
+        allSessions = [...currentSessions, ...historicalSessionsForDate];
       }
       
       // Create available time range slots
@@ -504,12 +258,10 @@ const CounsellorCalendar: React.FC = () => {
         availableSlots: availableSlots,
         isToday: dateString === todayString,
         isPastDay: isPastDay,
-        isUnavailable: !isAvailable, // Default is unavailable if not specifically marked available
-        isAvailable: isAvailable,
-        isRecurringAvailable: isRecurring,
-        unavailableDetails: unavailableEntry,
-        availableDetails: availableEntry || recurringEntry
-      });
+        isUnavailable: isUnavailable && !hasAvailableSlots, // If it has available slots, it's not fully unavailable
+        isClickable: isClickable, // New property to track if the day is within the clickable window
+        unavailableDetails: undefined
+      };
     }
 
     return days;
@@ -530,50 +282,203 @@ const CounsellorCalendar: React.FC = () => {
   };
 
   const handleDateClick = (date: Date) => {
-    // Fix timezone issue by using local date string instead of UTC (ISO)
-    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    // Check if the date is a past day
     const today = new Date();
     const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const isPastDay = dateString < todayString;
     
-    // Don't process clicks on past days - they are now unclickable
-    if (isPastDay) {
+    // If the date is in the past, show historical details
+    if (normalizedDate < today) {
+      const dateString = date.toISOString().split('T')[0];
+      const sessionsForDate = sessions.filter(session => session.date === dateString);
+      const historicalSessionsForDate = historicalSessions.filter(session => session.date === dateString);
+      const allSessions = [...sessionsForDate, ...historicalSessionsForDate];
+      
+      // Get unavailability details if any
+      const unavailableDetails = unavailableDates.find(u => u.date === dateString);
+      
+      setSelectedHistoricalDate({
+        date: date,
+        sessions: allSessions,
+        unavailableSlots: [],
+        unavailableDetails: unavailableDetails
+      });
+      
+      setShowHistoricalDetails(true);
       return;
     }
     
-    // For current/future dates, always open the availability setter dialog
+    // Check if the date is within the clickable two-week window
+    if (!isWithinTwoWeeks(date)) {
+      // If not clickable and not a past day, do nothing
+      return;
+    }
+    
     setSelectedDate(date);
-    setSelectedStartTime('09:00');
-    setSelectedEndTime('17:00');
-    setShowAvailability(true);
     
-    // Check if this date has an availability entry already
-    const availableEntry = availableDates.find(available => available.date === dateString);
+    // For clickable dates, check availability
+    const isUnavailable = isDateUnavailable(date);
     
-    // Check if there's a recurring availability for this day of the week
-    const dayOfWeek = daysOfWeek[date.getDay()];
-    const recurringEntry = availableDates.find(available => 
-      available.isRecurring && 
-      available.recurringPattern === 'weekly' && 
-      available.recurringDays?.includes(dayOfWeek));
-    
-    // Pre-fill the form with existing availability data if it exists
-    if (availableEntry) {
-      setAvailabilityType(availableEntry.isFullDay ? 'full-day' : 'specific-hours');
-      if (!availableEntry.isFullDay && availableEntry.timeRanges.length > 0) {
-        setSelectedStartTime(availableEntry.timeRanges[0].start);
-        setSelectedEndTime(availableEntry.timeRanges[0].end);
+    if (isUnavailable) {
+      // If the date is unavailable (default), show the unavailable day details modal
+      const dateString = date.toISOString().split('T')[0];
+      const unavailableDate = {
+        id: `unavailable-${dateString}`,
+        date: dateString,
+        isFullDay: true
+      };
+      setSelectedUnavailableDate(unavailableDate);
+      setShowUnavailableDetails(true);
+    } else {
+      // If the date is available, show the time slots modal for available day
+      setShowTimeSlots(true);
+    }
+  };
+
+  // Handle marking a date as unavailable
+  const handleMarkAsUnavailable = (recurFor4Weeks = false, timeRange: {start: string, end: string} | null = null) => {
+    if (selectedDate) {
+      const dateString = selectedDate.toISOString().split('T')[0];
+      console.log('Marking date as unavailable:', dateString);
+      console.log('Recur for 4 weeks:', recurFor4Weeks);
+      console.log('Time range:', timeRange);
+      
+      // Create a list of dates to process
+      const datesToProcess = [dateString];
+      
+      // If recurFor4Weeks is true, mark this week and 3 more weeks (total of 4 weeks)
+      if (recurFor4Weeks) {
+        for (let i = 1; i <= 3; i++) {
+          const nextWeekDate = new Date(selectedDate);
+          nextWeekDate.setDate(selectedDate.getDate() + (i * 7)); // Add 7 days for each week
+          const nextWeekDateStr = nextWeekDate.toISOString().split('T')[0];
+          datesToProcess.push(nextWeekDateStr);
+        }
       }
-      setShowRecurring(!!availableEntry.isRecurring);
-      if (availableEntry.isRecurring) {
-        setRecurringPattern(availableEntry.recurringPattern || 'weekly');
-        setSelectedDays(availableEntry.recurringDays || []);
+      
+      if (timeRange) {
+        // For partial day unavailability, add to unavailableDates
+        const newUnavailableDates = [...unavailableDates];
+        
+        // Add unavailable time slots for each date
+        datesToProcess.forEach(date => {
+          const unavailableEntry = {
+            id: `unavailable-${date}-${timeRange.start}-${timeRange.end}`,
+            date: date,
+            isFullDay: false,
+            timeRange: {
+              start: timeRange.start,
+              end: timeRange.end
+            }
+          };
+          
+          // Check if there's already an entry for this date and time range
+          const existingIndex = newUnavailableDates.findIndex(
+            entry => entry.date === date && 
+                   !entry.isFullDay && 
+                   entry.timeRange?.start === timeRange.start && 
+                   entry.timeRange?.end === timeRange.end
+          );
+          
+          if (existingIndex === -1) {
+            newUnavailableDates.push(unavailableEntry);
+          }
+        });
+        
+        // Update unavailableDates state
+        setUnavailableDates(newUnavailableDates);
+      } else {
+        // For full day unavailability, remove from availableDates
+        const newAvailableDates = availableDates.filter(date => !datesToProcess.includes(date));
+        setAvailableDates(newAvailableDates);
       }
-    } else if (recurringEntry) {
-      setAvailabilityType(recurringEntry.isFullDay ? 'full-day' : 'specific-hours');
-      if (!recurringEntry.isFullDay && recurringEntry.timeRanges.length > 0) {
-        setSelectedStartTime(recurringEntry.timeRanges[0].start);
-        setSelectedEndTime(recurringEntry.timeRanges[0].end);
+      
+      // Close the modal
+      setShowTimeSlots(false);
+    }
+  };
+
+  // Handle marking a date as available - directly mark it without showing another popup
+  const handleMarkAsAvailable = (recurFor4Weeks = false, timeRange: {start: string, end: string} | null = null) => {
+    if (selectedUnavailableDate) {
+      const dateStr = selectedUnavailableDate.date;
+      const selectedDate = new Date(dateStr);
+      
+      console.log('Marking date as available:', dateStr);
+      console.log('Recur for 4 weeks:', recurFor4Weeks);
+      console.log('Time range:', timeRange);
+      
+      // Create a list of dates to process
+      const datesToProcess = [dateStr];
+      
+      // If recurFor4Weeks is true, mark this week and 3 more weeks (total of 4 weeks)
+      if (recurFor4Weeks) {
+        for (let i = 1; i <= 3; i++) {
+          const nextWeekDate = new Date(selectedDate);
+          nextWeekDate.setDate(selectedDate.getDate() + (i * 7)); // Add 7 days for each week
+          const nextWeekDateStr = nextWeekDate.toISOString().split('T')[0];
+          datesToProcess.push(nextWeekDateStr);
+        }
+      }
+      
+      if (timeRange) {
+        // For partial day availability, add available slots to the calendar
+        // These will be tracked as available slots within an otherwise unavailable day
+        const newAvailableSlots = [...unavailableDates];
+        
+        // Add available time slots for each date
+        datesToProcess.forEach(date => {
+          const availableSlot = {
+            id: `available-${date}-${timeRange.start}-${timeRange.end}`,
+            date: date,
+            isFullDay: false,
+            isAvailable: true, // Mark this slot as available
+            timeRange: {
+              start: timeRange.start,
+              end: timeRange.end
+            }
+          };
+          
+          // Check if there's already an entry for this date and time range
+          const existingIndex = newAvailableSlots.findIndex(
+            entry => entry.date === date && 
+                   !entry.isFullDay && 
+                   entry.timeRange?.start === timeRange.start && 
+                   entry.timeRange?.end === timeRange.end &&
+                   entry.isAvailable === true
+          );
+          
+          if (existingIndex === -1) {
+            newAvailableSlots.push(availableSlot);
+            
+            // Remove this date from fully available dates if it exists
+            // This ensures it's treated as partially available (green) instead of fully available (blue)
+            const newAvailableDates = availableDates.filter(d => d !== date);
+            setAvailableDates(newAvailableDates);
+          }
+        });
+        
+        // Update unavailableDates state to include the available slots
+        setUnavailableDates(newAvailableSlots);
+      } else {
+        // For full day availability, add to availableDates
+        const newAvailableDates = [...availableDates];
+        
+        // Add each date if it's not already available
+        datesToProcess.forEach(dateStr => {
+          if (!newAvailableDates.includes(dateStr)) {
+            newAvailableDates.push(dateStr);
+          }
+          
+          // Remove any partial availability slots for this date
+          const newUnavailableDates = unavailableDates.filter(
+            entry => entry.date !== dateStr || !entry.isAvailable
+          );
+          setUnavailableDates(newUnavailableDates);
+        });
+        
+        // Update the available dates
+        setAvailableDates(newAvailableDates);
       }
       setShowRecurring(true);
       setRecurringPattern(recurringEntry.recurringPattern || 'weekly');
@@ -1171,276 +1076,45 @@ const CounsellorCalendar: React.FC = () => {
           </div>
         )}
 
-        {/* Set Availability Modal */}
-        {showAvailability && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            onClick={() => {
-              setShowAvailability(false);
-              setAvailabilityType('full-day');
-              setShowRecurring(false);
-            }}
-          >
-            <div 
-              className="bg-white rounded-2xl shadow-xl max-w-md w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold text-gray-900">Set Availability</h3>
-                  <button 
-                    onClick={() => {
-                      setShowAvailability(false);
-                      setAvailabilityType('full-day');
-                      setShowRecurring(false);
-                    }}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <X className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                  <input 
-                    type="date" 
-                    value={selectedDate ? 
-                      `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}` : 
-                      ''}
-                    onChange={(e) => {
-                      // Create date without timezone issues by manually parsing the YYYY-MM-DD string
-                      const [year, month, day] = e.target.value.split('-').map(Number);
-                      const date = new Date(year, month - 1, day);
-                      setSelectedDate(date);
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                  />
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    id="recurring" 
-                    checked={showRecurring} 
-                    onChange={() => setShowRecurring(!showRecurring)} 
-                    className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
-                  />
-                  <label htmlFor="recurring" className="text-sm font-medium text-gray-700">
-                    Set as recurring availability
-                  </label>
-                </div>
-                
-                {/* Recurring Options */}
-                {showRecurring && (
-                  <div className="space-y-4 bg-purple-50 p-3 rounded-lg border border-purple-100">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Repeat Pattern</label>
-                      <select 
-                        value={recurringPattern}
-                        onChange={(e) => setRecurringPattern(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                      >
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly" disabled>Monthly (Coming Soon)</option>
-                      </select>
-                    </div>
-                    
-                    {recurringPattern === 'weekly' && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Days of Week</label>
-                        <div className="grid grid-cols-7 gap-2">
-                          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                            <div
-                              key={day}
-                              onClick={() => {
-                                const newSelectedDays = selectedDays.includes(day)
-                                  ? selectedDays.filter(d => d !== day)
-                                  : [...selectedDays, day];
-                                setSelectedDays(newSelectedDays);
-                              }}
-                              className={`flex items-center justify-center p-2 rounded-lg cursor-pointer text-sm font-medium ${
-                                selectedDays.includes(day)
-                                  ? 'bg-primary text-white'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                              }`}
-                            >
-                              {day}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Availability Type</label>
-                  <select 
-                    value={availabilityType}
-                    onChange={(e) => setAvailabilityType(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                  >
-                    <option value="full-day">Full Day Available</option>
-                    <option value="partial">Specific Time Range</option>
-                  </select>
-                </div>
-                
-                {/* Time Range Fields */}
-                <div 
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    availabilityType === 'partial' 
-                      ? 'max-h-96 opacity-100' 
-                      : 'max-h-0 opacity-0'
-                  }`}
-                >
-                  <div className="space-y-4 pt-2">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Start Time
-                      </label>
-                      <input 
-                        type="time" 
-                        value={selectedStartTime}
-                        onChange={(e) => setSelectedStartTime(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                        placeholder="Select start time"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        End Time
-                      </label>
-                      <input 
-                        type="time" 
-                        value={selectedEndTime}
-                        onChange={(e) => setSelectedEndTime(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                        placeholder="Select end time"
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Add more time slots */}
-                <div className={availabilityType === 'partial' ? '' : 'hidden'}>
-                  <button 
-                    type="button"
-                    className="flex items-center justify-center w-full border-2 border-dashed border-primary bg-primary/5 p-3 rounded-lg hover:bg-primary/10 transition-all text-primary"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    <span>Add Another Time Range</span>
-                  </button>
-                </div>
-                
-                <div className="pt-4 flex gap-3">
-                  <button className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg font-medium transition-all">
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={handleSaveAvailability}
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition-all"
-                  >
-                    Save Availability
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Unavailable Day Details Modal */}
-        {showUnavailableDetails && selectedUnavailableDate && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            onClick={() => {
-              setShowUnavailableDetails(false);
-              setSelectedUnavailableDate(null);
-            }}
-          >
-            <div 
-              className="bg-white rounded-2xl shadow-xl max-w-md w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    {selectedUnavailableDate.isFullDay ? 'Unavailable Day' : 'Unavailable Time Slots'}
-                  </h3>
-                  <button 
-                    onClick={() => {
-                      setShowUnavailableDetails(false);
-                      setSelectedUnavailableDate(null);
-                    }}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <X className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="p-6 space-y-4">
-                <div className="text-center">
-                  <CalendarX className="w-12 h-12 text-red-500 mx-auto mb-3" />
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">
-                    {new Date(selectedUnavailableDate.date).toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </h4>
-                  <p className="text-gray-600">
-                    {selectedUnavailableDate.isFullDay 
-                      ? 'This day is marked as unavailable' 
-                      : 'Some time slots are marked as unavailable'
-                    }
-                  </p>
-                </div>
+          {/* Time Slots Modal */}
+          {showTimeSlots && selectedDate && (
+            <TimeSlotsModal
+              selectedDate={selectedDate}
+              timeSlots={timeSlots}
+              sessions={sessions}
+              isTimeSlotUnavailable={isTimeSlotUnavailable}
+              onClose={() => setShowTimeSlots(false)}
+              onMarkAsUnavailable={handleMarkAsUnavailable}
+            />
+          )}
 
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0">
-                      <CalendarX className="w-5 h-5 text-red-600 mt-0.5" />
-                    </div>
-                    <div className="flex-1">
-                      <h5 className="font-medium text-red-900 mb-1">
-                        {selectedUnavailableDate.isFullDay ? 'Full Day Unavailable' : 'Partial Day Unavailable'}
-                      </h5>
-                      {selectedUnavailableDate.reason && (
-                        <p className="text-sm text-red-700 mb-2">
-                          <strong>Reason:</strong> {selectedUnavailableDate.reason}
-                        </p>
-                      )}
-                      {!selectedUnavailableDate.isFullDay && selectedUnavailableDate.timeRange && (
-                        <p className="text-sm text-red-700">
-                          <strong>Time:</strong> {selectedUnavailableDate.timeRange.start} - {selectedUnavailableDate.timeRange.end}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex pt-4">
-                  <button 
-                    onClick={handleMarkAsAvailable}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition-all"
-                  >
-                    Mark as Available
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+          {showUnavailable && (
+            <MarkUnavailableModal
+              unavailabilityType={unavailabilityType}
+              onUnavailabilityTypeChange={setUnavailabilityType}
+              sessions={sessions}
+              unavailableDates={unavailableDates}
+              onClose={() => {
+                setShowUnavailable(false);
+                setUnavailabilityType('full-day');
+              }}
+            />
+          )}
 
-        {/* Historical Details Modal */}
-        {showHistoricalDetails && selectedHistoricalDate && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            onClick={() => {
+          {/* Unavailable Day Details Modal */}
+          {showUnavailableDetails && selectedUnavailableDate && (
+            <UnavailableDayDetailsModal
+              isOpen={showUnavailableDetails}
+              onClose={() => setShowUnavailableDetails(false)}
+              unavailableDate={selectedUnavailableDate}
+              onMarkAsAvailable={handleMarkAsAvailable}
+            />
+          )}
+
+          <HistoricalDetailsModal
+            isOpen={showHistoricalDetails}
+            onClose={() => {
               setShowHistoricalDetails(false);
               setSelectedHistoricalDate(null);
             }}

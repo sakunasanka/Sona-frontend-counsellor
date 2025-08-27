@@ -14,7 +14,6 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({
   getStatusColor
 }) => {
   const [showAllSessions, setShowAllSessions] = useState(false);
-  const [containerHeight, setContainerHeight] = useState<string>('auto');
   const containerRef = useRef<HTMLDivElement>(null);
   
   const todayString = new Date().toISOString().split('T')[0];
@@ -26,51 +25,19 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({
   const displaySessions = showAllSessions ? todaySessions : todaySessions.slice(0, 3);
   const hasMoreSessions = todaySessions.length > 3;
   
-  // Initialize container height when component mounts
-  useEffect(() => {
-    // Set initial height after a small delay to ensure DOM is ready
-    const timer = setTimeout(() => {
-      if (containerRef.current) {
-        const sessionHeight = 80; // Approximate height of each session item
-        const buttonHeight = 24; // Approximate height of the "View more" button
-        const spacing = 12; // Spacing between items
-        // Calculate the height without extra padding at the bottom
-        const initialHeight = Math.min(todaySessions.length, 3) * (sessionHeight + spacing) - (todaySessions.length > 0 ? spacing : 0) + (hasMoreSessions ? buttonHeight : 0);
-        setContainerHeight(`${initialHeight}px`);
-      }
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Update container height when sessions change or showAllSessions changes
-  useEffect(() => {
-    if (containerRef.current) {
-      if (showAllSessions) {
-        // When showing all sessions, set height to the full scroll height
-        // Subtract a small amount to remove extra space at the bottom
-        setContainerHeight(`${containerRef.current.scrollHeight - 8}px`);
-      } else {
-        // When collapsing, first set height to current scroll height
-        setContainerHeight(`${containerRef.current.scrollHeight}px`);
-        // Force a reflow
-        containerRef.current.offsetHeight;
-        // Then set to the height of just 3 sessions
-        const sessionHeight = 80; // Approximate height of each session item
-        const buttonHeight = 24; // Approximate height of the "View more" button
-        const spacing = 12; // Spacing between items
-        // Calculate the height without extra padding at the bottom
-        const newHeight = Math.min(todaySessions.length, 3) * (sessionHeight + spacing) - (todaySessions.length > 0 ? spacing : 0) + (hasMoreSessions ? buttonHeight : 0);
-        setContainerHeight(`${newHeight}px`);
-      }
-    }
-  }, [showAllSessions, todaySessions.length, hasMoreSessions]);
-  
   const toggleShowAllSessions = () => {
     setShowAllSessions(prev => !prev);
   };
 
-    return (
+  // Format time to display in 12-hour format
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
+
+  return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
         <Calendar className="w-4 lg:w-5 h-4 lg:h-5 text-primary" />
@@ -78,8 +45,8 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({
       </h3>
       <div 
         ref={containerRef}
-        className="space-y-3 transition-all duration-300 ease-in-out overflow-hidden"
-        style={{ height: containerHeight }}>
+        className="space-y-3"
+      >
         {displaySessions.map(session => (
           <div 
             key={session.id} 
@@ -95,7 +62,7 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-gray-900 truncate">{session.clientName}</p>
-              <p className="text-sm text-gray-600">{session.time} • {session.duration}min</p>
+              <p className="text-sm text-gray-600">{formatTime(session.time)} • {session.duration}min</p>
             </div>
             {session.status === 'pending' ? (
               <div className="flex gap-2">
@@ -145,7 +112,10 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({
         )}
         
         {todaySessions.length === 0 && (
-          <p className="text-gray-500 text-center py-4">No sessions today</p>
+          <div className="text-gray-500 text-center py-8">
+            <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p>No sessions scheduled for today</p>
+          </div>
         )}
       </div>
     </div>
