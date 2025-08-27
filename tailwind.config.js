@@ -10,6 +10,9 @@ export default {
         primary: "#EF5DA8", 
         primaryLight: "rgba(239, 93, 168, 0.9)",
         secondary: 'rgba(174, 175, 247, 0.6)',
+        secondaryDark: 'rgba(174, 175, 247, 0.8)',
+        secondaryDarker: 'rgba(125, 126, 202, 0.95)',
+        secondaryDusk: 'rgba(78, 78, 125, 0.95)',
         gray: {
           400: "#9CA3AF", 
         },
@@ -78,5 +81,7 @@ export default {
       },  
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar'),
+  ],
 }

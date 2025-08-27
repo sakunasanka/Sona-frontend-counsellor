@@ -23,3 +23,32 @@
   --color-success-hover: #16a34a;
   --color-success-ring: rgba(34, 197, 94, 0.25);
 }
+
+/* Video loop transition animation */
+@keyframes videoLoopMask {
+  0% { 
+    opacity: 0;
+  }
+  20% { 
+    opacity: 0.8;
+  }
+  80% { 
+    opacity: 0.8;
+  }
+  100% { 
+    opacity: 0;
+  }
+}
+
+.video-loop-transition {
+  animation: videoLoopMask 2s ease-in-out;
+  background: linear-gradient(135deg, 
+    rgba(37, 99, 235, 0.15) 0%, 
+    rgba(147, 197, 253, 0.1) 50%, 
+    rgba(255, 255, 255, 0.05) 100%);
+}
+
+/* Smooth video element transitions */
+video {
+  transition: all 0.3s ease-in-out;
+}

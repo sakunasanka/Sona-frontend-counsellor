@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavBar, Sidebar } from "../../components/layout";
-import Container from "../../components/ui/Container";
-import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
-import { FaCalendarAlt, FaMoneyBillWave, FaPenNib } from "react-icons/fa";
-import { useKeenSlider } from "keen-slider/react";
-import "keen-slider/keen-slider.min.css";
+import { 
+  Calendar, 
+  Users, 
+  MessageCircle,
+  HandCoins,
+  Clock,
+  Star,
+  BookOpen,
+  Activity,
+  BarChart3,
+  PlusCircle,
+  ArrowRight
+} from "lucide-react";
 
 const CounsellorDashboard = () => {
   const navigate = useNavigate();
@@ -15,186 +22,355 @@ const CounsellorDashboard = () => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
 
-  const handleFeature = () => navigate("/signin");
-  const handleCreateBlog = () => navigate("/counsellor/create-blog");
-  const handleExploreCalendar = () => navigate("/counsellor-calendar");
+  // Mock data for dashboard stats
+  const dashboardStats = {
+    totalSessions: 127,
+    upcomingSessions: 5,
+    totalClients: 48,
+    averageRating: 4.8,
+    monthlyEarnings: 3240,
+    totalBlogs: 12
+  };
 
-
-  const sessions = [
+  // Recent sessions data
+  const recentSessions = [
     {
-      name: "JuniusIsMe",
-      date: "June 20 | 7.00 PM",
-      identity: "Undisclosed",
-      verified: true,
+      id: 1,
+      clientName: "JuniusIsMe",
+      date: "Today",
+      time: "2:00 PM",
+      status: "upcoming",
+      anonymous: true
     },
     {
-      name: "OptimusPrime",
-      date: "June 13 | 4.00 PM",
-      identity: "Undisclosed",
-      verified: true,
+      id: 2,
+      clientName: "OptimusPrime", 
+      date: "Tomorrow",
+      time: "10:00 AM",
+      status: "upcoming",
+      anonymous: true
     },
     {
-      name: "Boraluoda",
-      date: "June 13 | 4.00 PM",
-      identity: "Undisclosed",
-      verified: true,
+      id: 3,
+      clientName: "Sarah Johnson",
+      date: "June 20",
+      time: "4:00 PM", 
+      status: "completed",
+      anonymous: false
     },
     {
-      name: "Unknown101",
-      date: "June 13 | 4.00 PM",
-      identity: "Undisclosed",
-      verified: true,
-    },
-    {
-      name: "Bumblebee",
-      date: "June 13 | 4.00 PM",
-      identity: "Undisclosed",
-      verified: true,
-    },
+      id: 4,
+      clientName: "Boraluoda",
+      date: "June 19",
+      time: "11:00 AM",
+      status: "completed", 
+      anonymous: true
+    }
   ];
 
-  const [sliderRef] = useKeenSlider<HTMLDivElement>({
-    slides: {
-      perView: 3,
-      spacing: 24,
+  // Quick actions data
+  const quickActions = [
+    {
+      title: "Schedule Session",
+      description: "Set your availability and manage appointments",
+      icon: Calendar,
+      action: () => navigate("/counsellor-calendar"),
+      color: "bg-blue-500",
+      bgColor: "bg-blue-50",
+      textColor: "text-blue-600"
     },
-    loop: true,
-    mode: "snap",
-    breakpoints: {
-      "(max-width: 768px)": {
-        slides: { perView: 1, spacing: 16 }
-      },
-      "(max-width: 1024px)": {
-        slides: { perView: 2, spacing: 16 }
-      },
+    {
+      title: "View Clients",
+      description: "Manage your client relationships",
+      icon: Users,
+      action: () => navigate("/counsellor-clients"),
+      color: "bg-green-500", 
+      bgColor: "bg-green-50",
+      textColor: "text-green-600"
     },
-    slideChanged(s) {
-      setCurrentSlide(s.track.details.rel);
+    {
+      title: "Write Blog",
+      description: "Share insights with the community",
+      icon: PlusCircle,
+      action: () => navigate("/counsellor/create-blog"),
+      color: "bg-purple-500",
+      bgColor: "bg-purple-50", 
+      textColor: "text-purple-600"
     },
-  });
-
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const totalSlides = Math.ceil(sessions.length / 3) + 1;
+    {
+      title: "View Earnings",
+      description: "Track your income and payments",
+      icon: HandCoins,
+      action: () => navigate("/signin"),
+      color: "bg-yellow-500",
+      bgColor: "bg-yellow-50",
+      textColor: "text-yellow-600"
+    }
+  ];
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Top Navbar */}
       <NavBar onMenuClick={toggleSidebar} />
-
-      {/* Bottom section: Sidebar + Content */}
       <div className="flex flex-1 overflow-hidden">
-             
-      {/* Sidebar */}
-      <div className="w-80 bg-white border-r hidden lg:block">
-          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar}/>
-      </div>
+        {/* Sidebar - Desktop */}
+        <div className="w-80 bg-white border-r hidden lg:block">
+          <Sidebar isOpen={true} onClose={closeSidebar} />
+        </div>
+        
+        {/* Mobile Sidebar */}
+        <div className="lg:hidden">
+          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+        </div>
+        
+        {/* Main content */}
+        <div className="flex-1 overflow-auto p-4 lg:p-6 bg-gray-50">
+          {/* Page Header */}
+          <div className="mb-6 lg:mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                  Welcome back, Dr. Sakuna! 👋
+                </h1>
+                <p className="text-gray-600">Here's what's happening with your practice today.</p>
+              </div>
+            </div>
+          </div>
 
-      {/* Mobile Sidebar */}
-      <div className="lg:hidden">
-          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar}/>
-      </div>
-
-      {/* Main Content */}
-        <div className="flex-1 overflow-auto lg:ml-0">
-            <div className="p-6">
-            <div className="min-h-[calc(100vh-8rem)] w-full bg-white rounded-xl relative overflow-hidden"
-                style={{
-                  backgroundImage: `
-                    url('../../../public/assets/images/bg-trans.jpg'), 
-                    linear-gradient(rgba(255, 192,  203, 0.7), rgba(255, 192, 203, 0.1))
-                  `,
-                  backgroundBlendMode: 'overlay',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}>
-                <Container className="py-6">
-                {/* Welcome Section */}
-                <div className="mb-8">
-                    <p className="text-lg text-gray-700">Welcome back,</p>
-                    <h1 className="text-3xl font-bold text-gray-900">Dr. Sakuna!</h1>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6 mb-8">
+            {/* Total Sessions */}
+            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-5 h-5 lg:w-6 lg:h-6 text-blue-600" />
                 </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xl lg:text-2xl font-bold text-gray-900">{dashboardStats.totalSessions}</p>
+                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">Total Sessions</p>
+                </div>
+              </div>
+            </div>
 
-                {/* Recent Sessions */}
-                <section className="mb-10">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-0.5 ">Recent Sessions</h2>
-                  <div className="py--4">
-                    <div ref={sliderRef} className="keen-slider">
-                      {sessions.map((session, idx) => (
-                        <div key={idx} className="keen-slider__slide pr-6 py-4 px-0.5">
-                          <Card className="bg-pink-100 p-6 h-full shadow-lg transition-all hover:scale-104 hover:translate-x-2 duration-300 origin-left">
-                            <h3 className="text-xl font-bold mb-3">{session.name}</h3>
-                            <p className="text-base mb-3">{session.date}</p>
-                            <p className="text-sm text-gray-600 mb-4">
-                              Identity: {session.identity} {session.verified ? "✅" : "⚠️"}
-                            </p>
-                            <Button
-                              variant="special"
-                              onClick={() => navigate("/counsellor-sessions")}
-                              className="mt-6 flex items-center"
-                            >
-                              Explore Session
-                            </Button>
-                          </Card>
+            {/* Upcoming Sessions */}
+            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-5 h-5 lg:w-6 lg:h-6 text-orange-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xl lg:text-2xl font-bold text-gray-900">{dashboardStats.upcomingSessions}</p>
+                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">Bookings</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Total Clients */}
+            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Users className="w-5 h-5 lg:w-6 lg:h-6 text-green-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xl lg:text-2xl font-bold text-gray-900">{dashboardStats.totalClients}</p>
+                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">Total Clients</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Average Rating */}
+            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Star className="w-5 h-5 lg:w-6 lg:h-6 text-yellow-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xl lg:text-2xl font-bold text-gray-900">{dashboardStats.averageRating}</p>
+                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">Avg Rating</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Total Blogs */}
+            <div className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-[120px] flex items-center">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <BookOpen className="w-5 h-5 lg:w-6 lg:h-6 text-purple-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xl lg:text-2xl font-bold text-gray-900">{dashboardStats.totalBlogs}</p>
+                  <p className="text-gray-600 text-xs lg:text-sm leading-tight">Published Blogs</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            {/* Recent Sessions */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6 h-[400px] flex flex-col">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg lg:text-xl font-semibold text-gray-900">Recent Sessions</h2>
+                  <button 
+                    onClick={() => navigate("/counsellor-sessions")}
+                    className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-2 transition-colors"
+                  >
+                    View All
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="space-y-3 flex-1 overflow-y-auto">
+                  {recentSessions.map((session) => (
+                    <div key={session.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors h-[64px]">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                          {session.anonymous ? (
+                            <Users className="w-4 h-4 text-gray-600" />
+                          ) : (
+                            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                              <span className="text-xs font-medium text-blue-600">
+                                {session.clientName.charAt(0)}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      ))}
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">
+                            {session.anonymous ? session.clientName : session.clientName}
+                          </p>
+                          <p className="text-xs text-gray-600">{session.date} at {session.time}</p>
+                        </div>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        session.status === 'upcoming' 
+                          ? 'bg-blue-100 text-blue-700' 
+                          : 'bg-green-100 text-green-700'
+                      }`}>
+                        {session.status === 'upcoming' ? 'Upcoming' : 'Completed'}
+                      </span>
                     </div>
-                  </div>
-
-                  {/* Slider Dots */}
-                  <div className="flex justify-center mt-4 space-x-2">
-                    {Array.from({ length: totalSlides }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`w-3 h-3 rounded-full ${
-                          i === currentSlide ? 'bg-gray-800' : 'bg-gray-400'
-                        }`}
-                      ></div>
-                    ))}
-                  </div>
-                </section>
-
-                {/* Functional Cards */}
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4 px-0.5">Browse Features</h2>
-                  <section className="grid md:grid-cols-3 gap-6 px-0.5">
-                    <Card className="bg-rose-300 p-6 flex flex-col h-full">
-                      <h3 className="text-lg font-bold mb-2">Working Schedule</h3>
-                      <p className="mb-4 flex-grow">Work on demand & set your availability on your terms!</p>
-                      <div className="mt-auto">
-                        <Button variant="special" onClick={handleExploreCalendar} className="flex items-center">
-                          <FaCalendarAlt className="mr-2" /> Explore Calendar
-                        </Button>
-                      </div>
-                    </Card>
-
-                    <Card className="bg-rose-300 p-6 flex flex-col h-full">
-                      <h3 className="text-lg font-bold mb-2">Earnings</h3>
-                      <p className="mb-4 flex-grow">Check your earnings on your humane efforts</p>
-                      <div className="mt-auto">
-                        <Button variant="special" onClick={handleFeature} className="flex items-center">
-                          <FaMoneyBillWave className="mr-2" /> Explore Earnings
-                        </Button>
-                      </div>
-                    </Card>
-
-                    <Card className="bg-rose-300 p-6 flex flex-col h-full">
-                      <h3 className="text-lg font-bold mb-2">Write a Blog Post</h3>
-                      <p className="mb-4 flex-grow">Share your experience with the community</p>
-                      <div className="mt-auto">
-                        <Button variant="special" onClick={handleCreateBlog} className="flex items-center">
-                          <FaPenNib className="mr-2" /> Start Writing
-                        </Button>
-                      </div>
-                    </Card>
-                  </section>
+                  ))}
                 </div>
-                  </Container>              
+              </div>
             </div>
+
+            {/* Quick Actions */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6 h-[400px] flex flex-col">
+                <h2 className="text-lg lg:text-xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
+                <div className="space-y-3 flex-1">
+                  {quickActions.map((action, index) => {
+                    const IconComponent = action.icon;
+                    return (
+                      <button
+                        key={index}
+                        onClick={action.action}
+                        className={`w-full p-3 ${action.bgColor} rounded-xl hover:shadow-md transition-all group text-left h-[64px]`}
+                      >
+                        <div className="flex items-center gap-3 h-full">
+                          <div className={`w-8 h-8 ${action.color} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0`}>
+                            <IconComponent className="w-4 h-4 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className={`font-semibold ${action.textColor} mb-1 text-sm`}>{action.title}</h3>
+                            <p className="text-gray-600 text-xs">{action.description}</p>
+                          </div>
+                          <ArrowRight className={`w-4 h-4 ${action.textColor} group-hover:translate-x-1 transition-transform flex-shrink-0`} />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Additional Dashboard Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-8">
+            {/* Performance Overview */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg lg:text-xl font-semibold text-gray-900">Performance Overview</h2>
+                <BarChart3 className="w-5 h-5 text-gray-400" />
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Session Completion Rate</span>
+                  <span className="font-semibold text-gray-900">96%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '96%' }}></div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Client Satisfaction</span>
+                  <span className="font-semibold text-gray-900">4.8/5</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: '96%' }}></div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Response Time</span>
+                  <span className="font-semibold text-gray-900">&lt; 2 hours</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-purple-500 h-2 rounded-full" style={{ width: '85%' }}></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg lg:text-xl font-semibold text-gray-900">Recent Activity</h2>
+                <Activity className="w-5 h-5 text-gray-400" />
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">New message from JuniusIsMe</p>
+                    <p className="text-xs text-gray-600">2 minutes ago</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Session completed with Sarah Johnson</p>
+                    <p className="text-xs text-gray-600">1 hour ago</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Star className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Received 5-star rating</p>
+                    <p className="text-xs text-gray-600">3 hours ago</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <BookOpen className="w-4 h-4 text-yellow-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Published new blog post</p>
+                    <p className="text-xs text-gray-600">1 day ago</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div> 
+    </div>
   );
 };
 

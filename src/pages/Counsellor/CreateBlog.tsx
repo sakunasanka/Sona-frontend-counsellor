@@ -302,23 +302,6 @@ const BlogCreator: React.FC = () => {
                     Preview
                   </button>
                 </div>
-                
-                {/* Action Buttons */}
-                <button 
-                  onClick={handleSaveDraft}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 lg:px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  <span className="hidden sm:inline">Save Draft</span>
-                </button>
-                
-                <button 
-                  onClick={handlePublish}
-                  className="bg-primary hover:bg-primaryLight text-white px-4 lg:px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
-                >
-                  <Send className="w-4 h-4" />
-                  <span className="hidden sm:inline">Publish</span>
-                </button>
               </div>
             </div>
           </div>
@@ -328,7 +311,7 @@ const BlogCreator: React.FC = () => {
             {activeView === 'write' && (
               <div className="flex-1 flex flex-col lg:flex-row">
                 {/* Main Editor */}
-                <div className="flex-1 p-4 lg:p-6 space-y-6">
+                <div className="flex-1 px-4 lg:px-6 py-6 space-y-6">
                   {/* Title Input */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -339,7 +322,7 @@ const BlogCreator: React.FC = () => {
                       value={formData.title}
                       onChange={(e) => handleInputChange('title', e.target.value)}
                       placeholder="Enter your blog title..."
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-lg font-medium"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors text-lg font-medium"
                     />
                   </div>
 
@@ -353,7 +336,7 @@ const BlogCreator: React.FC = () => {
                       onChange={(e) => handleInputChange('excerpt', e.target.value)}
                       placeholder="Write a brief description of your blog..."
                       rows={3}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors resize-none"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none"
                     />
                   </div>
 
@@ -386,7 +369,7 @@ const BlogCreator: React.FC = () => {
                                 value={imageUrl}
                                 onChange={(e) => setImageUrl(e.target.value)}
                                 placeholder="Enter image URL..."
-                                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                               />
                               <button
                                 onClick={handleImageUpload}
@@ -475,7 +458,7 @@ const BlogCreator: React.FC = () => {
                       onChange={(e) => handleInputChange('content', e.target.value)}
                       placeholder="Start writing your blog content..."
                       rows={12}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors resize-none font-mono text-sm"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none font-mono text-sm"
                     />
                     <p className="text-xs text-gray-500 mt-2">
                       Tip: Use **bold**, *italic*, ## headings, {'>'} quotes, and - lists for formatting
@@ -493,7 +476,7 @@ const BlogCreator: React.FC = () => {
                     <select
                       value={formData.category}
                       onChange={(e) => handleInputChange('category', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     >
                       <option value="">Select a category</option>
                       {categories.map(category => (
@@ -536,7 +519,7 @@ const BlogCreator: React.FC = () => {
                         onChange={(e) => setNewTag(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
                         placeholder="Add a tag..."
-                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
                       />
                       <button
                         onClick={handleAddTag}
@@ -599,13 +582,13 @@ const BlogCreator: React.FC = () => {
                           type="date"
                           value={formData.publishDate}
                           onChange={(e) => handleInputChange('publishDate', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
                         />
                         <input
                           type="time"
                           value={formData.publishTime}
                           onChange={(e) => handleInputChange('publishTime', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
                         />
                       </div>
                     )}
