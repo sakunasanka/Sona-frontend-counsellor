@@ -154,31 +154,32 @@ const CounsellorDashboard = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <NavBar onMenuClick={toggleSidebar} />
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar - Desktop */}
-        <div className="w-80 bg-white border-r hidden lg:block">
+        {/* Sidebar - Let the Sidebar component handle its own positioning */}
+        <div className="hidden lg:block">
           <SidebarForPsy isOpen={true} onClose={closeSidebar} />
         </div>
-
+        
         {/* Mobile Sidebar */}
         <div className="lg:hidden">
           <SidebarForPsy isOpen={sidebarOpen} onClose={closeSidebar} />
         </div>
-
-        {/* Main content */}
-        <div className="flex-1 overflow-auto p-4 lg:p-6 bg-gray-50">
-          {/* Page Header */}
-          <div className="mb-6 lg:mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
-                  Welcome back, Dr. Sakuna! 👋
-                </h1>
-                <p className="text-gray-600">Here's what's happening with your practice today.</p>
+        
+          {/* Main content */}
+          <div className="flex-1 overflow-auto">
+            <NavBar onMenuClick={toggleSidebar} />
+            <div className="p-4 lg:p-6 bg-gray-50">
+              {/* Page Header */}
+              <div className="mb-6 lg:mb-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                      Welcome back, Dr. Sakuna! 👋
+                    </h1>
+                    <p className="text-gray-600">Here's what's happening with your practice today.</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6 mb-8">
@@ -404,6 +405,7 @@ const CounsellorDashboard = () => {
                     <p className="text-sm font-medium text-gray-900">Consultation completed with Shenara Fernando</p>
                     <p className="text-xs text-gray-600">1 day ago</p>
                   </div>
+                </div>
                 </div>
               </div>
             </div>

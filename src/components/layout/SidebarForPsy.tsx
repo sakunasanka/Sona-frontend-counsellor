@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, Camera, Users, Pen, DollarSign, MessageCircle, Contact, HelpingHand, LogOut } from 'lucide-react';
+import { Button } from '../ui';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -36,14 +37,14 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
     if (item.id === 'chats' && onChatClick) {
       onChatClick();
     } else {
-      // Handle other navigation with expansion animation if minimized
+      // Handle other navigation
       if (item.href !== '#') {
         if (isMinimized && onExpandBeforeNavigation) {
           // Trigger expansion animation before navigation
           onExpandBeforeNavigation(item.href);
         } else {
-          // Direct navigation if not minimized
-          window.location.href = item.href;
+          // Use React Router navigation instead of window.location
+          navigate(item.href);
         }
       }
     }
@@ -66,15 +67,18 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
 
       {/* Sidebar */}
       <div className={`
-        h-full bg-secondary flex flex-col transition-all duration-500 ease-in-out
+        h-full bg-slate-800 flex flex-col transition-all duration-500 ease-in-out
         fixed top-0 left-0 z-50 lg:relative lg:z-auto
         ${isMinimized 
           ? 'w-16 lg:w-16' 
-          : 'w-80 lg:w-80'
+          : 'w-72 lg:w-72'
         }
         ${isOpen || isMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         
+        <div className="items-center justify-center max-w-xl mx-4 p-4 border-b lg:border-none mt-5">
+            <img src="/assets/images/Sona-logo-light.png" alt="SONA" className='w-32' />
+          </div>
         {/* Sidebar Header - Only show on mobile when not minimized */}
         {!isMinimized && (
           <div className="flex items-center p-4 border-b lg:hidden">
@@ -104,9 +108,9 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
                   <button
                     onClick={() => handleItemClick(item)}
                     className={`
-                      flex items-center text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300 ease-in-out group w-full
+                      flex items-center text-slate-100 hover:bg-gray-50 rounded-lg text-l mt-0 transition-all duration-300 ease-in-out group w-full
                       ${isMinimized 
-                        ? 'px-3 py-3 justify-center' 
+                        ? 'px-3 py-3 justify-center hover:bg-gray-50 ' 
                         : 'px-4 py-3 space-x-4'
                       }
                       ${isActive ? 'bg-white shadow-sm' : ''}
@@ -116,7 +120,7 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
                     <IconComponent 
                       size={20} 
                       className={`
-                        text-gray-600 group-hover:text-gray-800 transition-colors duration-200
+                        text-slate-100 group-hover:text-gray-400 transition-colors duration-200
                         ${isActive ? 'text-gray-800' : ''}
                       `} 
                     />
@@ -135,29 +139,21 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
               );
             })}
           </ul>
-
+          
           <div className="flex-1"></div>
-
+          
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <button
-              className={`
-                flex items-center text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all duration-300 ease-in-out group w-full
-                ${isMinimized 
-                  ? 'px-3 py-3 justify-center' 
-                  : 'px-4 py-3 space-x-4'
-                }
-              `}
+            <Button
+              variant="logout"
+              isMinimized={isMinimized}
               title={isMinimized ? 'Log out' : undefined}
+              icon={<LogOut size={20} className="text-gray-600 group-hover:text-red-600 transition-colors duration-200" />}
               onClick={() => {
                 console.log('Logout clicked');
                 navigate('/signin');
                 onClose();
               }}
             >
-              <LogOut 
-                size={20} 
-                className="text-gray-600 group-hover:text-red-600 transition-colors duration-200" 
-              />
               <span className={`
                 font-medium transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap
                 ${isMinimized 
@@ -167,7 +163,7 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
               `}>
                 Log out
               </span>
-            </button>
+            </Button>
           </div>
         </nav>
       </div>
