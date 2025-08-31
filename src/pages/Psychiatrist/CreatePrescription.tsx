@@ -29,15 +29,6 @@ interface Notification {
   message: string;
 }
 
-interface MedicineTemplate {
-  id: string;
-  name: string;
-  commonDosages: string[];
-  category: string;
-  form: 'tablet' | 'liquid' | 'capsule' | 'injection';
-  unit: string; // mg, ml, etc.
-}
-
 interface TimingDosage {
   timing: string;
   amount: string;
@@ -163,21 +154,7 @@ const CreatePrescription = () => {
     { id: "6", name: "Kamal Perera", age: 38, gender: "Male", patientId: "PT006" }
   ];
 
-  // Mock medicine templates with auto-suggestions
-  const medicineTemplates: MedicineTemplate[] = [
-    { id: "1", name: "Paracetamol", commonDosages: ["500mg", "650mg", "1000mg"], category: "Analgesic", form: "tablet", unit: "mg" },
-    { id: "2", name: "Amoxicillin", commonDosages: ["250mg", "500mg", "875mg"], category: "Antibiotic", form: "capsule", unit: "mg" },
-    { id: "3", name: "Sertraline", commonDosages: ["25mg", "50mg", "100mg"], category: "Antidepressant", form: "tablet", unit: "mg" },
-    { id: "4", name: "Lorazepam", commonDosages: ["0.5mg", "1mg", "2mg"], category: "Anxiolytic", form: "tablet", unit: "mg" },
-    { id: "5", name: "Risperidone", commonDosages: ["1mg", "2mg", "3mg", "4mg"], category: "Antipsychotic", form: "tablet", unit: "mg" },
-    { id: "6", name: "Lithium Carbonate", commonDosages: ["300mg", "400mg", "450mg"], category: "Mood Stabilizer", form: "tablet", unit: "mg" },
-    { id: "7", name: "Fluoxetine", commonDosages: ["10mg", "20mg", "40mg"], category: "Antidepressant", form: "capsule", unit: "mg" },
-    { id: "8", name: "Alprazolam", commonDosages: ["0.25mg", "0.5mg", "1mg"], category: "Anxiolytic", form: "tablet", unit: "mg" },
-    { id: "9", name: "Quetiapine", commonDosages: ["25mg", "50mg", "100mg", "200mg"], category: "Antipsychotic", form: "tablet", unit: "mg" },
-    { id: "10", name: "Escitalopram", commonDosages: ["5mg", "10mg", "20mg"], category: "Antidepressant", form: "tablet", unit: "mg" },
-    { id: "11", name: "Cough Syrup", commonDosages: ["5ml", "10ml", "15ml"], category: "Cough Suppressant", form: "liquid", unit: "ml" },
-    { id: "12", name: "Amoxicillin Suspension", commonDosages: ["125mg/5ml", "250mg/5ml"], category: "Antibiotic", form: "liquid", unit: "ml" }
-  ];
+  // No medicine templates - doctors will type medicine names manually
 
   // Form state
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -202,9 +179,7 @@ const CreatePrescription = () => {
     specialInstructions: ""
   });
 
-  const [medicineSearch, setMedicineSearch] = useState("");
-  const [showMedicineDropdown, setShowMedicineDropdown] = useState(false);
-  const [selectedMedicineTemplate, setSelectedMedicineTemplate] = useState<MedicineTemplate | null>(null);
+  // State variables for prescription management
 
   // Saved prescriptions state with localStorage persistence
   const [savedPrescriptions, setSavedPrescriptions] = useState<SavedPrescription[]>(() => {
@@ -583,25 +558,7 @@ const CreatePrescription = () => {
   }, []);
 
   // Handle clicking outside the medicine dropdown to close it
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.medicine-dropdown-container')) {
-        setShowMedicineDropdown(false);
-      }
-    };
-
-    if (showMedicineDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showMedicineDropdown]);
-
-  // Filter medicines based on search
-  const filteredMedicines = medicineTemplates.filter(med =>
-    med.name.toLowerCase().includes(medicineSearch.toLowerCase()) ||
-    med.category.toLowerCase().includes(medicineSearch.toLowerCase())
-  );
+  // No medicine filtering needed - doctors type medicine names directly
 
   // Add medicine to the prescription
   const addMedicineToList = () => {
@@ -656,34 +613,11 @@ const CreatePrescription = () => {
       durationType: "",
       specialInstructions: ""
     });
-    setMedicineSearch("");
-    setSelectedMedicineTemplate(null);
   };
 
   // Remove medicine from list
   const removeMedicineFromList = (id: string) => {
     setAddedMedicines(addedMedicines.filter(med => med.id !== id));
-  };
-
-  // Select medicine template
-  const selectMedicineTemplate = (template: MedicineTemplate) => {
-    setCurrentMedicine({
-      ...currentMedicine,
-      name: template.name,
-      form: template.form,
-      unit: template.unit
-    });
-    setSelectedMedicineTemplate(template);
-    setMedicineSearch(template.name);
-    setShowMedicineDropdown(false);
-  };
-
-  // Select dosage
-  const selectDosage = (dosage: string) => {
-    setCurrentMedicine({
-      ...currentMedicine,
-      dosage: dosage
-    });
   };
 
   // Handle timing dosage changes
@@ -774,8 +708,6 @@ const CreatePrescription = () => {
       durationType: "",
       specialInstructions: ""
     });
-    setMedicineSearch("");
-    setSelectedMedicineTemplate(null);
   };
 
   // Notify patient
@@ -890,7 +822,7 @@ const CreatePrescription = () => {
               {/* Patient Selection & Basic Info - Reorganized */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-secondaryDusk to-secondaryDarker px-6 py-4">
+                <div className="bg-gradient-to-r from-gray-900 to-secondaryDusk px-6 py-4">
                   <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                     <FileText className="w-6 h-6" />
                     Prescription Details
@@ -935,8 +867,8 @@ const CreatePrescription = () => {
                                     }}
                                     className="w-full p-4 text-left hover:bg-secondaryDusk/10 border-b border-gray-100 last:border-b-0 transition-all duration-200 group"
                                   >
-                                    <div className="font-semibold text-gray-900 group-hover:text-blue-700">{patient.name}</div>
-                                    <div className="text-sm text-gray-600 mt-1 group-hover:text-blue-600">
+                                    <div className="font-semibold text-gray-600 group-hover:text-gray-900">{patient.name}</div>
+                                    <div className="text-sm text-gray-600 mt-1 group-hover:text-gray-900">
                                       ID: {patient.patientId} • {patient.age} years • {patient.gender}
                                     </div>
                                   </button>
@@ -1062,61 +994,24 @@ const CreatePrescription = () => {
                   <div className="space-y-6">
                     {/* Medicine Name and Type - First Row */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* Medicine Search */}
+                      {/* Medicine Name Input */}
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Medicine Name *
+                          Medicine Name & Manufacturer*
                         </label>
-                        <div className="relative medicine-dropdown-container">
-                          <input
-                            type="text"
-                            value={medicineSearch}
-                            onChange={(e) => {
-                              setMedicineSearch(e.target.value);
-                              setShowMedicineDropdown(true);
-                              
-                              // Update current medicine name for custom medicines
-                              setCurrentMedicine({
-                                ...currentMedicine,
-                                name: e.target.value
-                              });
-                              
-                              // Clear selected template if typing custom medicine
-                              if (selectedMedicineTemplate && !filteredMedicines.some(med => med.name.toLowerCase().includes(e.target.value.toLowerCase()))) {
-                                setSelectedMedicineTemplate(null);
-                              }
-                            }}
-                            onFocus={() => setShowMedicineDropdown(true)}
-                            placeholder="Search for medicine..."
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:border-secondaryDusk"
-                            required
-                          />
-                          {showMedicineDropdown && medicineSearch && (
-                            <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-white border border-gray-300 rounded-lg shadow-xl max-h-60 overflow-y-auto animate-fade-in">
-                              {filteredMedicines.length > 0 ? (
-                                filteredMedicines.map((medicine) => (
-                                  <button
-                                    key={medicine.id}
-                                    type="button"
-                                    onMouseDown={(e) => {
-                                      e.preventDefault(); // Prevent input blur
-                                      selectMedicineTemplate(medicine);
-                                    }}
-                                    className="w-full p-3 text-left hover:bg-secondary border-b border-gray-100 last:border-b-0 transition-all duration-200 group"
-                                  >
-                                    <div className="font-medium text-gray-900 group-hover:text-gray-800">{medicine.name}</div>
-                                    <div className="text-sm text-gray-600 group-hover:text-gray-800">{medicine.category}</div>
-                                  </button>
-                                ))
-                              ) : (
-                                <div className="p-3 text-center text-gray-500">
-                                  <div className="text-sm">No matching medicines found</div>
-                                  <div className="text-xs mt-1 text-blue-600">Continue typing to use "<span className="font-medium">{medicineSearch}</span>" as a custom medicine</div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
+                        <input
+                          type="text"
+                          value={currentMedicine.name}
+                          onChange={(e) => {
+                            setCurrentMedicine({
+                              ...currentMedicine,
+                              name: e.target.value
+                            });
+                          }}
+                          placeholder="Enter medicine name..."
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:border-secondaryDusk"
+                          required
+                        />
                       </div>
 
                         {/* Medicine Type Selection */}
@@ -1163,47 +1058,28 @@ const CreatePrescription = () => {
                         </div>
                     </div>
 
-                    {/* Dosage Selection */}
-                    {(selectedMedicineTemplate || (medicineSearch && currentMedicine.name)) && currentMedicine.form && (
+                    {/* Dosage Input */}
+                    {currentMedicine.name && currentMedicine.form && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Dosage *
                         </label>
-                        {selectedMedicineTemplate ? (
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                            {selectedMedicineTemplate.commonDosages.map((dosage) => (
-                              <button
-                                key={dosage}
-                                type="button"
-                                onClick={() => selectDosage(dosage)}
-                                className={`p-2 rounded-lg border text-sm transition-colors ${
-                                  currentMedicine.dosage === dosage
-                                    ? 'bg-secondaryDusk text-white border-secondaryDusk'
-                                    : 'bg-white text-gray-700 border-gray-300 hover:border-secondaryDusk'
-                                }`}
-                              >
-                                {dosage}
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="max-w-md">
-                            <input
-                              type="text"
-                              value={currentMedicine.dosage}
-                              onChange={(e) => setCurrentMedicine({...currentMedicine, dosage: e.target.value})}
-                              placeholder={
-                                currentMedicine.form === 'liquid' 
-                                  ? "Type the dosage, ex: 5ml" 
-                                  : currentMedicine.form === 'injection'
-                                  ? "Type the dosage, ex: 1ml or 50mg"
-                                  : "Type the dosage, ex: 100mg"
-                              }
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:border-secondaryDusk"
-                              required
-                            />
-                          </div>
-                        )}
+                        <div className="max-w-md">
+                          <input
+                            type="text"
+                            value={currentMedicine.dosage}
+                            onChange={(e) => setCurrentMedicine({...currentMedicine, dosage: e.target.value})}
+                            placeholder={
+                              currentMedicine.form === 'liquid' 
+                                ? "Enter dosage, e.g: 5ml" 
+                                : currentMedicine.form === 'injection'
+                                ? "Enter dosage, e.g: 1ml or 50mg"
+                                : "Enter dosage, e.g: 100mg"
+                            }
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:border-secondaryDusk"
+                            required
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -1311,7 +1187,7 @@ const CreatePrescription = () => {
                                             currentMedicine.form === 'liquid' 
                                               ? "Enter ml" 
                                               : currentMedicine.form === 'injection'
-                                              ? "Enter ml or units"
+                                              ? "Enter ml"
                                               : "Enter amount"
                                           }
                                           value={existingDosage?.customAmount || ''}
@@ -1639,7 +1515,7 @@ const CreatePrescription = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleViewPrescription(prescription)}
-                          className="px-3 py-1 bg-secondaryDusk text-white rounded hover:bg-secondaryDarker transition-colors flex items-center gap-1"
+                          className="px-3 py-1 bg-secondaryDarker text-white rounded hover:bg-secondaryDusk transition-colors flex items-center gap-1"
                         >
                           <Eye className="w-3 h-3" />
                           View Details
