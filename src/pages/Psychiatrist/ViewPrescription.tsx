@@ -206,7 +206,7 @@ const ViewPrescription = () => {
             {/* Prescribed Medicines List */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-blue-600" />
+                <FileText className="w-5 h-5 text-gray-600" />
                 Prescribed Medicines ({prescription.medicines.length})
               </h2>
 
