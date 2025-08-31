@@ -890,7 +890,7 @@ const CreatePrescription = () => {
               {/* Patient Selection & Basic Info - Reorganized */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-secondaryDusk to-secondaryDarker px-6 py-4">
+                <div className="bg-gradient-to-r from-gray-900 to-secondaryDusk px-6 py-4">
                   <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                     <FileText className="w-6 h-6" />
                     Prescription Details
@@ -1639,7 +1639,7 @@ const CreatePrescription = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleViewPrescription(prescription)}
-                          className="px-3 py-1 bg-secondaryDusk text-white rounded hover:bg-secondaryDarker transition-colors flex items-center gap-1"
+                          className="px-3 py-1 bg-secondaryDarker text-white rounded hover:bg-secondaryDusk transition-colors flex items-center gap-1"
                         >
                           <Eye className="w-3 h-3" />
                           View Details
