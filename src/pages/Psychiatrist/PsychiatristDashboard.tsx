@@ -46,7 +46,6 @@ const CounsellorDashboard = () => {
           day: 'numeric' 
         }),
         medicineCount: prescription.medicines.length,
-        status: prescription.status,
         medicines: prescription.medicines.map((med: any) => `${med.name} ${med.dosage}`)
       })).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }
@@ -59,7 +58,6 @@ const CounsellorDashboard = () => {
         patientName: "Nayani Wickramasinghe",
         date: "July 16, 2025",
         medicineCount: 3,
-        status: "active",
         medicines: ["Olanzapine 5mg", "Haloperidol 2ml", "Vitamin B12 1ml"]
       },
       {
@@ -68,7 +66,6 @@ const CounsellorDashboard = () => {
         patientName: "Chamara Perera",
         date: "July 15, 2025",
         medicineCount: 2,
-        status: "active",
         medicines: ["Escitalopram 10mg", "Mirtazapine 15mg"]
       },
       {
@@ -77,7 +74,6 @@ const CounsellorDashboard = () => {
         patientName: "Kumari Silva",
         date: "July 14, 2025",
         medicineCount: 2,
-        status: "active",
         medicines: ["Paroxetine 25mg", "Alprazolam 0.5mg"]
       },
       {
@@ -86,7 +82,6 @@ const CounsellorDashboard = () => {
         patientName: "Ronath Konara",
         date: "July 13, 2025",
         medicineCount: 1,
-        status: "active",
         medicines: ["Sertraline 50mg"]
       }
     ];
@@ -281,13 +276,6 @@ const CounsellorDashboard = () => {
                           <p className="text-xs text-gray-600">{prescription.date} • {prescription.medicineCount} medicine{prescription.medicineCount > 1 ? 's' : ''}</p>
                         </div>
                       </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        prescription.status === 'active'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}>
-                        {prescription.status === 'active' ? 'Active' : 'Discontinued'}
-                      </span>
                     </div>
                   ))}
                 </div>
