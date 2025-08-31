@@ -25,6 +25,7 @@ import PsychiatristFeedbacks from './pages/Psychiatrist/PsychiatristFeedbacks';
 import PsychiatristPatients from './pages/Psychiatrist/PsychiatristPatients';
 import PatientDetails from './pages/Psychiatrist/PatientDetails';
 import CreatePrescription from './pages/Psychiatrist/CreatePrescription';
+import ViewPrescription from './pages/Psychiatrist/ViewPrescription';
 
 
 function App() {
@@ -36,7 +37,7 @@ function App() {
         <Route path="/example-use" element={<ExampleUse />} />
         <Route path="/signup" element={<SignUp/>} ></Route>
         <Route path="/signin" element={<SignIn />} />
-        <Route path="/generalusersignin" element={<GeneralUserSignIn />} />
+        <Route path="/general-user-signin" element={<GeneralUserSignIn />} />
         <Route path="/counsellor-dashboard" element={<CounsellorDashboard />} />
         <Route path="/psychiatrist-dashboard" element={<PsychiatristDashboard />} />
         <Route path="/counsellor-feedbacks" element={<CounsellorFeedbacks />} />
@@ -58,6 +59,7 @@ function App() {
         <Route path="/psychiatrist-patients" element={<PsychiatristPatients />} />
         <Route path="/psychiatrist-patients/:clientId" element={<PatientDetails />} />
         <Route path="/psychiatrist/create-prescription" element={<CreatePrescription />} />
+        <Route path="/psychiatrist/view-prescription/:prescriptionId" element={<ViewPrescription />} />
         
       </Routes>
     </Router>
