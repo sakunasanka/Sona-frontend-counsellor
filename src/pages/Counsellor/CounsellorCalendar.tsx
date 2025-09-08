@@ -544,6 +544,9 @@ const CounsellorCalendar: React.FC = () => {
 
   // Function to handle clicking on a date
   const handleDateClick = (date: Date) => {
+    console.log('handleDateClick called with date:', date);
+    console.log('Date components - Year:', date.getFullYear(), 'Month:', date.getMonth() + 1, 'Day:', date.getDate());
+    
     setSelectedDate(date);
     
     // Check if the date is in the past
@@ -574,7 +577,14 @@ const CounsellorCalendar: React.FC = () => {
     
     if (isUnavailable) {
       // If the date is unavailable (default), show the unavailable day details modal
-      const dateString = date.toISOString().split('T')[0];
+      // Create date string using date components to avoid timezone issues
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateString = `${year}-${month}-${day}`;
+      
+      console.log('Creating unavailable date object with dateString:', dateString);
+      
       const unavailableDate = {
         id: `unavailable-${dateString}`,
         date: dateString,

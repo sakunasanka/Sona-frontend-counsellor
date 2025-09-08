@@ -293,7 +293,7 @@ const CounsellorSessionDetails: React.FC = () => {
                                         <div className="min-w-0 flex-1">
                                             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Date</p>
                                             <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1 leading-tight">
-                                                {new Date(sessionData.date).toLocaleDateString('en-US', { 
+                                                {new Date(sessionData.date + 'T00:00:00').toLocaleDateString('en-US', { 
                                                     weekday: 'short',
                                                     month: 'short', 
                                                     day: 'numeric',

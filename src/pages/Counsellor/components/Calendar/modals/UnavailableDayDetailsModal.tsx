@@ -22,6 +22,23 @@ export const UnavailableDayDetailsModal: React.FC<UnavailableDayDetailsModalProp
   
   if (!isOpen || !unavailableDate) return null;
 
+  // Create a safe date display by parsing the date string components
+  const formatDateSafely = (dateString: string) => {
+    console.log('formatDateSafely called with dateString:', dateString);
+    const [year, month, day] = dateString.split('-').map(Number);
+    console.log('Parsed components - Year:', year, 'Month:', month, 'Day:', day);
+    const safeDate = new Date(year, month - 1, day); // month is 0-indexed
+    console.log('Created safe date:', safeDate);
+    const formattedDate = safeDate.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    console.log('Formatted date:', formattedDate);
+    return formattedDate;
+  };
+
   const handleMarkAsAvailable = () => {
     // Pass the recurFor4Weeks value and time range to the parent component
     if (availabilityType === 'specific-hours') {
@@ -58,12 +75,7 @@ export const UnavailableDayDetailsModal: React.FC<UnavailableDayDetailsModalProp
           <div className="text-center">
             <CalendarX className="w-12 h-12 text-red-500 mx-auto mb-3" />
             <h4 className="text-lg font-medium text-gray-900 mb-2">
-              {new Date(unavailableDate.date).toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
+              {formatDateSafely(unavailableDate.date)}
             </h4>
             <p className="text-gray-600">
               This day is currently unavailable

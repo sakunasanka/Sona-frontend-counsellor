@@ -71,7 +71,7 @@ export const PendingRequestsModal: React.FC<PendingRequestsModalProps> = ({
                         <div>
                           <h5 className="font-semibold text-gray-900">{session.clientName}</h5>
                           <p className="text-sm text-gray-600">
-                            {new Date(session.date).toLocaleDateString('en-US', { 
+                            {new Date(session.date + 'T00:00:00').toLocaleDateString('en-US', { 
                               weekday: 'long', 
                               year: 'numeric', 
                               month: 'long', 
