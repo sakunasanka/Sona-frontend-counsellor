@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { CounsellorProfile, Credential, Achievement } from './types';
 import { Language } from './constants';
 
@@ -6,6 +6,14 @@ export const useProfileState = (initialProfile: CounsellorProfile) => {
   const [profile, setProfile] = useState<CounsellorProfile>(initialProfile);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editForm, setEditForm] = useState<Partial<CounsellorProfile>>(initialProfile);
+
+  // Update profile when initialProfile changes (API data loads)
+  useEffect(() => {
+    setProfile(initialProfile);
+    if (!isEditing) {
+      setEditForm(initialProfile);
+    }
+  }, [initialProfile, isEditing]);
   
   // Image selection states
   const [showCoverImageOptions, setShowCoverImageOptions] = useState<boolean>(false);
@@ -23,6 +31,16 @@ export const useProfileState = (initialProfile: CounsellorProfile) => {
   const [editingAchievement, setEditingAchievement] = useState<number | null>(null);
   const [editingCredentialData, setEditingCredentialData] = useState<{[key: number]: any}>({});
   const [editingAchievementData, setEditingAchievementData] = useState<{[key: number]: any}>({});
+
+  // Update editing states when profile data changes
+  useEffect(() => {
+    if (!isEditing) {
+      setEditingCredentials(initialProfile.credentials);
+      setEditingAchievements(initialProfile.achievements);
+      setEditingLanguages(initialProfile.languages);
+      setEditingSpecializations(initialProfile.specializations);
+    }
+  }, [initialProfile.credentials, initialProfile.achievements, initialProfile.languages, initialProfile.specializations, isEditing]);
   
   // Add new items states
   const [showAddCredential, setShowAddCredential] = useState<boolean>(false);
@@ -47,18 +65,27 @@ export const useProfileState = (initialProfile: CounsellorProfile) => {
     setNewAchievementData({ title: '', description: '', date: '' });
   }, [profile]);
 
-  const handleSave = useCallback(() => {
-    setProfile({ 
-      ...profile, 
-      ...editForm, 
-      languages: editingLanguages,
-      specializations: editingSpecializations,
-      credentials: editingCredentials,
-      achievements: editingAchievements
-    });
-    setIsEditing(false);
-    setShowCoverImageOptions(false);
-    setShowProfileImageOptions(false);
+  const handleSave = useCallback(async () => {
+    try {
+      const updatedProfileData = { 
+        ...profile, 
+        ...editForm, 
+        languages: editingLanguages,
+        specializations: editingSpecializations,
+        credentials: editingCredentials,
+        achievements: editingAchievements
+      };
+      
+      setProfile(updatedProfileData);
+      setIsEditing(false);
+      setShowCoverImageOptions(false);
+      setShowProfileImageOptions(false);
+      
+      return { success: true, data: updatedProfileData };
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to save profile' };
+    }
   }, [profile, editForm, editingLanguages, editingSpecializations, editingCredentials, editingAchievements]);
 
   const handleCancel = useCallback(() => {

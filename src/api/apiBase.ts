@@ -74,6 +74,14 @@ export class ApiBase {
       },
       (error) => {
         console.error('❌ Response error:', error);
+        if (error.response) {
+          console.error('❌ Server response data:', error.response.data);
+          console.error('❌ Server response status:', error.response.status);
+          console.error('❌ Server response headers:', error.response.headers);
+        }
+        if (error.request) {
+          console.error('❌ Request data:', error.config?.data);
+        }
         return Promise.reject(this.handleError(error));
       }
     );
@@ -285,7 +293,7 @@ export class ApiBase {
         return {
           message: responseData?.message || axiosError.message || 'Server error',
           status: axiosError.response.status,
-          code: responseData?.code,
+          code: String(responseData?.error || responseData?.code || ''),
           details: responseData as Record<string, unknown>,
         };
       } else if (axiosError.request) {

@@ -17,6 +17,7 @@ interface ProfileHeaderProps {
   onProfileImageChange: (image: string) => void;
   onCoverImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onProfileImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  isSaving?: boolean;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -33,7 +34,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onCoverImageChange,
   onProfileImageChange,
   onCoverImageUpload,
-  onProfileImageUpload
+  onProfileImageUpload,
+  isSaving = false
 }) => {
   const availableCoverImages = [
     "/assets/images/bg-trans.jpeg",
@@ -120,7 +122,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
             <img 
               src={isEditing ? editForm.profileImage || profile.profileImage : profile.profileImage} 
-              alt={`${profile.firstName} ${profile.lastName}`}
+              alt={`Dr. ${profile.firstName}`}
               className="w-full h-full object-cover"
             />
           </div>
@@ -204,9 +206,18 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           </button>
           <button 
             onClick={onSave}
-            className="bg-slate-400 hover:bg-primary text-white p-2 rounded-full transition-all shadow-lg"
+            disabled={isSaving}
+            className={`p-2 rounded-full transition-all shadow-lg text-white ${
+              isSaving 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-slate-400 hover:bg-primary'
+            }`}
           >
-            <Check className="w-5 h-5" />
+            {isSaving ? (
+              <div className="w-5 h-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              <Check className="w-5 h-5" />
+            )}
           </button>
         </div>
       )}
