@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Share2, Eye, MoreHorizontal, Calendar, Edit, Trash2, FileText, CheckCircle, PenTool, Search, Filter, ChevronDown } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Eye, MoreHorizontal, Calendar, Edit, Trash2, FileText, PenTool, Search, Filter, ChevronDown } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
 import { getPosts, getMyPosts } from '../../api/counsellorAPI';
 
@@ -307,8 +307,14 @@ const CounsellorBlogs: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const totalViews = blogs.reduce((sum, blog) => sum + blog.stats.views, 0);
-  const totalLikes = blogs.reduce((sum, blog) => sum + blog.stats.likes, 0);
+  // Calculate different counts based on active tab
+  const approvedPosts = blogs.filter(blog => blog.status === 'approved' || !blog.status);
+  const allMyPosts = blogs;
+  
+  // Use appropriate posts array for calculations based on active tab
+  const postsForStats = activeFilter === 'all' ? approvedPosts : allMyPosts;
+  const totalViews = postsForStats.reduce((sum, blog) => sum + blog.stats.views, 0);
+  const totalLikes = postsForStats.reduce((sum, blog) => sum + blog.stats.likes, 0);
 
   return (
     <div className="flex flex-col h-screen">
@@ -340,15 +346,17 @@ const CounsellorBlogs: React.FC = () => {
             </div>
 
             {/* Stats Cards - Desktop Only */}
-            <div className="hidden lg:grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="hidden lg:grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-secondary/30 rounded-xl flex items-center justify-center">
                     <FileText className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">{blogs.length}</p>
-                    <p className="text-gray-600 text-sm">Total Posts</p>
+                    <p className="text-2xl font-bold text-gray-900">{postsForStats.length}</p>
+                    <p className="text-gray-600 text-sm">
+                      {activeFilter === 'all' ? 'Total Posts' : 'Total Posts'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -371,17 +379,6 @@ const CounsellorBlogs: React.FC = () => {
                   <div>
                     <p className="text-2xl font-bold text-gray-900">{totalLikes}</p>
                     <p className="text-gray-600 text-sm">Total Likes</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-green-400/80 rounded-xl flex items-center justify-center">
-                    <CheckCircle className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">{blogs.length}</p>
-                    <p className="text-gray-600 text-sm">Total Posts</p>
                   </div>
                 </div>
               </div>

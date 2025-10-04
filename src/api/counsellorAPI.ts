@@ -33,13 +33,86 @@ export interface Session {
 }
 
 export interface Client {
-  id: string;
+  id: number;
   name: string;
-  email: string;
-  anonymous: boolean;
-  sessionsCount: number;
-  lastSession?: string;
-  status: 'active' | 'inactive';
+  avatar: string;
+  student_id: string;
+  is_anonymous: boolean;
+  status: 'active' | 'inactive' | 'new';
+  last_session: string | null;
+  total_sessions: number;
+  next_appointment: string | null;
+  progress_status: 'starting' | 'improving' | 'stable' | 'concerning';
+}
+
+// Extended client interface for detailed view
+export interface ClientDetails extends Client {
+  email?: string;
+  phone?: string;
+  age?: number;
+  gender?: string;
+  address?: string;
+  is_verified: boolean;
+  join_date: string;
+  institution?: string;
+  program?: string;
+  year?: string;
+  referred_by?: string;
+  concerns: string[];
+  emergency_contact?: {
+    name: string;
+    relationship: string;
+    phone: string;
+  };
+  preferences?: {
+    session_type: string;
+    preferred_time: string;
+    language: string;
+    notifications: boolean;
+  };
+  notes: ClientNote[];
+  sessions: ClientSession[];
+  analytics: {
+    attendance_rate: number;
+    average_rating: number | null;
+    mood_trend: string;
+    session_completion_rate: number;
+  };
+}
+
+export interface ClientNote {
+  id: number;
+  content: string;
+  created_at: string;
+  created_by: string;
+  is_private: boolean;
+  is_deleted: boolean;
+  counselor_id: number;
+}
+
+export interface ClientSession {
+  id: number;
+  date: string;
+  duration: number;
+  type: string;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+  concerns: string[];
+  notes: string;
+  rating?: number;
+}
+
+export interface ClientsResponse {
+  clients: Client[];
+  pagination: {
+    current_page: number;
+    total: number;
+    total_pages: number;
+  };
+  stats: {
+    total_clients: number;
+    active_clients: number;
+    new_clients: number;
+  };
 }
 
 export interface Blog {
@@ -169,21 +242,150 @@ export const getSessions = async (counselorId: number, params?: {
  * Get clients list
  */
 export const getClients = async (params?: { 
-  status?: string; 
-  search?: string; 
-  limit?: number; 
-  offset?: number;
-}): Promise<Client[]> => {
+  page?: number;
+  limit?: number;
+  search?: string;
+  filter?: string;
+  sort?: string;
+}): Promise<{ success: boolean; data: ClientsResponse }> => {
   try {
-    const response: ApiResponse<Client[]> = await apiClient.get('/counsellor/clients', params, undefined, true);
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: ClientsResponse }> = await apiClient.get('/counsellor/clients', params as Record<string, unknown>, token, true);
+    
+    console.log('Get clients response:', response);
     
     if (response.success && response.data) {
-      return response.data;
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
     }
     
     throw new Error('Failed to fetch clients');
   } catch (error) {
     console.error('Get clients error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get individual client details with notes and sessions
+ */
+export const getClientDetails = async (clientId: string): Promise<{ success: boolean; data: ClientDetails }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: ClientDetails }> = await apiClient.get(`/counsellor/clients/${clientId}`, undefined, token, true);
+    
+    console.log('Get client details response:', response);
+    
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    }
+    
+    throw new Error('Failed to fetch client details');
+  } catch (error) {
+    console.error('Get client details error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new client note
+ */
+export const createClientNote = async (clientId: string, noteData: {
+  content: string;
+  isPrivate: boolean;
+}): Promise<{ success: boolean; data: ClientNote }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: ClientNote }> = await apiClient.post(`/counsellor/clients/${clientId}/notes`, noteData, token, true);
+    
+    console.log('Create client note response:', response);
+    
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    }
+    
+    throw new Error('Failed to create client note');
+  } catch (error) {
+    console.error('Create client note error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a client note
+ */
+export const deleteClientNote = async (clientId: string, noteId: number): Promise<{ success: boolean; message: string }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ message: string }> = await apiClient.delete(`/counsellor/clients/${clientId}/notes/${noteId}`, token, true);
+    
+    console.log('Delete client note response:', response);
+    
+    if (response.success) {
+      return {
+        success: true,
+        message: response.data?.message || 'Note deleted successfully'
+      };
+    }
+    
+    throw new Error('Failed to delete client note');
+  } catch (error) {
+    console.error('Delete client note error:', error);
+    throw error;
+  }
+};
+
+export const updateClientNote = async (clientId: string, noteId: number, noteData: {
+  content: string;
+  isPrivate: boolean;
+}): Promise<{ success: boolean; data: ClientNote }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    console.log(`Making PUT request to: /counsellor/clients/${clientId}/notes/${noteId}`);
+    console.log('Request payload:', noteData);
+
+    const response: ApiResponse<{ data: ClientNote }> = await apiClient.put(`/counsellor/clients/${clientId}/notes/${noteId}`, noteData, token, true);
+    
+    console.log('Update client note response:', response);
+    
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    }
+    
+    throw new Error('Failed to update client note');
+  } catch (error) {
+    console.error('Update client note error:', error);
     throw error;
   }
 };
@@ -587,3 +789,4 @@ export const updatePost = async (postId: string, postData: UpdatePostData): Prom
     throw error;
   }
 };
+

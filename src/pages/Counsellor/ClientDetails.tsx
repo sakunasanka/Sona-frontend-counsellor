@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavBar, Sidebar } from '../../components/layout';
 import { useParams } from 'react-router-dom';
+import { getClientDetails, createClientNote, deleteClientNote, updateClientNote, type ClientDetails as APIClientDetails } from '../../api/counsellorAPI';
 import { 
   Calendar, 
   Clock, 
@@ -25,6 +26,7 @@ interface Note {
   createdAt: string;
   createdBy: string;
   isPrivate: boolean;
+  counselorId: number;
 }
 
 interface Session {
@@ -52,6 +54,11 @@ const ClientDetails: React.FC = () => {
   const [newNote, setNewNote] = useState('');
   const [isPrivateNote, setIsPrivateNote] = useState(false);
   
+  // Edit note state
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState('');
+  const [editingPrivacy, setEditingPrivacy] = useState(false);
+  
   // Session modals state
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -61,28 +68,31 @@ const ClientDetails: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>([
     {
       id: 1,
-      content: "Client showed significant progress in anxiety management techniques. Will focus on breathing exercises next session.",
-      createdAt: "June 28, 2025",
-      createdBy: "Dr. Hiruni Chandradasa",
-      isPrivate: false
+      content: "MY NOTE (Nilukshi): Client showed significant progress in anxiety management techniques.",
+      createdAt: "June 28, 2025", 
+      createdBy: "Nilukshi Karunaratne",
+      isPrivate: false,
+      counselorId: 38  // My notes - should show edit/delete buttons
     },
     {
       id: 2,
-      content: "Client mentioned difficulty with workplace stress. Recommended journaling and provided worksheet for cognitive restructuring.",
+      content: "OTHER'S NOTE (Naruto): Client mentioned difficulty with workplace stress.",
       createdAt: "June 20, 2025",
-      createdBy: "Dr. SHiruni Chandradasa",
-      isPrivate: false
+      createdBy: "Uzumaki Naruto", 
+      isPrivate: false,
+      counselorId: 1   // Other's notes - should NOT show edit/delete buttons (but visible because public)
     },
     {
       id: 3,
-      content: "First session went well. Client is open to therapy but hesitant about homework activities. Will introduce small, manageable tasks.",
+      content: "MY PRIVATE NOTE (Nilukshi): Confidential observation about client's progress.",
       createdAt: "June 12, 2025",
-      createdBy: "Dr. Hiruni Chandradasa",
-      isPrivate: false
+      createdBy: "Nilukshi Karunaratne",
+      isPrivate: true,
+      counselorId: 38  // My private note - should show edit/delete buttons
     }
   ]);
   
-  const [sessions] = useState<Session[]>([
+  const [sessions, setSessions] = useState<Session[]>([
     {
       id: 1,
       date: "June 28, 2025 • 10:00 AM",
@@ -205,35 +215,294 @@ const ClientDetails: React.FC = () => {
     }
   ];
 
-  // Use client based on the route param
-  const [currentClient, setCurrentClient] = useState<Client>(clients[0]);
-  // In a real app, we would fetch the client data based on the clientId
+  // State for client data and loading
+  const [currentClient, setCurrentClient] = useState<Client | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Transform API client data to component format
+  const transformApiClient = (apiClient: APIClientDetails): Client => {
+    const baseClient = {
+      id: apiClient.id,
+      sessionCount: apiClient.total_sessions,
+      lastSession: apiClient.last_session ? new Date(apiClient.last_session).toLocaleDateString() : 'No sessions',
+      nextSession: apiClient.next_appointment ? new Date(apiClient.next_appointment).toLocaleDateString() + ' at ' + new Date(apiClient.next_appointment).toLocaleTimeString() : undefined,
+      concerns: apiClient.concerns || [],
+      status: apiClient.status,
+      anonymous: apiClient.is_anonymous,
+      student: true, // Assuming all clients are students based on student_id field
+      institution: apiClient.institution || 'University',
+      joinDate: apiClient.join_date ? new Date(apiClient.join_date).toLocaleDateString() : 'Unknown',
+      profileImage: apiClient.avatar || '/assets/images/student-photo.png',
+    };
+
+    if (apiClient.is_anonymous) {
+      return {
+        ...baseClient,
+        anonymous: true,
+        nickname: `Student ${apiClient.student_id}`,
+      } as AnonymousClient;
+    } else {
+      return {
+        ...baseClient,
+        anonymous: false,
+        name: apiClient.name,
+        age: apiClient.age || 22,
+        gender: apiClient.gender || 'Unknown',
+        email: apiClient.email || 'N/A',
+        phone: apiClient.phone || 'N/A',
+        address: apiClient.address || 'N/A',
+        program: apiClient.program || 'Computer Science',
+        year: apiClient.year || '3rd Year',
+        referredBy: apiClient.referred_by || 'University Counseling Center',
+        emergencyContact: apiClient.emergency_contact ? {
+          name: apiClient.emergency_contact.name,
+          relationship: apiClient.emergency_contact.relationship,
+          phone: apiClient.emergency_contact.phone
+        } : {
+          name: 'Contact Person',
+          relationship: 'Guardian',
+          phone: 'N/A'
+        }
+      } as IdentifiedClient;
+    }
+  };
+
+  // Fetch client details from API
+  const fetchClientDetails = async () => {
+    if (!clientId) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Set default counselor ID for testing if not already set
+      if (!localStorage.getItem('counsellor_id')) {
+        localStorage.setItem('counsellor_id', '38'); // Your actual counselor ID
+      }
+      
+      const response = await getClientDetails(clientId);
+      
+      if (response.success && response.data) {
+        const transformedClient = transformApiClient(response.data);
+        setCurrentClient(transformedClient);
+        
+        // Transform API notes to component format and apply privacy filtering
+        const currentCounsellorId = parseInt(localStorage.getItem('counsellor_id') || '38'); // Your actual counselor ID
+        const transformedNotes: Note[] = response.data.notes
+          .filter(note => {
+            // Show all public notes, but only private notes created by current counselor
+            if (!note.is_private) return true;
+            return note.counselor_id === currentCounsellorId;
+          })
+          .map(note => {
+            // Handle date properly with fallback
+            const createdDate = note.created_at ? new Date(note.created_at) : new Date();
+            const formattedDate = isNaN(createdDate.getTime()) ? 
+              new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) :
+              createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            
+            return {
+              id: note.id,
+              content: note.content,
+              createdAt: formattedDate,
+              createdBy: note.created_by,
+              isPrivate: note.is_private,
+              counselorId: note.counselor_id
+            };
+          });
+        setNotes(transformedNotes);
+
+        // Transform API sessions to component format
+        const transformedSessions: Session[] = response.data.sessions.map(session => ({
+          id: session.id,
+          date: new Date(session.date).toLocaleDateString('en-US', { 
+            month: 'long', 
+            day: 'numeric', 
+            year: 'numeric' 
+          }) + ' • ' + new Date(session.date).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          }),
+          status: session.status === 'scheduled' ? 'upcoming' : 
+                  session.status === 'no_show' ? 'cancelled' : 
+                  session.status as 'completed' | 'cancelled',
+          duration: session.duration,
+          concerns: session.concerns,
+          notes: session.notes || '',
+          rating: session.rating
+        }));
+        setSessions(transformedSessions);
+      }
+    } catch (err) {
+      console.error('Error fetching client details:', err);
+      setError('Failed to load client details. Please try again.');
+      // Fallback to first mock client for demo purposes
+      setCurrentClient(clients[0]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch client details on component mount
   useEffect(() => {
-    // For demo purposes, we're just picking from the mock data based on ID
-    const client = clients.find(c => c.id === parseInt(clientId)) || clients[0];
-    setCurrentClient(client);
+    fetchClientDetails();
   }, [clientId]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
 
-  const handleAddNote = () => {
-    if (newNote.trim()) {
-      const newNoteObj: Note = {
-        id: notes.length + 1,
-        content: newNote,
-        createdAt: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-        createdBy: "Dr. Hasini Chandradasa", // This would be dynamic in a real app
-        isPrivate: isPrivateNote
-      };
+  const handleAddNote = async () => {
+    if (newNote.trim() && clientId) {
+      try {
+        const response = await createClientNote(clientId, {
+          content: newNote,
+          isPrivate: isPrivateNote
+        });
+
+        if (response.success) {
+          console.log('API Response for new note:', response.data);
+          
+          // Handle date properly with robust fallback
+          let formattedDate;
+          try {
+            if (response.data.created_at) {
+              const createdDate = new Date(response.data.created_at);
+              if (!isNaN(createdDate.getTime())) {
+                formattedDate = createdDate.toLocaleDateString('en-US', { 
+                  month: 'long', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                });
+              } else {
+                throw new Error('Invalid date from API');
+              }
+            } else {
+              throw new Error('No created_at field from API');
+            }
+          } catch (error) {
+            console.warn('Date parsing error:', error, 'Using current date as fallback');
+            formattedDate = new Date().toLocaleDateString('en-US', { 
+              month: 'long', 
+              day: 'numeric', 
+              year: 'numeric' 
+            });
+          }
+            
+          console.log('Date handling - original:', response.data.created_at, 'formatted:', formattedDate);
+            
+          const newNoteObj: Note = {
+            id: response.data.id || Date.now(), // Fallback ID
+            content: response.data.content || newNote, // Fallback to original content
+            createdAt: formattedDate,
+            createdBy: response.data.created_by || 'Current User', // Fallback name
+            isPrivate: response.data.is_private ?? isPrivateNote, // Fallback to original privacy setting
+            counselorId: response.data.counselor_id || parseInt(localStorage.getItem('counsellor_id') || '38') // Fallback to current counselor
+          };
+          
+          setNotes([newNoteObj, ...notes]);
+          setNewNote('');
+          setIsPrivateNote(false);
+        }
+      } catch (error) {
+        console.error('Error creating note:', error);
+        // Fallback to local note creation for demo purposes
+        const currentCounsellorId = parseInt(localStorage.getItem('counsellor_id') || '38');
+        const newNoteObj: Note = {
+          id: notes.length + 1,
+          content: newNote,
+          createdAt: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+          createdBy: "Dr. Counsellor", // This would be dynamic in a real app
+          isPrivate: isPrivateNote,
+          counselorId: currentCounsellorId
+        };
+        
+        setNotes([newNoteObj, ...notes]);
+        setNewNote('');
+        setIsPrivateNote(false);
+      }
+    }
+  };
+
+  const handleDeleteNote = async (noteId: number) => {
+    // Check if current counselor is authorized to delete this note
+    const noteToDelete = notes.find(note => note.id === noteId);
+    const currentCounsellorId = parseInt(localStorage.getItem('counsellor_id') || '38');
+    
+    if (noteToDelete && noteToDelete.counselorId !== currentCounsellorId) {
+      alert('You can only delete notes that you created.');
+      return;
+    }
+
+    try {
+      await deleteClientNote(clientId, noteId);
       
-      setNotes([newNoteObj, ...notes]);
-      setNewNote('');
-      setIsPrivateNote(false);
+      // Remove the note from local state
+      setNotes(notes.filter(note => note.id !== noteId));
+    } catch (error) {
+      console.error('Error deleting note:', error);
+    }
+  };
+
+  const handleEditNote = (note: Note) => {
+    setEditingNoteId(note.id);
+    setEditingContent(note.content);
+    setEditingPrivacy(note.isPrivate);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingNoteId(null);
+    setEditingContent('');
+    setEditingPrivacy(false);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingNoteId || !editingContent.trim()) return;
+
+    const currentCounsellorId = parseInt(localStorage.getItem('counsellor_id') || '38');
+    const noteToEdit = notes.find(note => note.id === editingNoteId);
+    
+    if (noteToEdit && noteToEdit.counselorId !== currentCounsellorId) {
+      alert('You can only edit notes that you created.');
+      return;
+    }
+
+    try {
+      console.log('Updating note:', {
+        clientId,
+        noteId: editingNoteId,
+        endpoint: `PUT /api/counsellor/clients/${clientId}/notes/${editingNoteId}`,
+        payload: { content: editingContent, isPrivate: editingPrivacy }
+      });
+
+      const response = await updateClientNote(clientId, editingNoteId, {
+        content: editingContent,
+        isPrivate: editingPrivacy
+      });
+
+      console.log('Update note response:', response);
+
+      if (response.success) {
+        // Update the note in local state
+        setNotes(notes.map(note => 
+          note.id === editingNoteId 
+            ? { ...note, content: editingContent, isPrivate: editingPrivacy }
+            : note
+        ));
+        
+        // Clear editing state
+        handleCancelEdit();
+      }
+    } catch (error) {
+      console.error('Error updating note:', error);
+      alert('Failed to update note. Please try again.');
     }
   };
   
   const handleRemoveConcern = (index: number) => {
+    if (!currentClient) return;
+    
     const updatedConcerns = [...currentClient.concerns];
     updatedConcerns.splice(index, 1);
     
@@ -277,7 +546,10 @@ const ClientDetails: React.FC = () => {
     }
   };
   
-  const renderOverviewTab = () => (
+  const renderOverviewTab = () => {
+    if (!currentClient) return null;
+    
+    return (
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -496,7 +768,8 @@ const ClientDetails: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   const renderNotesTab = () => (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
@@ -512,7 +785,7 @@ const ClientDetails: React.FC = () => {
         ></textarea>
         
         <div className="flex justify-between mt-3">
-          {/* <div className="flex items-center">
+          <div className="flex items-center">
             <input
               type="checkbox"
               id="privateNote"
@@ -524,7 +797,7 @@ const ClientDetails: React.FC = () => {
               <Shield className="w-3.5 h-3.5 mr-1 text-red-500" />
               Mark as private note (only visible to you)
             </label>
-          </div> */}
+          </div>
           
           <button
             className={`px-4 py-2 ${!newNote.trim() ? 'bg-gray-300 cursor-not-allowed opacity-50' : 'bg-primary hover:bg-opacity-90'} text-white rounded-md text-sm font-medium flex items-center transition-all`}
@@ -539,9 +812,55 @@ const ClientDetails: React.FC = () => {
       </div>
       
       <div className="space-y-5">
-        {notes.map(note => (
+        {notes.filter(note => {
+          // Show all public notes, but only private notes created by current counselor
+          if (!note.isPrivate) return true;
+          // For private notes, only show if created by current counselor
+          const currentCounsellorId = parseInt(localStorage.getItem('counsellor_id') || '38');
+          return note.counselorId === currentCounsellorId;
+        }).map(note => (
           <div key={note.id} className={`border-l-4 ${note.isPrivate ? 'border-red-300' : 'border-indigo-300'} pl-4 py-3`}>
-            <p className="text-gray-700">{note.content}</p>
+            {editingNoteId === note.id ? (
+              <div className="space-y-3">
+                <textarea
+                  value={editingContent}
+                  onChange={(e) => setEditingContent(e.target.value)}
+                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                  rows={3}
+                />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`editPrivate${note.id}`}
+                      checked={editingPrivacy}
+                      onChange={(e) => setEditingPrivacy(e.target.checked)}
+                      className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                    />
+                    <label htmlFor={`editPrivate${note.id}`} className="ml-2 text-sm text-gray-600 flex items-center">
+                      <Shield className="w-3.5 h-3.5 mr-1 text-red-500" />
+                      Private note
+                    </label>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={handleSaveEdit}
+                      className="px-3 py-1 bg-primary text-white text-sm rounded hover:bg-primary-dark"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-700">{note.content}</p>
+            )}
             <div className="mt-3 flex justify-between items-center">
               <div className="flex items-center">
                 <span className="text-sm text-gray-500">{note.createdAt}</span>
@@ -554,17 +873,34 @@ const ClientDetails: React.FC = () => {
               </div>
               <span className="text-sm text-gray-500">{note.createdBy}</span>
             </div>
-            <div className="mt-2 flex items-center space-x-2 text-xs">
-              <button className="text-gray-500 hover:text-gray-700 flex items-center">
-                <PenLine className="w-3 h-3 mr-1" />
-                Edit
-              </button>
-              <span className="text-gray-300">|</span>
-              <button className="text-red-500 hover:text-red-700 flex items-center">
-                <X className="w-3 h-3 mr-1" />
-                Delete
-              </button>
-            </div>
+            {(() => {
+              const currentCounsellorId = parseInt(localStorage.getItem('counsellor_id') || '38');
+              
+              // Very strict ownership check - only show buttons for notes that match exactly
+              if (note.counselorId && note.counselorId === currentCounsellorId) {
+                return (
+                  <div className="mt-2 flex items-center space-x-2 text-xs">
+                    <button 
+                      onClick={() => handleEditNote(note)}
+                      className="text-gray-500 hover:text-gray-700 flex items-center"
+                    >
+                      <PenLine className="w-3 h-3 mr-1" />
+                      Edit
+                    </button>
+                    <span className="text-gray-300">|</span>
+                    <button 
+                      onClick={() => handleDeleteNote(note.id)}
+                      className="text-red-500 hover:text-red-700 flex items-center"
+                    >
+                      <X className="w-3 h-3 mr-1" />
+                      Delete
+                    </button>
+                  </div>
+                );
+              } else {
+                return null;
+              }
+            })()}
           </div>
         ))}
       </div>
@@ -703,7 +1039,10 @@ const ClientDetails: React.FC = () => {
     </div>
   );
 
-  const renderDetailsTab = () => (
+  const renderDetailsTab = () => {
+    if (!currentClient) return null;
+    
+    return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Personal Information */}
@@ -951,7 +1290,8 @@ const ClientDetails: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col h-screen">
@@ -971,8 +1311,38 @@ const ClientDetails: React.FC = () => {
           <NavBar onMenuClick={toggleSidebar} />
 
           <div className="p-4 lg:p-6">
-              {/* Client Profile Header */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+            {/* Loading State */}
+            {loading && (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <span className="ml-3 text-gray-600">Loading client details...</span>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div className="flex">
+                  <svg className="w-5 h-5 text-red-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <div>
+                    <h3 className="text-sm font-medium text-red-800">Error loading client details</h3>
+                    <p className="text-sm text-red-700 mt-1">{error}</p>
+                    <button 
+                      onClick={fetchClientDetails}
+                      className="mt-2 text-sm text-red-600 hover:text-red-500 underline"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Client Profile Header - Only show when data is available */}
+            {currentClient && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div className="flex flex-col md:flex-row md:items-center">
               <div className="flex items-center">
                 <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 ${currentClient.anonymous ? 'bg-primary bg-opacity-10 flex items-center justify-center' : 'border-2 border-gray-100'}`}>
@@ -1063,6 +1433,7 @@ const ClientDetails: React.FC = () => {
               </nav>
             </div>
           </div>
+          )}
           
           {/* Tab Content */}
           <div className="mt-4">
