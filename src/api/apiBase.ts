@@ -342,5 +342,30 @@ export class ApiBase {
 // Create and export a singleton instance
 export const apiClient = new ApiBase();
 
+// Helper function for making requests
+export const makeRequest = async <T = unknown>(url: string, method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', data?: any): Promise<T> => {
+  const token = localStorage.getItem('auth_token');
+  
+  switch (method) {
+    case 'GET':
+      const response = await apiClient.get<T>(url, undefined, token || undefined, true);
+      return response.data;
+    case 'POST':
+      const postResponse = await apiClient.post<T>(url, data, token || undefined, true);
+      return postResponse.data;
+    case 'PUT':
+      const putResponse = await apiClient.put<T>(url, data, token || undefined, true);
+      return putResponse.data;
+    case 'PATCH':
+      const patchResponse = await apiClient.patch<T>(url, data, token || undefined, true);
+      return patchResponse.data;
+    case 'DELETE':
+      const deleteResponse = await apiClient.delete<T>(url, token || undefined, true);
+      return deleteResponse.data;
+    default:
+      throw new Error(`Unsupported HTTP method: ${method}`);
+  }
+};
+
 // Export default instance
 export default apiClient;
