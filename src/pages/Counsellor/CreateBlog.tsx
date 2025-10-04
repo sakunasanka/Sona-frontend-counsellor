@@ -3,38 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Eye, 
-  Save, 
   Send, 
   Image, 
   Bold, 
   Italic, 
-  Underline, 
-  List, 
-  ListOrdered, 
+  Type,
   Quote, 
   Link, 
-  Type,
-  Hash,
-  Tag,
-  Calendar,
-  Clock,
+  List,
   X,
-  Plus,
-  FileText,
-  Sparkles
+  Plus
 } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
+import { createPost, CreatePostData } from '../../api/counsellorAPI';
 
 interface BlogFormData {
   title: string;
-  excerpt: string;
   content: string;
-  category: string;
   tags: string[];
   image: string;
-  publishDate: string;
-  publishTime: string;
-  isScheduled: boolean;
 }
 
 const BlogCreator: React.FC = () => {
@@ -44,32 +31,18 @@ const BlogCreator: React.FC = () => {
   const [newTag, setNewTag] = useState('');
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
   const [formData, setFormData] = useState<BlogFormData>({
     title: '',
-    excerpt: '',
     content: '',
-    category: '',
     tags: [],
-    image: '',
-    publishDate: '',
-    publishTime: '',
-    isScheduled: false
+    image: ''
   });
 
-  const categories = [
-    'Personal Growth',
-    'Mental Health',
-    'Mindfulness',
-    'Relationships',
-    'Stress Management',
-    'Self-Care',
-    'Life Coaching',
-    'Wellness',
-    'Therapy Insights',
-    'Success Stories'
-  ];
+
 
   const suggestedTags = [
     'growth', 'mindset', 'wellbeing', 'happiness', 'mindfulness', 
@@ -167,19 +140,64 @@ const BlogCreator: React.FC = () => {
     }, 0);
   };
 
-  const handleSaveDraft = () => {
-    console.log('Saving draft:', formData);
-    // Add save draft logic here
-  };
+  const handlePublish = async () => {
+    if (!formData.title.trim() || !formData.content.trim()) {
+      setPublishError('Title and content are required');
+      return;
+    }
 
-  const handlePublish = () => {
-    console.log('Publishing blog:', formData);
-    // Add publish logic here
-  };
+    try {
+      setIsPublishing(true);
+      setPublishError(null);
 
-  const handleSchedule = () => {
-    console.log('Scheduling blog:', formData);
-    // Add schedule logic here
+      // Prepare the post data according to the backend API structure
+      // Combine title and content since the API expects content to include everything
+      const fullContent = formData.title.trim() + '\n\n' + formData.content.trim();
+      
+      const postData: CreatePostData = {
+        content: fullContent,
+        hashtags: formData.tags,
+        backgroundColor: '#FFFFFF', // Default background color
+        image: formData.image || undefined
+      };
+
+      const response = await createPost(postData);
+      
+      console.log('Create post response:', response);
+      
+      if (response && response.success) {
+        // Successfully created the post, navigate back to blogs
+        console.log('Navigating to /counsellor-blogs');
+        
+        // Use a small delay to ensure the navigation happens
+        setTimeout(() => {
+          navigate('/counsellor-blogs', { 
+            state: { message: 'Blog post created successfully!' }
+          });
+        }, 100);
+      } else {
+        console.error('Failed to create post:', response);
+        setPublishError('Failed to create post. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error creating post:', error);
+      
+      // Check if it's a network error but the post might have been created
+      // Since you mentioned the post is created in DB but navigation fails
+      if (error instanceof Error && error.message.includes('Failed to create post')) {
+        // Try navigating anyway since the post might have been created
+        console.log('Post creation failed in response parsing, but might be created. Navigating...');
+        setTimeout(() => {
+          navigate('/counsellor-blogs', { 
+            state: { message: 'Blog post may have been created. Please check your posts.' }
+          });
+        }, 100);
+      } else {
+        setPublishError('An error occurred while creating the post. Please try again.');
+      }
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   const handleGoBack = () => {
@@ -199,17 +217,13 @@ const BlogCreator: React.FC = () => {
       {/* Preview Header */}
       <div className="p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Calendar className="w-4 h-4 text-gray-400" />
           <span className="text-gray-500 text-sm">Today • Just now</span>
         </div>
         
-        {formData.category && (
+        {formData.tags.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-medium">
-              {formData.category}
-            </span>
             {formData.tags.map((tag) => (
-              <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+              <span key={tag} className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-medium">
                 #{tag}
               </span>
             ))}
@@ -219,12 +233,6 @@ const BlogCreator: React.FC = () => {
         <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">
           {formData.title || 'Your Blog Title'}
         </h1>
-
-        {formData.excerpt && (
-          <p className="text-gray-600 mb-4 text-base leading-relaxed">
-            {formData.excerpt}
-          </p>
-        )}
       </div>
 
       {formData.image && (
@@ -328,24 +336,10 @@ const BlogCreator: React.FC = () => {
                       />
                     </div>
 
-                    {/* Excerpt Input */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Excerpt
-                      </label>
-                      <textarea
-                        value={formData.excerpt}
-                        onChange={(e) => handleInputChange('excerpt', e.target.value)}
-                        placeholder="Write a brief description of your blog..."
-                        rows={3}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none"
-                      />
-                    </div>
-
                     {/* Featured Image */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Featured Image
+                        Featured Image (Optional)
                       </label>
                       {formData.image ? (
                         <div className="relative">
@@ -460,7 +454,7 @@ const BlogCreator: React.FC = () => {
                         onChange={(e) => handleInputChange('content', e.target.value)}
                         placeholder="Start writing your blog content..."
                         rows={12}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none font-mono text-sm"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none"
                       />
                       <p className="text-xs text-gray-500 mt-2">
                         Tip: Use **bold**, *italic*, ## headings, {'>'} quotes, and - lists for formatting
@@ -470,27 +464,10 @@ const BlogCreator: React.FC = () => {
 
                   {/* Sidebar Panel */}
                   <div className="w-full lg:w-80 bg-gray-50 p-4 lg:p-6 space-y-6 border-t lg:border-t-0 lg:border-l border-gray-200">
-                    {/* Category Selection */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Category
-                      </label>
-                      <select
-                        value={formData.category}
-                        onChange={(e) => handleInputChange('category', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      >
-                        <option value="">Select a category</option>
-                        {categories.map(category => (
-                          <option key={category} value={category}>{category}</option>
-                        ))}
-                      </select>
-                    </div>
-
                     {/* Tags */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tags
+                        Tags (Optional)
                       </label>
                       
                       {/* Current Tags */}
@@ -548,81 +525,34 @@ const BlogCreator: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Publishing Options */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
-                        Publishing Options
-                      </label>
-                      
-                      <div className="space-y-3">
-                        <label className="flex items-center gap-3">
-                          <input
-                            type="radio"
-                            name="publishOption"
-                            checked={!formData.isScheduled}
-                            onChange={() => handleInputChange('isScheduled', false)}
-                            className="text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">Publish immediately</span>
-                        </label>
-                        
-                        <label className="flex items-center gap-3">
-                          <input
-                            type="radio"
-                            name="publishOption"
-                            checked={formData.isScheduled}
-                            onChange={() => handleInputChange('isScheduled', true)}
-                            className="text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">Schedule for later</span>
-                        </label>
-                      </div>
-                      
-                      {formData.isScheduled && (
-                        <div className="mt-3 space-y-2">
-                          <input
-                            type="date"
-                            value={formData.publishDate}
-                            onChange={(e) => handleInputChange('publishDate', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                          />
-                          <input
-                            type="time"
-                            value={formData.publishTime}
-                            onChange={(e) => handleInputChange('publishTime', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                          />
-                        </div>
-                      )}
-                    </div>
-
                     {/* Publish Button */}
-                    <div className="space-y-2">
-                      {formData.isScheduled ? (
-                        <button
-                          onClick={handleSchedule}
-                          className="w-full bg-primary hover:bg-primaryLight text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-                        >
-                          <Calendar className="w-4 h-4" />
-                          Schedule Blog
-                        </button>
-                      ) : (
-                        <button
-                          onClick={handlePublish}
-                          className="w-full bg-primary hover:bg-primaryLight text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-                        >
-                          <Send className="w-4 h-4" />
-                          Publish Now
-                        </button>
+                    <div className="pt-4">
+                      {publishError && (
+                        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="text-red-600 text-sm">{publishError}</p>
+                        </div>
                       )}
                       
                       <button
-                        onClick={handleSaveDraft}
-                        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                        onClick={handlePublish}
+                        className="w-full bg-primary hover:bg-primaryLight disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                        disabled={!formData.title.trim() || !formData.content.trim() || isPublishing}
                       >
-                        <FileText className="w-4 h-4" />
-                        Save as Draft
+                        {isPublishing ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            Publishing...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4" />
+                            Publish Blog
+                          </>
+                        )}
                       </button>
+                      <p className="text-xs text-gray-500 mt-2 text-center">
+                        {isPublishing ? 'Creating your post...' : 'Title and content are required to publish'}
+                      </p>
                     </div>
                   </div>
                 </div>

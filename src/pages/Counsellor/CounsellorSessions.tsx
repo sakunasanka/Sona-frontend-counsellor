@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavBar, Sidebar } from "../../components/layout";
-import { Search, Calendar, Clock, User, Eye, ChevronDown, CheckCircle2, Video, MapPin, X, AlertCircle } from "lucide-react";
+import { Search, Calendar, Clock, User, Eye, ChevronDown, CheckCircle2, MapPin, X, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui";
 import { apiClient } from "../../api/apiBase";
@@ -38,10 +38,9 @@ interface TokenPayload {
 
 interface SessionCardProps {
   session: Session;
-  onViewDetails: (sessionId: number) => void;
 }
 
-const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => {
+const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
   const navigate = useNavigate();
   
   const getStatusColor = (status: string) => {
@@ -180,10 +179,10 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onViewDetails }) => 
         <div className="pt-2 border-t border-gray-100">
           <Button 
               variant="calendar" 
-              onClick={() => onViewDetails(session.id)}
+              onClick={() => navigate(`/counsellor-clients/${session.user.id}`)}
               icon={<Eye className="w-4 h-4" />}
           >
-              <span className="hidden sm:inline">View Details</span>
+              <span className="hidden sm:inline">View Client</span>
           </Button>
         </div>
       </div>
@@ -327,10 +326,6 @@ const CounsellorSessions = () => {
         );
 
     const visibleSessions = filteredSessions.slice(0, visibleCount);
-
-    const handleViewDetails = (sessionId: number) => {
-        navigate(`/counsellor-session-details?id=${sessionId}`);
-    };
 
     useEffect(() => {
         const loader = loaderRef.current;
@@ -570,7 +565,6 @@ const CounsellorSessions = () => {
                                     <SessionCard 
                                         key={session.id} 
                                         session={session} 
-                                        onViewDetails={handleViewDetails}
                                     />
                                 ))
                             )}
