@@ -363,6 +363,7 @@ const ClientDetails: React.FC = () => {
 
         if (response.success) {
           console.log('API Response for new note:', response.data);
+          console.log('Full response object:', JSON.stringify(response, null, 2));
           
           // Handle date properly with robust fallback
           let formattedDate;
@@ -391,14 +392,25 @@ const ClientDetails: React.FC = () => {
           }
             
           console.log('Date handling - original:', response.data.created_at, 'formatted:', formattedDate);
+          
+          // Validate required fields
+          if (!response.data.id || !response.data.content || !response.data.created_by) {
+            console.error('Missing required fields in API response:', {
+              id: response.data.id,
+              content: response.data.content,
+              created_by: response.data.created_by,
+              counselor_id: response.data.counselor_id
+            });
+            throw new Error('Incomplete note data from API');
+          }
             
           const newNoteObj: Note = {
-            id: response.data.id || Date.now(), // Fallback ID
-            content: response.data.content || newNote, // Fallback to original content
+            id: response.data.id,
+            content: response.data.content,
             createdAt: formattedDate,
-            createdBy: response.data.created_by || 'Current User', // Fallback name
-            isPrivate: response.data.is_private ?? isPrivateNote, // Fallback to original privacy setting
-            counselorId: response.data.counselor_id || parseInt(localStorage.getItem('counsellor_id') || '38') // Fallback to current counselor
+            createdBy: response.data.created_by,
+            isPrivate: response.data.is_private,
+            counselorId: response.data.counselor_id
           };
           
           setNotes([newNoteObj, ...notes]);
@@ -407,6 +419,19 @@ const ClientDetails: React.FC = () => {
         }
       } catch (error) {
         console.error('Error creating note:', error);
+        
+        // If note creation failed due to incomplete response, try to refresh all client details
+        if (error instanceof Error && error.message?.includes('Incomplete note data')) {
+          console.log('Refreshing client details due to incomplete note response...');
+          try {
+            await fetchClientDetails();
+            setNewNote('');
+            setIsPrivateNote(false);
+            return; // Exit early since fetchClientDetails will handle the state update
+          } catch (refreshError) {
+            console.error('Failed to refresh client details:', refreshError);
+          }
+        }
         // Fallback to local note creation for demo purposes
         const currentCounsellorId = parseInt(localStorage.getItem('counsellor_id') || '38');
         const newNoteObj: Note = {

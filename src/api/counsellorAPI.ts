@@ -316,11 +316,16 @@ export const createClientNote = async (clientId: string, noteData: {
     const response: ApiResponse<{ data: ClientNote }> = await apiClient.post(`/counsellor/clients/${clientId}/notes`, noteData, token, true);
     
     console.log('Create client note response:', response);
+    console.log('Response data structure:', JSON.stringify(response, null, 2));
     
     if (response.success && response.data) {
+      // Handle potentially nested response structure
+      const noteData = response.data.data || response.data;
+      console.log('Extracted note data:', noteData);
+      
       return {
         success: true,
-        data: response.data.data || response.data
+        data: noteData
       };
     }
     
