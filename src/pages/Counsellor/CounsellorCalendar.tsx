@@ -376,12 +376,28 @@ const CounsellorCalendar: React.FC = () => {
                 const totalAvailable = allSlots.filter(slot => slot.isAvailable && !slot.isBooked).length;
                 const totalBooked = allSlots.filter(slot => slot.isBooked).length;
                 
-                // Calculate total unavailable as: 24 * (days in month) - available slots
+                // Calculate total unavailable as: future slots - marked available slots
                 const year = currentDate.getFullYear();
                 const month = currentDate.getMonth();
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
                 const totalPossibleSlots = 24 * daysInMonth;
-                const totalUnavailable = totalPossibleSlots - totalAvailable;
+                
+                // Calculate expired slots (past times from current moment)
+                const now = new Date();
+                let expiredSlots = 0;
+                for (let day = 1; day <= daysInMonth; day++) {
+                  const date = new Date(year, month, day);
+                  for (let hour = 0; hour < 24; hour++) {
+                    const slotTime = new Date(date);
+                    slotTime.setHours(hour, 0, 0, 0);
+                    if (slotTime < now) {
+                      expiredSlots++;
+                    }
+                  }
+                }
+                
+                const futureSlots = totalPossibleSlots - expiredSlots;
+                const totalUnavailable = futureSlots - totalAvailable;
                 
                 const daysWithSlots = Object.keys(monthlyTimeSlots).filter(date => monthlyTimeSlots[date].length > 0).length;
                 
