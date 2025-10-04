@@ -19,7 +19,7 @@ export interface Session {
   date: string; // YYYY-MM-DD
   time: string; // HH:mm
   duration: number;
-  status: 'confirmed' | 'pending' | 'completed';
+  status: 'scheduled' | 'confirmed' | 'pending' | 'completed' | 'cancelled';
 }
 
 // Backend session shape returned by /sessions/counselor/:id
@@ -177,8 +177,8 @@ export const getCounselorSessions = async (counselorId: number): Promise<Session
         date: s.date,
         time: s.timeSlot,
         duration: s.duration,
-        // Map backend status 'scheduled' to 'confirmed' for UI
-        status: s.status === 'scheduled' ? 'confirmed' : (s.status === 'pending' ? 'pending' : 'completed'),
+        // Use actual backend status values
+        status: s.status as Session['status'],
       }));
       return mapped;
     }

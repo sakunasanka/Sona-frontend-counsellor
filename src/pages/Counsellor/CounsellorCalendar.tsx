@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavBar, Sidebar } from '../../components/layout';
+import { FlashMessage } from '../../components/ui';
 import { 
   Calendar, 
   Clock, 
@@ -33,6 +34,17 @@ const CounsellorCalendar: React.FC = () => {
   const [monthlyLoading, setMonthlyLoading] = useState(false);
   // const [sessionsLoading, setSessionsLoading] = useState(false);
   
+  // Flash message state
+  const [flashMessage, setFlashMessage] = useState<{
+    type: 'success' | 'error' | 'warning' | 'info';
+    message: string;
+    isVisible: boolean;
+  }>({
+    type: 'info',
+    message: '',
+    isVisible: false
+  });
+  
   // TODO: Get counselor ID from auth context or user profile
   // For now using hardcoded ID - replace with actual user's counselor ID
   const counselorId = 38;
@@ -41,6 +53,19 @@ const CounsellorCalendar: React.FC = () => {
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
+
+  // Flash message helpers
+  const showFlashMessage = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
+    setFlashMessage({
+      type,
+      message,
+      isVisible: true
+    });
+  };
+
+  const hideFlashMessage = () => {
+    setFlashMessage(prev => ({ ...prev, isVisible: false }));
+  };
 
   // Build YYYY-MM-DD in local time to avoid timezone shifts
   const formatDateKey = (d: Date) => {
@@ -225,7 +250,7 @@ const CounsellorCalendar: React.FC = () => {
       const selected = new Date(selectedDate);
       selected.setHours(0, 0, 0, 0);
       if (selected < today) {
-        alert('Cannot set availability for past dates.');
+        showFlashMessage('warning', 'Cannot set availability for past dates.');
         setLoading(false);
         return;
       }
@@ -234,7 +259,7 @@ const CounsellorCalendar: React.FC = () => {
       const [startH] = selectedTimeRange.start.split(':').map(Number);
       const [endH] = selectedTimeRange.end.split(':').map(Number);
       if (Number.isNaN(startH) || Number.isNaN(endH) || endH <= startH) {
-        alert('Please select a valid time range (end must be greater than start).');
+        showFlashMessage('warning', 'Please select a valid time range (end must be greater than start).');
         setLoading(false);
         return;
       }
@@ -270,10 +295,10 @@ const CounsellorCalendar: React.FC = () => {
 
       // Reload monthly view to refresh availability data
       await loadMonthlyTimeSlots();
-      alert(`Successfully ${isAvailable ? 'set availability' : 'set unavailability'} for ${dateString}`);
+      showFlashMessage('success', `Successfully ${isAvailable ? 'set availability' : 'set unavailability'} for ${dateString}`);
     } catch (error) {
       console.error('Error setting availability:', error);
-      alert(`Failed to ${isAvailable ? 'set availability' : 'set unavailability'}. Please try again.`);
+      showFlashMessage('error', `Failed to ${isAvailable ? 'set availability' : 'set unavailability'}. Please try again.`);
     } finally {
       setLoading(false);
     }
@@ -548,9 +573,12 @@ const CounsellorCalendar: React.FC = () => {
                                 <span className="font-medium text-gray-900">{session.time}</span>
                               </div>
                               <span className={`px-2 py-1 text-xs rounded-full ${
+                                session.status === 'scheduled' ? 'bg-green-100 text-green-700' :
                                 session.status === 'confirmed' ? 'bg-green-100 text-green-700' :
                                 session.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-blue-100 text-blue-700'
+                                session.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                session.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                                'bg-gray-100 text-gray-700'
                               }`}>
                                 {session.status}
                               </span>
@@ -826,9 +854,12 @@ const CounsellorCalendar: React.FC = () => {
                                       <span className="font-medium text-gray-900">{s.time}</span>
                                     </div>
                                     <span className={`px-2 py-0.5 text-[11px] rounded-full ${
+                                      s.status === 'scheduled' ? 'bg-green-100 text-green-700' :
                                       s.status === 'confirmed' ? 'bg-green-100 text-green-700' :
                                       s.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                      'bg-blue-100 text-blue-700'
+                                      s.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                      s.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                                      'bg-gray-100 text-gray-700'
                                     }`}>
                                       {s.status}
                                     </span>
@@ -852,6 +883,14 @@ const CounsellorCalendar: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Flash Message */}
+      <FlashMessage
+        type={flashMessage.type}
+        message={flashMessage.message}
+        isVisible={flashMessage.isVisible}
+        onClose={hideFlashMessage}
+      />
     </div>
   );
 };
