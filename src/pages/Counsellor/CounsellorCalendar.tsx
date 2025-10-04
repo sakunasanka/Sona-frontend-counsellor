@@ -264,6 +264,25 @@ const CounsellorCalendar: React.FC = () => {
         return;
       }
 
+      // Check if setting availability for today and time is in the past
+      const now = new Date();
+      const isToday = selected.getTime() === today.getTime();
+      
+      if (isToday) {
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        
+        // Round up to the next hour if we're past the current hour
+        const nextAvailableHour = currentMinute > 0 ? currentHour + 1 : currentHour;
+        
+        if (startH < nextAvailableHour) {
+          const nextHourFormatted = `${String(nextAvailableHour).padStart(2, '0')}:00`;
+          showFlashMessage('warning', `Cannot set availability for past times. You can only set availability from ${nextHourFormatted} onwards.`);
+          setLoading(false);
+          return;
+        }
+      }
+
       // Calculate number of hours in the range
       const hourCount = endH - startH;
       console.log(`Setting availability for ${hourCount} hour(s): ${selectedTimeRange.start} to ${selectedTimeRange.end}`);
@@ -686,11 +705,30 @@ const CounsellorCalendar: React.FC = () => {
                           onChange={(e) => setSelectedTimeRange(prev => ({ ...prev, start: e.target.value }))}
                           className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
                         >
-                          {Array.from({ length: 24 }, (_, i) => (
-                            <option key={i} value={`${i.toString().padStart(2, '0')}:00`}>
-                              {`${i.toString().padStart(2, '0')}:00`}
-                            </option>
-                          ))}
+                          {Array.from({ length: 24 }, (_, i) => {
+                            // Check if this time slot should be disabled for today
+                            const today = new Date();
+                            const selectedToday = selectedDate && selectedDate.toDateString() === today.toDateString();
+                            
+                            let isDisabled = false;
+                            if (selectedToday) {
+                              const currentHour = today.getHours();
+                              const currentMinute = today.getMinutes();
+                              const nextAvailableHour = currentMinute > 0 ? currentHour + 1 : currentHour;
+                              isDisabled = i < nextAvailableHour;
+                            }
+                            
+                            return (
+                              <option 
+                                key={i} 
+                                value={`${i.toString().padStart(2, '0')}:00`}
+                                disabled={isDisabled}
+                                style={isDisabled ? { color: '#9CA3AF' } : {}}
+                              >
+                                {`${i.toString().padStart(2, '0')}:00`} {isDisabled ? '(Past)' : ''}
+                              </option>
+                            );
+                          })}
                         </select>
                         <span className="self-center text-gray-500">to</span>
                         <select
@@ -705,6 +743,26 @@ const CounsellorCalendar: React.FC = () => {
                           ))}
                         </select>
                       </div>
+                      {(() => {
+                        const today = new Date();
+                        const selectedToday = selectedDate && selectedDate.toDateString() === today.toDateString();
+                        
+                        if (selectedToday) {
+                          const currentHour = today.getHours();
+                          const currentMinute = today.getMinutes();
+                          const nextAvailableHour = currentMinute > 0 ? currentHour + 1 : currentHour;
+                          const nextHourFormatted = `${String(nextAvailableHour).padStart(2, '0')}:00`;
+                          
+                          return (
+                            <div className="text-xs text-blue-600 mt-1 flex items-center">
+                              <Clock className="w-3 h-3 mr-1" />
+                              Current time: {today.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}. 
+                              You can set availability from {nextHourFormatted} onwards.
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                       {(() => {
                         const [startH] = selectedTimeRange.start.split(':').map(Number);
                         const [endH] = selectedTimeRange.end.split(':').map(Number);
@@ -774,11 +832,25 @@ const CounsellorCalendar: React.FC = () => {
                           const selectedDateString = formatDateKey(selectedDate);
                           const daySlots = monthlyTimeSlots[selectedDateString] || [];
                           
+                          // Check if this time slot is in the past for today
+                          const today = new Date();
+                          const selectedToday = selectedDate.toDateString() === today.toDateString();
+                          let isPastTime = false;
+                          
+                          if (selectedToday) {
+                            const currentHour = today.getHours();
+                            const currentMinute = today.getMinutes();
+                            const nextAvailableHour = currentMinute > 0 ? currentHour + 1 : currentHour;
+                            isPastTime = i < nextAvailableHour;
+                          }
+                          
                           // Find if this hour has a slot in the database
                           const existingSlot = daySlots.find(slot => slot.time === hourTime);
                           
-                          let status: 'booked' | 'available' | 'unavailable';
-                          if (existingSlot) {
+                          let status: 'booked' | 'available' | 'unavailable' | 'past';
+                          if (isPastTime) {
+                            status = 'past';
+                          } else if (existingSlot) {
                             if (existingSlot.isBooked) {
                               status = 'booked';
                             } else if (existingSlot.isAvailable) {
@@ -795,16 +867,21 @@ const CounsellorCalendar: React.FC = () => {
                             <div
                               key={i}
                               className={`p-2 rounded-md text-xs text-center border ${
-                                status === 'booked'
-                                  ? 'bg-red-100 border-red-200 text-red-700'
-                                  : status === 'available'
-                                    ? 'bg-green-100 border-green-200 text-green-700'
-                                    : 'bg-gray-100 border-gray-200 text-gray-500'
+                                status === 'past'
+                                  ? 'bg-gray-50 border-gray-300 text-gray-400 opacity-60'
+                                  : status === 'booked'
+                                    ? 'bg-red-100 border-red-200 text-red-700'
+                                    : status === 'available'
+                                      ? 'bg-green-100 border-green-200 text-green-700'
+                                      : 'bg-gray-100 border-gray-200 text-gray-500'
                               }`}
+                              title={isPastTime ? 'Past time - cannot modify' : ''}
                             >
                               <div className="font-medium">{hourTime}</div>
                               <div className="flex items-center justify-center mt-1">
-                                {status === 'booked' ? (
+                                {status === 'past' ? (
+                                  <Clock className="w-3 h-3" />
+                                ) : status === 'booked' ? (
                                   <XCircle className="w-3 h-3" />
                                 ) : status === 'available' ? (
                                   <CheckCircle className="w-3 h-3" />
@@ -818,7 +895,7 @@ const CounsellorCalendar: React.FC = () => {
                       </div>
                         
                       <div className="mt-3 text-xs text-gray-500">
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-3 flex-wrap">
                           <div className="flex items-center">
                             <div className="w-3 h-3 bg-green-100 border border-green-200 rounded mr-1"></div>
                             Available
@@ -830,6 +907,10 @@ const CounsellorCalendar: React.FC = () => {
                           <div className="flex items-center">
                             <div className="w-3 h-3 bg-gray-100 border border-gray-200 rounded mr-1"></div>
                             Unavailable
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-gray-50 border border-gray-300 rounded mr-1 opacity-60"></div>
+                            Past Time
                           </div>
                         </div>
                       </div>

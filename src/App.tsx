@@ -1,11 +1,14 @@
 import Home from './pages/Home';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import NotFoundPage from './pages/Error/NotFoundPage';
+import ForbiddenPage from './pages/Error/ForbiddenPage';
 import SignUp from "./pages/Auth/SignUp";
 import SignIn from './pages/Auth/SignIn';
 import GeneralUserSignIn from './pages/Auth/GeneralUserSignIn';
 import CounsellorDashboard from './pages/Counsellor/CounsellorDashboard';
 import ExampleUse from './pages/ExampleUse';
-import CounsellorFeedbacks from './pages/Counsellor/CounsellorFeedbacks';
+// import CounsellorFeedbacks from './pages/Counsellor/CounsellorFeedbacks';
 import CounsellorSessions from './pages/Counsellor/CounsellorSessions';
 import CounsellorSessionDetails from './pages/Counsellor/CounsellorSessionDetails';
 import CounsellorBlogs from './pages/Counsellor/CounsellorBlogs';
@@ -38,20 +41,28 @@ function App() {
         <Route path="/signup" element={<SignUp/>} ></Route>
         <Route path="/signin" element={<SignIn />} />
         <Route path="/general-user-signin" element={<GeneralUserSignIn />} />
-        <Route path="/counsellor-dashboard" element={<CounsellorDashboard />} />
+        <Route path="/counsellor-dashboard" element={
+          <ProtectedRoute>
+            <CounsellorDashboard />
+          </ProtectedRoute>
+        } />
         <Route path="/psychiatrist-dashboard" element={<PsychiatristDashboard />} />
-        <Route path="/counsellor-feedbacks" element={<CounsellorFeedbacks />} />
-        <Route path="/counsellor-blogs" element={<CounsellorBlogs />} />
-        <Route path="/counsellor-sessions" element={<CounsellorSessions />} />
-        <Route path="/counsellor-session-details" element={<CounsellorSessionDetails />} />
-        <Route path="/counsellor/create-blog" element={<CreateBlog />} />
-        <Route path="/counsellor/edit-blog/:blogId" element={<EditBlog />} />
-        <Route path="/counsellor/chats" element={<CounsellorChats />} />
-        <Route path="/counsellor-profile" element={<CounsellorProfile />} />
-        <Route path="/counsellor-calendar" element={<CounsellorCalendar />} />
-        <Route path="/counsellor-clients" element={<CounsellorClients />} />
-        <Route path="/counsellor/earnings" element={<CounsellorEarnings />} />
-        <Route path="/counsellor-clients/:clientId" element={<ClientDetails />} />
+  {/* Counsellor protected routes */}
+  <Route path="/counsellor-blogs" element={<ProtectedRoute><CounsellorBlogs /></ProtectedRoute>} />
+  <Route path="/counsellor-sessions" element={<ProtectedRoute><CounsellorSessions /></ProtectedRoute>} />
+  <Route path="/counsellor-session-details" element={<ProtectedRoute><CounsellorSessionDetails /></ProtectedRoute>} />
+  <Route path="/counsellor/create-blog" element={<ProtectedRoute><CreateBlog /></ProtectedRoute>} />
+  <Route path="/counsellor/edit-blog/:blogId" element={<ProtectedRoute><EditBlog /></ProtectedRoute>} />
+  <Route path="/counsellor/chats" element={<ProtectedRoute><CounsellorChats /></ProtectedRoute>} />
+  <Route path="/counsellor-profile" element={<ProtectedRoute><CounsellorProfile /></ProtectedRoute>} />
+  <Route path="/counsellor-calendar" element={<ProtectedRoute><CounsellorCalendar /></ProtectedRoute>} />
+  <Route path="/counsellor-clients" element={<ProtectedRoute><CounsellorClients /></ProtectedRoute>} />
+  <Route path="/counsellor/earnings" element={<ProtectedRoute><CounsellorEarnings /></ProtectedRoute>} />
+  <Route path="/counsellor-clients/:clientId" element={<ProtectedRoute><ClientDetails /></ProtectedRoute>} />
+
+  {/* Error routes */}
+  <Route path="/forbidden" element={<ForbiddenPage />} />
+  <Route path="*" element={<NotFoundPage />} />
         <Route path="/psychiatrist-chats" element={<PsychiatristChat />} />
         <Route path="/psychiatrist-sessions" element={<PsychiatristSessions />} />
         <Route path="/psychiatrist-session-details" element={<PsychiatristSessionDetails />} />

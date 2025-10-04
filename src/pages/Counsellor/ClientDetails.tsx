@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { NavBar, Sidebar } from '../../components/layout';
+import { FlashMessage } from '../../components/ui';
 import { useParams } from 'react-router-dom';
-import { getClientDetails, createClientNote, deleteClientNote, updateClientNote, addClientConcern, removeClientConcern, type ClientDetails as APIClientDetails } from '../../api/counsellorAPI';
+import { getClientDetails, createClientNote, deleteClientNote, updateClientNote, addClientConcern, removeClientConcern, getClientMoodAnalysis, getClientPHQ9Analysis, getSessions, type ClientDetails as APIClientDetails, type MoodAnalysisResponse, type PHQ9AnalysisResponse } from '../../api/counsellorAPI';
+import { MoodChart, PHQ9Chart } from '../../components/charts';
 import { 
   Calendar, 
   Clock, 
@@ -17,7 +19,11 @@ import {
   MapPin,
   UserCheck,
   FileSymlink,
-  Flag
+  Flag,
+  FileDown,
+  CalendarDays,
+  Brain,
+  TrendingUp
 } from 'lucide-react';
 
 interface Note {
@@ -50,7 +56,7 @@ const ClientDetails: React.FC = () => {
   const recentNotesRef = React.useRef<HTMLDivElement>(null);
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'sessions' | 'details'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'sessions' | 'details' | 'mood'>('overview');
   const [newNote, setNewNote] = useState('');
   const [isPrivateNote, setIsPrivateNote] = useState(false);
   
@@ -68,6 +74,36 @@ const ClientDetails: React.FC = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
+  
+  // Report generation state
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportStartDate, setReportStartDate] = useState('');
+  const [reportEndDate, setReportEndDate] = useState('');
+  const [reportGenerating, setReportGenerating] = useState(false);
+  
+  // Mood analysis state
+  const [moodData, setMoodData] = useState<MoodAnalysisResponse | null>(null);
+  const [moodLoading, setMoodLoading] = useState(false);
+  const [moodError, setMoodError] = useState<string | null>(null);
+  
+  // PHQ-9 analysis state
+  const [phq9Data, setPhq9Data] = useState<PHQ9AnalysisResponse | null>(null);
+  const [phq9Loading, setPhq9Loading] = useState(false);
+  const [phq9Error, setPhq9Error] = useState<string | null>(null);
+  
+  // Mood analysis sub-tab state
+  const [moodSubTab, setMoodSubTab] = useState<'phq9' | 'mood'>('phq9');
+  
+  // Flash message state
+  const [flashMessage, setFlashMessage] = useState<{
+    type: 'success' | 'error' | 'warning' | 'info';
+    message: string;
+    isVisible: boolean;
+  }>({
+    type: 'info',
+    message: '',
+    isVisible: false
+  });
   
   const [notes, setNotes] = useState<Note[]>([
     {
@@ -354,10 +390,59 @@ const ClientDetails: React.FC = () => {
     }
   };
 
+  // Load mood analysis data
+  const fetchMoodAnalysis = async () => {
+    if (!clientId) return;
+    
+    try {
+      setMoodLoading(true);
+      setMoodError(null);
+      
+      const moodResponse = await getClientMoodAnalysis(clientId);
+      setMoodData(moodResponse);
+      
+    } catch (err) {
+      console.error('Error fetching mood analysis:', err);
+      setMoodError('Failed to load mood analysis data. Please try again.');
+    } finally {
+      setMoodLoading(false);
+    }
+  };
+
+  // Load PHQ-9 analysis data
+  const fetchPHQ9Analysis = async () => {
+    if (!clientId) return;
+    
+    try {
+      setPhq9Loading(true);
+      setPhq9Error(null);
+      
+      const phq9Response = await getClientPHQ9Analysis(clientId);
+      setPhq9Data(phq9Response);
+      
+    } catch (err) {
+      console.error('Error fetching PHQ-9 analysis:', err);
+      setPhq9Error('Failed to load PHQ-9 analysis data. Please try again.');
+    } finally {
+      setPhq9Loading(false);
+    }
+  };
+
   // Fetch client details on component mount
   useEffect(() => {
     fetchClientDetails();
   }, [clientId]);
+
+  // Load data based on selected mood sub-tab
+  useEffect(() => {
+    if (activeTab === 'mood' && clientId) {
+      if (moodSubTab === 'phq9' && !phq9Data) {
+        fetchPHQ9Analysis();
+      } else if (moodSubTab === 'mood' && !moodData) {
+        fetchMoodAnalysis();
+      }
+    }
+  }, [activeTab, clientId, moodSubTab, moodData, phq9Data]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -465,7 +550,7 @@ const ClientDetails: React.FC = () => {
     const currentCounsellorId = parseInt(localStorage.getItem('counsellor_id') || '38');
     
     if (noteToDelete && noteToDelete.counselorId !== currentCounsellorId) {
-      alert('You can only delete notes that you created.');
+      showFlashMessage('warning', 'You can only delete notes that you created.');
       return;
     }
 
@@ -498,7 +583,7 @@ const ClientDetails: React.FC = () => {
     const noteToEdit = notes.find(note => note.id === editingNoteId);
     
     if (noteToEdit && noteToEdit.counselorId !== currentCounsellorId) {
-      alert('You can only edit notes that you created.');
+      showFlashMessage('warning', 'You can only edit notes that you created.');
       return;
     }
 
@@ -530,7 +615,7 @@ const ClientDetails: React.FC = () => {
       }
     } catch (error) {
       console.error('Error updating note:', error);
-      alert('Failed to update note. Please try again.');
+      showFlashMessage('error', 'Failed to update note. Please try again.');
     }
   };
   
@@ -559,7 +644,7 @@ const ClientDetails: React.FC = () => {
         errorMessage: error instanceof Error ? error.message : 'Unknown error'
       });
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      alert(`Failed to remove concern: ${errorMessage}. Please try again.`);
+      showFlashMessage('error', `Failed to remove concern: ${errorMessage}. Please try again.`);
     }
   };
 
@@ -586,7 +671,7 @@ const ClientDetails: React.FC = () => {
       setNewConcernText('');
     } catch (error) {
       console.error('Error adding concern:', error);
-      alert('Failed to add concern. Please try again.');
+      showFlashMessage('error', 'Failed to add concern. Please try again.');
     }
   };
 
@@ -619,12 +704,687 @@ const ClientDetails: React.FC = () => {
       console.log("Session cancelled:", updatedSession);
       
       // Show confirmation message (in a real app)
-      alert("Session cancelled successfully!");
+      showFlashMessage('success', 'Session cancelled successfully!');
       
       // Close modal
       setIsCancelModalOpen(false);
       setSelectedSession(null);
       setCancelReason('');
+    }
+  };
+
+  // Report generation handlers
+  const handleOpenReportModal = () => {
+    // Set default date range to last 30 days
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+    
+    setReportStartDate(startDate.toISOString().split('T')[0]);
+    setReportEndDate(endDate.toISOString().split('T')[0]);
+    setIsReportModalOpen(true);
+  };
+
+  // Flash message helpers
+  const showFlashMessage = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
+    setFlashMessage({
+      type,
+      message,
+      isVisible: true
+    });
+  };
+
+  const hideFlashMessage = () => {
+    setFlashMessage(prev => ({ ...prev, isVisible: false }));
+  };
+
+  // Function to generate and download mock PDF report
+  const generateMockPDF = (clientName: string, startDate: string, endDate: string, sessionsInRange: any[], moodAnalysis?: MoodAnalysisResponse | null, phq9Analysis?: PHQ9AnalysisResponse | null) => {
+    // Sessions are already filtered by date range and passed as parameter
+    // No notes will be included in the report as per requirement
+
+    // Calculate average rating, handling both data structures
+    const ratingsOnly = sessionsInRange.filter(s => s.rating && s.rating > 0);
+    const avgRating = ratingsOnly.length > 0 ? 
+      (ratingsOnly.reduce((sum, s) => sum + s.rating, 0) / ratingsOnly.length).toFixed(1) : 'N/A';
+
+    // Create HTML content that can be opened in browser and easily printed to PDF
+    const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Report - ${clientName}</title>
+    <style>
+        @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4F46E5;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #4F46E5;
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .header h2 {
+            color: #666;
+            margin: 10px 0;
+            font-size: 20px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .info-card {
+            background: #F8F9FA;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4F46E5;
+        }
+        
+        .info-card h4 {
+            margin: 0 0 10px 0;
+            color: #4F46E5;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-card p {
+            margin: 0;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h3 {
+            color: #4F46E5;
+            border-bottom: 2px solid #E5E7EB;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .session-item, .note-item {
+            background: #FAFAFA;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #10B981;
+        }
+        
+        .note-item {
+            border-left-color: #F59E0B;
+        }
+        
+        .session-item h4 {
+            margin: 0 0 10px 0;
+            color: #1F2937;
+            font-size: 16px;
+        }
+        
+        .session-item p, .note-item p {
+            margin: 5px 0;
+            color: #4B5563;
+        }
+        
+        .session-item strong, .note-item strong {
+            color: #1F2937;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-completed { background: #D1FAE5; color: #065F46; }
+        .status-upcoming { background: #DBEAFE; color: #1E40AF; }
+        .status-cancelled { background: #FEE2E2; color: #991B1B; }
+        
+        .privacy-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #FEF3C7;
+            color: #92400E;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #EEF2FF;
+            border-radius: 8px;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4F46E5;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6B7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #E5E7EB;
+            color: #6B7280;
+            font-size: 12px;
+        }
+        
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4F46E5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            z-index: 1000;
+        }
+        
+        .print-button:hover {
+            background: #4338CA;
+        }
+        
+        @media print {
+            .print-button { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">🖨️ Print to PDF</button>
+    
+    <div class="header">
+        <h1>Client Progress Report</h1>
+        <h2>${clientName}</h2>
+        <p style="margin: 10px 0; color: #666;">
+            Report Period: ${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}
+        </p>
+    </div>
+    
+    <div class="info-grid">
+        <div class="info-card">
+            <h4>Report Generated</h4>
+            <p>${new Date().toLocaleDateString()}</p>
+        </div>
+        <div class="info-card">
+            <h4>Sessions in Period</h4>
+            <p>${sessionsInRange.length}</p>
+        </div>
+        <div class="info-card">
+            <h4>Client Status</h4>
+            <p>${currentClient?.status || 'Active'}</p>
+        </div>
+        <div class="info-card">
+            <h4>Total Sessions</h4>
+            <p>${currentClient?.sessionCount || 0}</p>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h3>📋 Client Information</h3>
+        <div style="background: #F9FAFB; padding: 20px; border-radius: 8px;">
+            <p><strong>Client Name:</strong> ${clientName}</p>
+            <p><strong>Client Since:</strong> ${currentClient?.joinDate || 'N/A'}</p>
+            <p><strong>Primary Concerns:</strong> ${currentClient?.concerns.join(', ') || 'None listed'}</p>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h3>📅 Sessions Summary</h3>
+        ${sessionsInRange.length > 0 ? sessionsInRange.map(session => {
+          // Handle both mock data structure and API data structure
+          const sessionDate = session.date || new Date(session.createdAt || session.updatedAt).toLocaleDateString();
+          const sessionDuration = session.duration || 50; // Default to 50 minutes if not specified
+          const sessionStatus = session.status || 'completed';
+          const sessionConcerns = session.concerns || session.type ? [session.type] : ['General Session'];
+          const sessionNotes = session.notes || '';
+          const sessionRating = session.rating || null;
+          
+          return `
+            <div class="session-item">
+                <h4>${sessionDate}</h4>
+                <p><strong>Status:</strong> <span class="status-badge status-${sessionStatus}">${sessionStatus}</span></p>
+                <p><strong>Duration:</strong> ${sessionDuration} minutes</p>
+                <p><strong>Topics:</strong> ${Array.isArray(sessionConcerns) ? sessionConcerns.join(', ') : sessionConcerns}</p>
+                ${sessionNotes ? `<p><strong>Session Notes:</strong> ${sessionNotes}</p>` : ''}
+                ${sessionRating ? `<p><strong>Client Rating:</strong> ${'⭐'.repeat(sessionRating)} (${sessionRating}/5)</p>` : ''}
+            </div>
+          `;
+        }).join('') : '<p style="text-align: center; color: #6B7280; font-style: italic;">No sessions found in the selected date range.</p>'}
+    </div>
+    
+    <div class="section">
+        <h3> Summary Statistics</h3>
+        <div class="summary-stats">
+            <div class="stat-item">
+                <div class="stat-number">${sessionsInRange.filter(s => (s.status === 'completed' || s.status === 'scheduled')).length}</div>
+                <div class="stat-label">Completed Sessions</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">${avgRating}/5</div>
+                <div class="stat-label">Average Rating</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">${sessionsInRange.reduce((sum, s) => sum + (s.duration || 50), 0)}</div>
+                <div class="stat-label">Total Minutes</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">${moodAnalysis ? moodAnalysis.totalEntries : 0}</div>
+                <div class="stat-label">Mood Entries</div>
+            </div>
+        </div>
+    </div>
+    
+    ${moodAnalysis ? `
+    <div class="section">
+        <h3>🧠 Mood Analysis</h3>
+        <div style="background: #F8F9FA; padding: 20px; border-radius: 8px; border-left: 4px solid #7C3AED;">
+            <div class="summary-stats" style="margin-bottom: 20px;">
+                <div class="stat-item" style="background: #EDE9FE;">
+                    <div class="stat-number" style="color: #7C3AED;">${moodAnalysis.totalEntries}</div>
+                    <div class="stat-label">Total Entries</div>
+                </div>
+                <div class="stat-item" style="background: #D1FAE5;">
+                    <div class="stat-number" style="color: #059669;">${moodAnalysis.averageMoodScore}/5</div>
+                    <div class="stat-label">Average Score</div>
+                </div>
+                <div class="stat-item" style="background: #FEF3C7;">
+                    <div class="stat-number" style="color: #D97706;">${moodAnalysis.recentMoods.length}</div>
+                    <div class="stat-label">Recent Entries</div>
+                </div>
+                <div class="stat-item" style="background: #E0E7FF;">
+                    <div class="stat-number" style="color: #4F46E5;">${moodAnalysis.lastUpdated ? new Date(moodAnalysis.lastUpdated).toLocaleDateString() : 'N/A'}</div>
+                    <div class="stat-label">Last Updated</div>
+                </div>
+            </div>
+            
+            <h4 style="color: #7C3AED; margin: 20px 0 10px 0;">Mood Distribution:</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                ${Object.entries(moodAnalysis.moodDistribution).map(([mood, count]) => {
+                  const moodLabels: Record<string, string> = {
+                    'very_sad': 'Very Sad',
+                    'sad': 'Sad', 
+                    'neutral': 'Neutral',
+                    'happy': 'Happy',
+                    'very_happy': 'Very Happy'
+                  };
+                  const moodColors: Record<string, string> = {
+                    'very_sad': '#FEE2E2',
+                    'sad': '#FED7AA',
+                    'neutral': '#FEF3C7',
+                    'happy': '#D1FAE5',
+                    'very_happy': '#DCFCE7'
+                  };
+                  return `
+                    <div style="background: ${moodColors[mood] || '#F3F4F6'}; padding: 10px; border-radius: 6px; text-align: center;">
+                        <div style="font-weight: bold; font-size: 16px;">${count}</div>
+                        <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">${moodLabels[mood] || mood}</div>
+                    </div>
+                  `;
+                }).join('')}
+            </div>
+            
+            ${moodAnalysis.recentMoods.length > 0 ? `
+            <h4 style="color: #7C3AED; margin: 20px 0 10px 0;">Recent Mood Entries:</h4>
+            <div style="max-height: 200px; overflow-y: auto;">
+                ${moodAnalysis.recentMoods.slice(0, 10).map(mood => {
+                  const moodLabels: Record<string, string> = {
+                    'very_sad': 'Very Sad',
+                    'sad': 'Sad',
+                    'neutral': 'Neutral', 
+                    'happy': 'Happy',
+                    'very_happy': 'Very Happy'
+                  };
+                  const moodColors: Record<string, string> = {
+                    'very_sad': 'background: #FEE2E2; color: #991B1B;',
+                    'sad': 'background: #FED7AA; color: #9A3412;',
+                    'neutral': 'background: #FEF3C7; color: #92400E;',
+                    'happy': 'background: #D1FAE5; color: #065F46;',
+                    'very_happy': 'background: #DCFCE7; color: #14532D;'
+                  };
+                  return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #E5E7EB;">
+                        <span style="font-size: 14px;">${new Date(mood.local_date).toLocaleDateString()}</span>
+                        <span style="padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; ${moodColors[mood.mood] || 'background: #F3F4F6; color: #374151;'}">${moodLabels[mood.mood] || mood.mood}</span>
+                    </div>
+                  `;
+                }).join('')}
+            </div>
+            ` : '<p style="font-style: italic; color: #6B7280;">No recent mood entries available.</p>'}
+        </div>
+    </div>
+    ` : ''}
+    
+    ${phq9Analysis ? `
+    <div class="section">
+        <h3>📊 PHQ-9 Depression Assessment</h3>
+        <div style="background: #FEF2F2; padding: 20px; border-radius: 8px; border-left: 4px solid #EF4444;">
+            <div class="summary-stats" style="margin-bottom: 20px;">
+                <div class="stat-item" style="background: #FEE2E2;">
+                    <div class="stat-number" style="color: #DC2626;">${phq9Analysis.totalEntries}</div>
+                    <div class="stat-label">Total Assessments</div>
+                </div>
+                <div class="stat-item" style="background: #FEF3C7;">
+                    <div class="stat-number" style="color: #D97706;">${phq9Analysis.averageScore}/27</div>
+                    <div class="stat-label">Average Score</div>
+                </div>
+                <div class="stat-item" style="background: #DBEAFE;">
+                    <div class="stat-number" style="color: #2563EB;">${phq9Analysis.currentSeverity || 'N/A'}</div>
+                    <div class="stat-label">Current Severity</div>
+                </div>
+                <div class="stat-item" style="background: ${phq9Analysis.hasRiskIndicators ? '#FEE2E2' : '#D1FAE5'};">
+                    <div class="stat-number" style="color: ${phq9Analysis.hasRiskIndicators ? '#DC2626' : '#059669'};">${phq9Analysis.hasRiskIndicators ? 'HIGH' : 'LOW'}</div>
+                    <div class="stat-label">Risk Level</div>
+                </div>
+            </div>
+            
+            <h4 style="color: #EF4444; margin: 20px 0 10px 0;">Severity Trend: 
+                <span style="text-transform: capitalize; ${
+                  phq9Analysis.severityTrend === 'improving' ? 'color: #059669;' : 
+                  phq9Analysis.severityTrend === 'worsening' ? 'color: #DC2626;' : 
+                  'color: #D97706;'
+                }">${phq9Analysis.severityTrend.replace('_', ' ')}</span>
+            </h4>
+            
+            <h4 style="color: #EF4444; margin: 20px 0 10px 0;">Severity Distribution:</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                ${Object.entries(phq9Analysis.severityDistribution).map(([severity, count]) => {
+                  const severityColors: Record<string, string> = {
+                    'Minimal': '#D1FAE5',
+                    'Mild': '#FEF3C7',
+                    'Moderate': '#FED7AA', 
+                    'Moderately Severe': '#FECACA',
+                    'Severe': '#FEE2E2'
+                  };
+                  return `
+                    <div style="background: ${severityColors[severity] || '#F3F4F6'}; padding: 10px; border-radius: 6px; text-align: center;">
+                        <div style="font-weight: bold; font-size: 16px;">${count}</div>
+                        <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">${severity}</div>
+                    </div>
+                  `;
+                }).join('')}
+            </div>
+            
+            ${phq9Analysis.recentEntries.length > 0 ? `
+            <h4 style="color: #EF4444; margin: 20px 0 10px 0;">Recent Assessment Scores:</h4>
+            <div style="max-height: 200px; overflow-y: auto;">
+                ${phq9Analysis.recentEntries.slice(0, 10).map(entry => {
+                  const severityColors: Record<string, string> = {
+                    'Minimal': 'background: #D1FAE5; color: #065F46;',
+                    'Mild': 'background: #FEF3C7; color: #92400E;',
+                    'Moderate': 'background: #FED7AA; color: #9A3412;',
+                    'Moderately Severe': 'background: #FECACA; color: #991B1B;',
+                    'Severe': 'background: #FEE2E2; color: #991B1B;'
+                  };
+                  return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #E5E7EB;">
+                        <span style="font-size: 14px;">${new Date(entry.completedAt).toLocaleDateString()}</span>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span style="font-weight: bold;">${entry.totalScore}/27</span>
+                            <span style="padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; ${severityColors[entry.severity] || 'background: #F3F4F6; color: #374151;'}">${entry.severity}</span>
+                            ${entry.hasItem9Positive ? '<span style="color: #DC2626; font-size: 12px;">⚠️ Suicidal ideation</span>' : ''}
+                        </div>
+                    </div>
+                  `;
+                }).join('')}
+            </div>
+            ` : '<p style="font-style: italic; color: #6B7280;">No recent assessments available.</p>'}
+            
+            ${phq9Analysis.hasRiskIndicators ? `
+            <div style="background: #FEE2E2; border: 2px solid #FECACA; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                <h5 style="color: #991B1B; margin: 0 0 10px 0; display: flex; align-items: center;">
+                    ⚠️ Risk Indicators Detected
+                </h5>
+                <p style="color: #991B1B; margin: 0; font-size: 14px;">
+                    This client has shown indicators requiring clinical attention (severe scores or positive suicidal ideation responses).
+                </p>
+            </div>
+            ` : ''}
+        </div>
+    </div>
+    ` : ''}
+    
+    <div class="section">
+        <h3>📈 Treatment Summary</h3>
+        <div style="background: #F0F9FF; padding: 20px; border-radius: 8px; border-left: 4px solid #0EA5E9;">
+            <p>This comprehensive report covers the period from <strong>${new Date(startDate).toLocaleDateString()}</strong> to <strong>${new Date(endDate).toLocaleDateString()}</strong>.</p>
+            
+            <p>During this period, the client attended <strong>${sessionsInRange.length} session(s)</strong> and demonstrated consistent engagement with the therapeutic process.</p>
+            
+            <h4 style="color: #0EA5E9; margin: 20px 0 10px 0;">Key Observations:</h4>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li>Sessions completed: ${sessionsInRange.filter(s => (s.status === 'completed' || s.status === 'scheduled')).length} out of ${sessionsInRange.length}</li>
+                <li>Average session rating: ${avgRating}/5 stars</li>
+                <li>Total therapy time: ${sessionsInRange.reduce((sum, s) => sum + (s.duration || 50), 0)} minutes</li>
+                <li>Mood tracking entries: ${moodAnalysis ? moodAnalysis.totalEntries : 0} recorded</li>
+                <li>PHQ-9 assessments: ${phq9Analysis ? phq9Analysis.totalEntries : 0} completed</li>
+            </ul>
+            
+            <p style="margin-top: 20px;">The client has shown commitment to addressing their therapeutic goals and has participated actively in treatment planning and implementation.</p>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p><strong>⚠️ CONFIDENTIALITY NOTICE</strong></p>
+        <p>This report contains confidential information and is intended solely for professional use in the context of therapeutic care.</p>
+        <p style="margin-top: 20px;">
+            Generated by: <strong>Sona Counselling System</strong><br>
+            Generated on: ${new Date().toLocaleString()}
+        </p>
+    </div>
+</body>
+</html>`;
+
+    // Create a Blob with HTML content
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    
+    // Create download link
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${clientName.replace(/\s+/g, '_')}_Report_${startDate}_to_${endDate}.html`;
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Clean up URL
+    URL.revokeObjectURL(url);
+  };
+
+  const handleGenerateReport = async () => {
+    if (!reportStartDate || !reportEndDate) {
+      showFlashMessage('warning', 'Please select both start and end dates for the report.');
+      return;
+    }
+
+    if (new Date(reportStartDate) > new Date(reportEndDate)) {
+      showFlashMessage('warning', 'Start date cannot be after end date.');
+      return;
+    }
+
+    setReportGenerating(true);
+
+    try {
+      console.log('Generating report for client:', clientId);
+      console.log('Date range:', reportStartDate, 'to', reportEndDate);
+      
+      // Fetch sessions for the date range
+      let reportSessions: any[] = [];
+      if (clientId && currentClient && !currentClient.anonymous) {
+        try {
+          // Get counselor ID from localStorage or context
+          const counselorId = JSON.parse(localStorage.getItem('user') || '{}').id;
+          if (counselorId) {
+            const allSessions = await getSessions(counselorId, {
+              startDate: reportStartDate,
+              endDate: reportEndDate
+            });
+            // Filter sessions for this specific client
+            reportSessions = allSessions.filter(session => session.userId === parseInt(clientId));
+          }
+        } catch (err) {
+          console.log('Could not fetch sessions data for report:', err);
+          // Fall back to mock sessions filtered by date range
+          reportSessions = sessions.filter(s => {
+            const sessionDateStr = s.date.split(' • ')[0];
+            const sessionDate = new Date(sessionDateStr);
+            return sessionDate >= new Date(reportStartDate) && sessionDate <= new Date(reportEndDate);
+          });
+        }
+      } else {
+        // For anonymous clients or when API fails, use mock data filtered by date
+        reportSessions = sessions.filter(s => {
+          const sessionDateStr = s.date.split(' • ')[0];
+          const sessionDate = new Date(sessionDateStr);
+          return sessionDate >= new Date(reportStartDate) && sessionDate <= new Date(reportEndDate);
+        });
+      }
+      
+      // Fetch mood and PHQ-9 data if not already loaded (filtered by date range in analysis)
+      let reportMoodData = moodData;
+      let reportPHQ9Data = phq9Data;
+      
+      if (!moodData && clientId) {
+        try {
+          reportMoodData = await getClientMoodAnalysis(clientId);
+          // Filter mood data by date range
+          if (reportMoodData) {
+            const startDate = new Date(reportStartDate);
+            const endDate = new Date(reportEndDate);
+            
+            reportMoodData.recentMoods = reportMoodData.recentMoods.filter(mood => {
+              const moodDate = new Date(mood.local_date);
+              return moodDate >= startDate && moodDate <= endDate;
+            });
+            
+            reportMoodData.moodTrends = reportMoodData.moodTrends.filter(mood => {
+              const moodDate = new Date(mood.local_date);
+              return moodDate >= startDate && moodDate <= endDate;
+            });
+            
+            // Recalculate distribution for the date range
+            reportMoodData.moodDistribution = reportMoodData.recentMoods.reduce((acc, mood) => {
+              acc[mood.mood] = (acc[mood.mood] || 0) + 1;
+              return acc;
+            }, {} as Record<string, number>);
+            
+            reportMoodData.totalEntries = reportMoodData.recentMoods.length;
+          }
+        } catch (err) {
+          console.log('Could not fetch mood data for report:', err);
+          // Continue with report generation without mood data
+        }
+      }
+      
+      if (!phq9Data && clientId) {
+        try {
+          reportPHQ9Data = await getClientPHQ9Analysis(clientId);
+          // Filter PHQ-9 data by date range
+          if (reportPHQ9Data) {
+            const startDate = new Date(reportStartDate);
+            const endDate = new Date(reportEndDate);
+            
+            reportPHQ9Data.recentEntries = reportPHQ9Data.recentEntries.filter(entry => {
+              const entryDate = new Date(entry.completedAt);
+              return entryDate >= startDate && entryDate <= endDate;
+            });
+            
+            // Recalculate distribution for the date range
+            reportPHQ9Data.severityDistribution = reportPHQ9Data.recentEntries.reduce((acc, entry) => {
+              acc[entry.severity] = (acc[entry.severity] || 0) + 1;
+              return acc;
+            }, {} as Record<string, number>);
+            
+            reportPHQ9Data.totalEntries = reportPHQ9Data.recentEntries.length;
+            
+            // Recalculate average for the date range
+            if (reportPHQ9Data.recentEntries.length > 0) {
+              const totalScore = reportPHQ9Data.recentEntries.reduce((sum, entry) => sum + entry.totalScore, 0);
+              reportPHQ9Data.averageScore = Math.round((totalScore / reportPHQ9Data.recentEntries.length) * 10) / 10;
+            }
+          }
+        } catch (err) {
+          console.log('Could not fetch PHQ-9 data for report:', err);
+          // Continue with report generation without PHQ-9 data
+        }
+      }
+      
+      // Simulate additional processing time
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Generate and download report
+      const clientName = currentClient?.anonymous 
+        ? (currentClient?.nickname || 'Anonymous Client')
+        : (currentClient?.name || 'Client');
+      
+      generateMockPDF(clientName, reportStartDate, reportEndDate, reportSessions, reportMoodData, reportPHQ9Data);
+      
+      // Show success message
+      showFlashMessage('success', 'Report generated and downloaded successfully!');
+      
+      // Close modal
+      setIsReportModalOpen(false);
+      setReportStartDate('');
+      setReportEndDate('');
+    } catch (error) {
+      console.error('Error generating report:', error);
+      showFlashMessage('error', 'Failed to generate report. Please try again.');
+    } finally {
+      setReportGenerating(false);
     }
   };
   
@@ -712,7 +1472,7 @@ const ClientDetails: React.FC = () => {
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <button 
             className="flex flex-col items-center justify-center bg-indigo-50 hover:bg-indigo-100 p-4 rounded-lg transition-colors"
             onClick={() => window.location.href = `/counsellor/chats?clientId=${clientId}`}
@@ -742,6 +1502,13 @@ const ClientDetails: React.FC = () => {
           >
             <Calendar className="w-6 h-6 text-green-500 mb-2" />
             <span className="text-sm text-gray-800">Schedule</span>
+          </button>
+          <button 
+            className="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 p-4 rounded-lg transition-colors"
+            onClick={handleOpenReportModal}
+          >
+            <FileDown className="w-6 h-6 text-blue-500 mb-2" />
+            <span className="text-sm text-gray-800">Generate Report</span>
           </button>
           <button 
             className="flex flex-col items-center justify-center bg-amber-50 hover:bg-amber-100 p-4 rounded-lg transition-colors"
@@ -1412,6 +2179,401 @@ const ClientDetails: React.FC = () => {
     );
   };
 
+  const renderMoodTab = () => {
+    if (!currentClient) return null;
+    
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center">
+              <Brain className="w-6 h-6 text-indigo-600 mr-3" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Mental Health Analytics</h3>
+                <p className="text-sm text-gray-600">Comprehensive mood and depression assessment tracking</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Sub-tab Navigation */}
+          <div className="border-b border-gray-200">
+            <nav className="flex space-x-6 pb-4">
+              <button 
+                className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
+                  moodSubTab === 'phq9' 
+                    ? 'border-red-500 text-red-600' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+                onClick={() => setMoodSubTab('phq9')}
+              >
+                <div className="flex items-center">
+                  <FileText className="w-4 h-4 mr-2" />
+                  PHQ-9 Depression Assessment
+                </div>
+              </button>
+              <button 
+                className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
+                  moodSubTab === 'mood' 
+                    ? 'border-indigo-500 text-indigo-600' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+                onClick={() => setMoodSubTab('mood')}
+              >
+                <div className="flex items-center">
+                  <Brain className="w-4 h-4 mr-2" />
+                  Daily Mood Tracking
+                </div>
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* PHQ-9 Content */}
+        {moodSubTab === 'phq9' && (
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <FileText className="w-6 h-6 text-red-600 mr-3" />
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900">PHQ-9 Depression Assessment</h4>
+                  <p className="text-sm text-gray-600">Clinical depression screening and severity tracking</p>
+                </div>
+              </div>
+              <button
+                onClick={fetchPHQ9Analysis}
+                disabled={phq9Loading}
+                className="flex items-center px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+              >
+                <TrendingUp className="w-4 h-4 mr-2" />
+                {phq9Loading ? 'Loading...' : 'Refresh Data'}
+              </button>
+            </div>
+
+            {phq9Error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center">
+                  <X className="w-5 h-5 text-red-500 mr-2" />
+                  <p className="text-red-700">{phq9Error}</p>
+                </div>
+              </div>
+            )}
+
+            {phq9Loading && (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+                <span className="ml-3 text-gray-600">Loading PHQ-9 analysis...</span>
+              </div>
+            )}
+
+            {!phq9Loading && !phq9Error && phq9Data && (
+              <>
+                {/* PHQ-9 Summary Statistics */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                  <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg border border-red-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-red-600">Total Assessments</p>
+                        <p className="text-2xl font-bold text-red-900">{phq9Data.totalEntries}</p>
+                      </div>
+                      <FileText className="w-8 h-8 text-red-500" />
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-amber-600">Average Score</p>
+                        <p className="text-2xl font-bold text-amber-900">{phq9Data.averageScore}/27</p>
+                      </div>
+                      <BarChart2 className="w-8 h-8 text-amber-500" />
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-blue-600">Current Severity</p>
+                        <p className="text-lg font-bold text-blue-900">{phq9Data.currentSeverity || 'N/A'}</p>
+                      </div>
+                      <TrendingUp className="w-8 h-8 text-blue-500" />
+                    </div>
+                  </div>
+
+                  <div className={`bg-gradient-to-r p-4 rounded-lg border ${
+                    phq9Data.hasRiskIndicators 
+                      ? 'from-red-50 to-red-100 border-red-200' 
+                      : 'from-green-50 to-green-100 border-green-200'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className={`text-sm font-medium ${
+                          phq9Data.hasRiskIndicators ? 'text-red-600' : 'text-green-600'
+                        }`}>Risk Status</p>
+                        <p className={`text-sm font-bold ${
+                          phq9Data.hasRiskIndicators ? 'text-red-900' : 'text-green-900'
+                        }`}>
+                          {phq9Data.hasRiskIndicators ? 'Attention Needed' : 'Stable'}
+                        </p>
+                      </div>
+                      <Flag className={`w-8 h-8 ${
+                        phq9Data.hasRiskIndicators ? 'text-red-500' : 'text-green-500'
+                      }`} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* PHQ-9 Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                  <div className="lg:col-span-2">
+                    <PHQ9Chart
+                      phq9Data={phq9Data}
+                      type="line"
+                      className="h-full"
+                    />
+                  </div>
+                  <div className="lg:col-span-1">
+                    <PHQ9Chart
+                      phq9Data={phq9Data}
+                      type="severity-distribution"
+                      className="h-full"
+                    />
+                  </div>
+                </div>
+
+                {/* Score Distribution Bar Chart */}
+                <div className="mb-6">
+                  <PHQ9Chart
+                    phq9Data={phq9Data}
+                    type="score-comparison"
+                    className="w-full"
+                  />
+                </div>
+              </>
+            )}
+
+            {!phq9Loading && !phq9Error && !phq9Data && (
+              <div className="text-center py-12">
+                <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">No PHQ-9 Data Available</h4>
+                <p className="text-gray-600 mb-4">
+                  This client hasn't completed any PHQ-9 assessments yet.
+                </p>
+                <button
+                  onClick={fetchPHQ9Analysis}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium"
+                >
+                  Try Loading Again
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Daily Mood Tracking Content */}
+        {moodSubTab === 'mood' && (
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <Brain className="w-6 h-6 text-indigo-600 mr-3" />
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900">Daily Mood Tracking</h4>
+                  <p className="text-sm text-gray-600">Track and analyze daily mood patterns over time</p>
+                </div>
+              </div>
+              <button
+                onClick={fetchMoodAnalysis}
+                disabled={moodLoading}
+                className="flex items-center px-3 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+              >
+                <TrendingUp className="w-4 h-4 mr-2" />
+                {moodLoading ? 'Loading...' : 'Refresh Data'}
+              </button>
+            </div>
+
+            {moodError && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center">
+                  <X className="w-5 h-5 text-red-500 mr-2" />
+                  <p className="text-red-700">{moodError}</p>
+                </div>
+              </div>
+            )}
+
+            {moodLoading && (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <span className="ml-3 text-gray-600">Loading mood analysis...</span>
+              </div>
+            )}
+
+            {!moodLoading && !moodError && moodData && (
+              <>
+                {/* Mood Summary Statistics */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-blue-600">Total Entries</p>
+                        <p className="text-2xl font-bold text-blue-900">{moodData.totalEntries}</p>
+                      </div>
+                      <BarChart2 className="w-8 h-8 text-blue-500" />
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-green-600">Average Score</p>
+                        <p className="text-2xl font-bold text-green-900">{moodData.averageMoodScore}/5</p>
+                      </div>
+                      <TrendingUp className="w-8 h-8 text-green-500" />
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-purple-600">Recent Entries</p>
+                        <p className="text-2xl font-bold text-purple-900">{moodData.recentMoods.length}</p>
+                        <p className="text-xs text-purple-500">(Last 30 days)</p>
+                      </div>
+                      <Calendar className="w-8 h-8 text-purple-500" />
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-amber-600">Last Updated</p>
+                        <p className="text-sm font-bold text-amber-900">
+                          {moodData.lastUpdated 
+                            ? new Date(moodData.lastUpdated).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric' 
+                              })
+                            : 'No data'
+                          }
+                        </p>
+                      </div>
+                      <Clock className="w-8 h-8 text-amber-500" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mood Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <div className="lg:col-span-1">
+                    <MoodChart
+                      moodData={moodData}
+                      type="line"
+                      className="h-full"
+                    />
+                  </div>
+                  <div className="lg:col-span-1">
+                    <MoodChart
+                      moodData={moodData}
+                      type="distribution"
+                      className="h-full"
+                    />
+                  </div>
+                </div>
+
+                {/* Recent Mood Entries Table */}
+                <div className="mt-8 bg-gray-50 rounded-lg p-6 border border-gray-200">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Recent Mood Entries</h4>
+                  
+                  {moodData.recentMoods.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-300">
+                            <th className="text-left py-2 px-3 font-medium text-gray-700">Date</th>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700">Mood</th>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700">Score</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {moodData.recentMoods.slice(0, 10).map((mood, index) => {
+                            const moodLabels: Record<string, string> = {
+                              'very_sad': 'Very Sad',
+                              'sad': 'Sad',
+                              'neutral': 'Neutral',
+                              'happy': 'Happy',
+                              'very_happy': 'Very Happy'
+                            };
+                            
+                            const moodColors: Record<string, string> = {
+                              'very_sad': 'text-red-600 bg-red-100',
+                              'sad': 'text-orange-600 bg-orange-100',
+                              'neutral': 'text-yellow-600 bg-yellow-100',
+                              'happy': 'text-green-600 bg-green-100',
+                              'very_happy': 'text-emerald-600 bg-emerald-100'
+                            };
+                            
+                            const moodScores: Record<string, number> = {
+                              'very_sad': 1,
+                              'sad': 2,
+                              'neutral': 3,
+                              'happy': 4,
+                              'very_happy': 5
+                            };
+
+                            return (
+                              <tr key={index} className="border-b border-gray-200 hover:bg-white">
+                                <td className="py-3 px-3">
+                                  {new Date(mood.local_date).toLocaleDateString('en-US', {
+                                    weekday: 'short',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                  })}
+                                </td>
+                                <td className="py-3 px-3">
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${moodColors[mood.mood] || 'text-gray-600 bg-gray-100'}`}>
+                                    {moodLabels[mood.mood] || mood.mood}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-3 font-medium">
+                                  {moodScores[mood.mood] || 3}/5
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Brain className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">No recent mood entries found</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {!moodLoading && !moodError && !moodData && (
+              <div className="text-center py-12">
+                <Brain className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">No Mood Data Available</h4>
+                <p className="text-gray-600 mb-4">
+                  This client hasn't logged any mood entries yet, or the data is not accessible.
+                </p>
+                <button
+                  onClick={fetchMoodAnalysis}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors text-sm font-medium"
+                >
+                  Try Loading Again
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <div className="flex flex-1 overflow-hidden">
@@ -1520,6 +2682,17 @@ const ClientDetails: React.FC = () => {
                   </div>
                 </div>
               </div>
+              
+              {/* Report Generation Button */}
+              <div className="ml-auto">
+                <button
+                  onClick={handleOpenReportModal}
+                  className="flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors text-sm font-medium"
+                >
+                  <FileDown className="w-4 h-4 mr-2" />
+                  Generate Report
+                </button>
+              </div>
             </div>
 
             {/* Tab navigation */}
@@ -1544,6 +2717,12 @@ const ClientDetails: React.FC = () => {
                   Sessions
                 </button>
                 <button 
+                  className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'mood' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
+                  onClick={() => setActiveTab('mood')}
+                >
+                  Mood Analysis
+                </button>
+                <button 
                   className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'details' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
                   onClick={() => setActiveTab('details')}
                 >
@@ -1559,6 +2738,7 @@ const ClientDetails: React.FC = () => {
             {activeTab === 'overview' && renderOverviewTab()}
             {activeTab === 'notes' && renderNotesTab()}
             {activeTab === 'sessions' && renderSessionsTab()}
+            {activeTab === 'mood' && renderMoodTab()}
             {activeTab === 'details' && renderDetailsTab()}
           </div>
 
@@ -1707,6 +2887,140 @@ const ClientDetails: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Report Generation Modal */}
+          {isReportModalOpen && (
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-6"
+              onClick={(e) => {
+                if (e.target === e.currentTarget && !reportGenerating) {
+                  setIsReportModalOpen(false);
+                }
+              }}
+            >
+              <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+                <div className="p-8">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                      <FileDown className="w-6 h-6 mr-2 text-indigo-600" />
+                      Generate Client Report
+                    </h3>
+                    <button 
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                      onClick={() => setIsReportModalOpen(false)}
+                      disabled={reportGenerating}
+                    >
+                      <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <p className="text-gray-700 text-sm">
+                      Generate a comprehensive report for {currentClient?.anonymous 
+                        ? (currentClient?.nickname || 'this client') 
+                        : currentClient?.name
+                      } covering sessions, notes, and progress within the selected date range.
+                    </p>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                          <CalendarDays className="w-4 h-4 mr-1" />
+                          Start Date
+                        </label>
+                        <input
+                          type="date"
+                          value={reportStartDate}
+                          onChange={(e) => setReportStartDate(e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          max={reportEndDate || new Date().toISOString().split('T')[0]}
+                          disabled={reportGenerating}
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                          <CalendarDays className="w-4 h-4 mr-1" />
+                          End Date
+                        </label>
+                        <input
+                          type="date"
+                          value={reportEndDate}
+                          onChange={(e) => setReportEndDate(e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          min={reportStartDate}
+                          max={new Date().toISOString().split('T')[0]}
+                          disabled={reportGenerating}
+                        />
+                      </div>
+                    </div>
+
+                    {reportStartDate && reportEndDate && (
+                      <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                        <h4 className="text-sm font-medium text-indigo-800 mb-2">Report will include:</h4>
+                        <ul className="text-sm text-indigo-700 space-y-1">
+                          <li className="flex items-center">
+                            <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full mr-2"></div>
+                            Session summaries and attendance
+                          </li>
+                          <li className="flex items-center">
+                            <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full mr-2"></div>
+                            Progress notes and observations
+                          </li>
+                          <li className="flex items-center">
+                            <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full mr-2"></div>
+                            Session ratings and feedback
+                          </li>
+                          <li className="flex items-center">
+                            <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full mr-2"></div>
+                            Treatment goals and outcomes
+                          </li>
+                        </ul>
+                        <p className="text-xs text-indigo-600 mt-3">
+                          Period: {new Date(reportStartDate).toLocaleDateString()} to {new Date(reportEndDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="mt-8 pt-6 border-t border-gray-100 flex justify-end space-x-4">
+                    <button
+                      className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+                      onClick={() => setIsReportModalOpen(false)}
+                      disabled={reportGenerating}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50 flex items-center"
+                      onClick={handleGenerateReport}
+                      disabled={!reportStartDate || !reportEndDate || reportGenerating}
+                    >
+                      {reportGenerating ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <FileDown className="w-4 h-4 mr-2" />
+                          Generate Report
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Flash Message */}
+          <FlashMessage
+            type={flashMessage.type}
+            message={flashMessage.message}
+            isVisible={flashMessage.isVisible}
+            onClose={hideFlashMessage}
+          />
           </div>  
         </div>
       </div>

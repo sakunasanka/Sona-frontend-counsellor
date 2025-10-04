@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavBar, Sidebar } from "../../components/layout";
 import type { CounsellorProfile as CounsellorProfileType } from './types';
-import { AVAILABLE_LANGUAGES } from './constants';
 import { useProfileState, useImageHandlers, useLanguageHandlers, useSpecializationHandlers, useCredentialsHandlers, useAchievementHandlers } from './hooks';
 import { getCounsellorProfile, updateCounsellorProfile, type CounsellorProfileData } from '../../api/counsellorAPI';
 import ProfileHeader from './components/ProfileHeader';

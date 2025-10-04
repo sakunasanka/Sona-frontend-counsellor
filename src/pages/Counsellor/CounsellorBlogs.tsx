@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Share2, Eye, MoreHorizontal, Calendar, Edit, Trash2, FileText, PenTool, Search, Filter, ChevronDown } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Eye, MoreHorizontal, Calendar, Edit, Trash2, FileText, PenTool, Search, Filter, ChevronDown, Users, Tag } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
-import { getPosts, getMyPosts } from '../../api/counsellorAPI';
+import { getPosts, getMyPosts, getPostLikeStatus, toggleLikePost, incrementPostView } from '../../api/counsellorAPI';
 
 interface Blog {
   id: string;
@@ -36,6 +36,20 @@ interface BlogCardProps {
 
 const CounsellorBlogs: React.FC = () => {
   const navigate = useNavigate();
+  // Track posts we've already incremented views for in this session
+  const viewedPostsRef = React.useRef<Set<string>>(new Set());
+  // Helper to format large counts like 1.6K, 2.3M
+  const formatCount = (num: number) => {
+    if (num < 1000) return num.toString();
+    const units = ['K', 'M', 'B', 'T'];
+    let unitIndex = -1;
+    let n = num;
+    while (n >= 1000 && unitIndex < units.length - 1) {
+      n /= 1000;
+      unitIndex++;
+    }
+    return `${n.toFixed(1).replace(/\.0$/, '')}${units[unitIndex]}`;
+  };
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +58,7 @@ const CounsellorBlogs: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
-  // Fetch posts from API
+  // Fetch posts from API and enrich with like status
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -56,8 +70,22 @@ const CounsellorBlogs: React.FC = () => {
         } else {
           response = await getPosts();
         }
-        
-        setBlogs(response.data.posts);
+        // Enrich each post with current user's like status and accurate likes count
+        const posts = response.data.posts as Blog[];
+        const enriched = await Promise.all(posts.map(async (p) => {
+          try {
+            const status = await getPostLikeStatus(p.id);
+            return {
+              ...p,
+              liked: status.liked,
+              stats: { ...p.stats, likes: status.likes, views: status.views }
+            } as Blog;
+          } catch (e) {
+            // If status fetch fails, fall back to the original values
+            return p;
+          }
+        }));
+        setBlogs(enriched);
         setError(null);
       } catch (err) {
         console.error('Error fetching posts:', err);
@@ -82,9 +110,68 @@ const CounsellorBlogs: React.FC = () => {
   const BlogCard: React.FC<BlogCardProps> = ({ blog, onLike, onEdit, onDelete, onShare, showStatus = false }) => {
     const [showFullContent, setShowFullContent] = useState(false);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
+    const cardRef = React.useRef<HTMLDivElement | null>(null);
+    const hasIncrementedRef = React.useRef<boolean>(false);
+    const timerRef = React.useRef<number | null>(null);
+
+    // Increment view after 2s of visibility (once per session per post)
+    useEffect(() => {
+      const el = cardRef.current;
+      if (!el) return;
+      if (hasIncrementedRef.current) return;
+      if (viewedPostsRef.current.has(blog.id)) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const isVisible = entry.isIntersecting && entry.intersectionRatio > 0.5;
+          if (isVisible && !hasIncrementedRef.current && !viewedPostsRef.current.has(blog.id)) {
+            if (timerRef.current == null) {
+              timerRef.current = window.setTimeout(async () => {
+                try {
+                  const res = await incrementPostView(blog.id);
+                  hasIncrementedRef.current = true;
+                  viewedPostsRef.current.add(blog.id);
+                  // Update views if backend returns it
+                  if (typeof res.views === 'number') {
+                    setBlogs(prev => prev.map(b => b.id === blog.id ? { ...b, stats: { ...b.stats, views: res.views! } } : b));
+                  } else {
+                    // Otherwise, increment locally once
+                    setBlogs(prev => prev.map(b => b.id === blog.id ? { ...b, stats: { ...b.stats, views: b.stats.views + 1 } } : b));
+                  }
+                } finally {
+                  // Clean up timer and stop observing after first increment
+                  if (timerRef.current != null) {
+                    clearTimeout(timerRef.current);
+                    timerRef.current = null;
+                  }
+                  observer.disconnect();
+                }
+              }, 2000);
+            }
+          } else {
+            // Not visible enough, clear pending timer
+            if (timerRef.current != null) {
+              clearTimeout(timerRef.current);
+              timerRef.current = null;
+            }
+          }
+        },
+        { threshold: [0.5] }
+      );
+
+      observer.observe(el);
+      return () => {
+        if (timerRef.current != null) {
+          clearTimeout(timerRef.current);
+          timerRef.current = null;
+        }
+        observer.disconnect();
+      };
+    }, [blog.id]);
 
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 lg:mb-6 overflow-hidden">
+  <div ref={cardRef} className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 lg:mb-6 overflow-hidden">
         {/* Blog Header */}
         <div className="p-4 md:p-6">
           <div className="flex items-start gap-3 mb-4">
@@ -227,7 +314,7 @@ const CounsellorBlogs: React.FC = () => {
                 } hover:bg-gray-50`}
               >
                 <Heart className={`w-4 h-4 ${blog.liked ? 'fill-current' : ''}`} />
-                {blog.stats.likes}
+                              {formatCount(blog.stats.likes)}
               </button>
               <button 
                 onClick={() => onShare(blog.id)}
@@ -239,7 +326,7 @@ const CounsellorBlogs: React.FC = () => {
             </div>
             <div className="flex items-center gap-1 text-gray-400 text-sm">
               <Eye className="w-4 h-4" />
-              <span>{blog.stats.views} views</span>
+              <span>{formatCount(blog.stats.views)} views</span>
             </div>
           </div>
         </div>
@@ -247,19 +334,43 @@ const CounsellorBlogs: React.FC = () => {
     );
   };
 
-  const handleLike = (blogId: string) => {
-    setBlogs(prev => prev.map(blog => 
-      blog.id === blogId 
-        ? { 
-            ...blog, 
-            liked: !blog.liked,
-            stats: {
-              ...blog.stats,
-              likes: blog.stats.likes + (blog.liked ? -1 : 1)
-            }
+  const handleLike = async (blogId: string) => {
+    // Optimistic update
+    let previousState: Blog | undefined;
+    setBlogs(prev => prev.map(blog => {
+      if (blog.id !== blogId) return blog;
+      previousState = blog;
+      const willLike = !blog.liked;
+      return {
+        ...blog,
+        liked: willLike,
+        stats: {
+          ...blog.stats,
+          likes: blog.stats.likes + (willLike ? 1 : -1)
+        }
+      };
+    }));
+
+    try {
+      // Use toggle endpoint; then sync both liked and likes from server if provided
+      const res = await toggleLikePost(blogId);
+      setBlogs(prev => prev.map(b => {
+        if (b.id !== blogId) return b;
+        return {
+          ...b,
+          liked: typeof res.liked === 'boolean' ? res.liked : b.liked,
+          stats: {
+            ...b.stats,
+            likes: typeof res.likes === 'number' ? res.likes : b.stats.likes,
+            views: typeof res.views === 'number' ? res.views : b.stats.views
           }
-        : blog
-    ));
+        };
+      }));
+    } catch (err) {
+      console.error('Like/unlike failed, reverting:', err);
+      // Revert on error
+      setBlogs(prev => prev.map(blog => previousState && blog.id === blogId ? previousState! : blog));
+    }
   };
 
   const handleEdit = (blogId: string) => {
@@ -316,6 +427,24 @@ const CounsellorBlogs: React.FC = () => {
   const totalViews = postsForStats.reduce((sum, blog) => sum + blog.stats.views, 0);
   const totalLikes = postsForStats.reduce((sum, blog) => sum + blog.stats.likes, 0);
 
+  // Additional metrics for All Posts tab
+  const uniqueAuthorsCount = new Set((activeFilter === 'all' ? postsForStats : []).map(b => b.author.name)).size;
+  const topHashtags = (() => {
+    if (activeFilter !== 'all') return [] as string[];
+    const freq: Record<string, number> = {};
+    for (const b of postsForStats) {
+      for (const tag of (b.hashtags || [])) {
+        const key = tag.trim();
+        if (!key) continue;
+        freq[key] = (freq[key] || 0) + 1;
+      }
+    }
+    return Object.entries(freq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([tag]) => tag);
+  })();
+
   return (
     <div className="flex flex-col h-screen">
       <div className="flex flex-1 overflow-hidden">
@@ -347,6 +476,7 @@ const CounsellorBlogs: React.FC = () => {
 
             {/* Stats Cards - Desktop Only */}
             <div className="hidden lg:grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {/* Total Posts - shown on both tabs */}
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-secondary/30 rounded-xl flex items-center justify-center">
@@ -354,34 +484,74 @@ const CounsellorBlogs: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-gray-900">{postsForStats.length}</p>
-                    <p className="text-gray-600 text-sm">
-                      {activeFilter === 'all' ? 'Total Posts' : 'Total Posts'}
-                    </p>
+                    <p className="text-gray-600 text-sm">Total Posts</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-orange-100/30 rounded-xl flex items-center justify-center">
-                    <Eye className="w-6 h-6 text-orange-700" />
+
+              {activeFilter === 'my-posts' ? (
+                <>
+                  {/* Total Views - only for My Posts */}
+                  <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-orange-100/30 rounded-xl flex items-center justify-center">
+                        <Eye className="w-6 h-6 text-orange-700" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-gray-900">{totalViews}</p>
+                        <p className="text-gray-600 text-sm">Total Views</p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">{totalViews}</p>
-                    <p className="text-gray-600 text-sm">Total Views</p>
+                  {/* Total Likes - only for My Posts */}
+                  <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-primary/30 rounded-xl flex items-center justify-center">
+                        <Heart className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-gray-900">{totalLikes}</p>
+                        <p className="text-gray-600 text-sm">Total Likes</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/30 rounded-xl flex items-center justify-center">
-                    <Heart className="w-6 h-6 text-primary" />
+                </>
+              ) : (
+                <>
+                  {/* Unique Authors - All Posts */}
+                  <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                        <Users className="w-6 h-6 text-green-700" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-gray-900">{uniqueAuthorsCount}</p>
+                        <p className="text-gray-600 text-sm">Unique Authors</p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">{totalLikes}</p>
-                    <p className="text-gray-600 text-sm">Total Likes</p>
+                  {/* Top Hashtags - All Posts */}
+                  <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                        <Tag className="w-6 h-6 text-purple-700" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-600 mb-1">Top Hashtags</p>
+                        {topHashtags.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {topHashtags.map((t) => (
+                              <span key={t} className="px-2 py-1 bg-purple-50 text-purple-700 rounded-full text-xs">{t}</span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-sm">No hashtags yet</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </>
+              )}
             </div>
 
             {/* Filter Tabs - All Devices */}

@@ -223,15 +223,7 @@ const CounsellorDashboard = () => {
     }
   };
 
-  const formatTime = (timeString: string) => {
-    if (!timeString) return '';
-    const date = new Date(timeString);
-    return date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
-    });
-  };
+  // Note: session.timeSlot already contains the formatted time string from backend
 
   // Quick actions data
   const quickActions = [
@@ -336,6 +328,13 @@ const CounsellorDashboard = () => {
                     </h1>
                     <p className="text-gray-600">Here's what's happening with your practice today.</p>
                   </div>
+                  <button
+                    onClick={() => navigate("/counsellor-calendar")}
+                    className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-2 transition-colors"
+                  >
+                    View Calendar
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
               

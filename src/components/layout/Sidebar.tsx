@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, DollarSign, LogOut } from 'lucide-react';
+import { ArrowLeft, Home, Calendar, Users, MessageCircle, FileText, DollarSign, LogOut } from 'lucide-react';
 import { Button } from '../ui';
 
 interface SidebarProps {
@@ -27,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { icon: Calendar, label: 'Sessions', href: '/counsellor-sessions', id: 'sessions' },
     { icon: Users, label: 'Clients', href: '/counsellor-clients', id: 'clients' },
     { icon: DollarSign, label: 'Earnings', href: '/counsellor/earnings', id: 'earnings' },
-    { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks', id: 'feedbacks' },
+    // { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks', id: 'feedbacks' },
     { icon: MessageCircle, label: 'Chats', href: '/counsellor/chats', id: 'chats' },
     { icon: FileText, label: 'Blogs', href: '/counsellor-blogs', id: 'blogs' },
   ];
