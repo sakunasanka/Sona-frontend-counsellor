@@ -396,6 +396,90 @@ export const updateClientNote = async (clientId: string, noteId: number, noteDat
 };
 
 /**
+ * Add a concern to a client
+ */
+export const addClientConcern = async (clientId: string, concern: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ message: string }> = await apiClient.post(`/counsellor/clients/${clientId}/concerns`, { concern }, token, true);
+    
+    console.log('Add client concern response:', response);
+    
+    if (response.success) {
+      return {
+        success: true,
+        message: response.data?.message || 'Concern added successfully'
+      };
+    }
+    
+    throw new Error('Failed to add client concern');
+  } catch (error) {
+    console.error('Add client concern error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Remove a concern from a client
+ */
+export const removeClientConcern = async (clientId: string, concern: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    console.log('Removing concern:', { clientId, concern, endpoint: `/counsellor/clients/${clientId}/concerns` });
+
+    // Try using axios directly to ensure DELETE with body works
+    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+    const fullUrl = `${baseURL}/counsellor/clients/${clientId}/concerns`;
+    
+    console.log('Making DELETE request to:', fullUrl, 'with data:', { concern });
+    
+    const response = await fetch(fullUrl, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ concern })
+    });
+
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    const responseData = await response.json();
+    console.log('Remove client concern response:', responseData);
+    
+    return {
+      success: true,
+      message: responseData?.message || 'Concern removed successfully'
+    };
+  } catch (error) {
+    console.error('Remove client concern error:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      clientId,
+      concern,
+      endpoint: `/counsellor/clients/${clientId}/concerns`
+    });
+    throw error;
+  }
+};
+
+/**
  * Get counsellor's blogs
  */
 export const getBlogs = async (params?: { 

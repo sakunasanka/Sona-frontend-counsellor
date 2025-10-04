@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavBar, Sidebar } from '../../components/layout';
 import { useParams } from 'react-router-dom';
-import { getClientDetails, createClientNote, deleteClientNote, updateClientNote, type ClientDetails as APIClientDetails } from '../../api/counsellorAPI';
+import { getClientDetails, createClientNote, deleteClientNote, updateClientNote, addClientConcern, removeClientConcern, type ClientDetails as APIClientDetails } from '../../api/counsellorAPI';
 import { 
   Calendar, 
   Clock, 
@@ -58,6 +58,10 @@ const ClientDetails: React.FC = () => {
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState('');
   const [editingPrivacy, setEditingPrivacy] = useState(false);
+  
+  // Add concern state
+  const [isAddingConcern, setIsAddingConcern] = useState(false);
+  const [newConcernText, setNewConcernText] = useState('');
   
   // Session modals state
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
@@ -284,7 +288,12 @@ const ClientDetails: React.FC = () => {
       const response = await getClientDetails(clientId);
       
       if (response.success && response.data) {
+        console.log('Client details API response:', response.data);
+        console.log('Client concerns from API:', response.data.concerns);
+        
         const transformedClient = transformApiClient(response.data);
+        console.log('Transformed client concerns:', transformedClient.concerns);
+        
         setCurrentClient(transformedClient);
         
         // Transform API notes to component format and apply privacy filtering
@@ -525,17 +534,65 @@ const ClientDetails: React.FC = () => {
     }
   };
   
-  const handleRemoveConcern = (index: number) => {
+  const handleRemoveConcern = async (index: number) => {
     if (!currentClient) return;
     
-    const updatedConcerns = [...currentClient.concerns];
-    updatedConcerns.splice(index, 1);
+    const concernToRemove = currentClient.concerns[index];
     
-    // In a real app, you would update this on the backend as well
-    setCurrentClient({
-      ...currentClient,
-      concerns: updatedConcerns
-    });
+    try {
+      // Remove concern from backend first
+      await removeClientConcern(clientId, concernToRemove);
+      
+      // Update local state only if backend update succeeds
+      const updatedConcerns = [...currentClient.concerns];
+      updatedConcerns.splice(index, 1);
+      setCurrentClient({
+        ...currentClient,
+        concerns: updatedConcerns
+      });
+    } catch (error) {
+      console.error('Error removing concern:', error);
+      console.error('Error removing concern details:', { 
+        clientId, 
+        concernToRemove, 
+        index, 
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Failed to remove concern: ${errorMessage}. Please try again.`);
+    }
+  };
+
+  const handleAddConcern = () => {
+    setIsAddingConcern(true);
+  };
+
+  const handleSaveConcern = async () => {
+    if (!newConcernText.trim() || !currentClient) return;
+
+    try {
+      // Add concern to backend first
+      await addClientConcern(clientId, newConcernText.trim());
+      
+      // Update local state only if backend update succeeds
+      const updatedConcerns = [...currentClient.concerns, newConcernText.trim()];
+      setCurrentClient({
+        ...currentClient,
+        concerns: updatedConcerns
+      });
+
+      // Reset add concern state
+      setIsAddingConcern(false);
+      setNewConcernText('');
+    } catch (error) {
+      console.error('Error adding concern:', error);
+      alert('Failed to add concern. Please try again.');
+    }
+  };
+
+  const handleCancelAddConcern = () => {
+    setIsAddingConcern(false);
+    setNewConcernText('');
   };
 
   // Session handlers
@@ -786,10 +843,47 @@ const ClientDetails: React.FC = () => {
             </div>
           ))}
           
-          <button className="bg-gray-50 hover:bg-gray-100 text-gray-600 px-3 py-2 rounded-lg border border-dashed border-gray-300 flex items-center">
-            <span className="text-lg mr-1">+</span>
-            <span>Add Concern</span>
-          </button>
+          {isAddingConcern ? (
+            <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg p-2">
+              <input
+                type="text"
+                value={newConcernText}
+                onChange={(e) => setNewConcernText(e.target.value)}
+                placeholder="Enter new concern..."
+                className="border-none outline-none bg-transparent flex-1"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSaveConcern();
+                  } else if (e.key === 'Escape') {
+                    handleCancelAddConcern();
+                  }
+                }}
+                autoFocus
+              />
+              <button
+                onClick={handleSaveConcern}
+                className="text-green-600 hover:text-green-800 p-1"
+                title="Save concern"
+              >
+                ✓
+              </button>
+              <button
+                onClick={handleCancelAddConcern}
+                className="text-red-600 hover:text-red-800 p-1"
+                title="Cancel"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={handleAddConcern}
+              className="bg-gray-50 hover:bg-gray-100 text-gray-600 px-3 py-2 rounded-lg border border-dashed border-gray-300 flex items-center"
+            >
+              <span className="text-lg mr-1">+</span>
+              <span>Add Concern</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -111,8 +111,8 @@ export class ApiBase {
         }
       }
 
-      // Add data for POST, PUT, PATCH requests
-      if ([HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH].includes(config.method)) {
+      // Add data for POST, PUT, PATCH, DELETE requests
+      if ([HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH, HttpMethod.DELETE].includes(config.method)) {
         requestConfig.data = config.data;
       }
 
