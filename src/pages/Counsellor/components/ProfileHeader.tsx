@@ -6,15 +6,9 @@ interface ProfileHeaderProps {
   profile: CounsellorProfile;
   editForm: Partial<CounsellorProfile>;
   isEditing: boolean;
-  showCoverImageOptions: boolean;
-  showProfileImageOptions: boolean;
-  setShowCoverImageOptions: (show: boolean) => void;
-  setShowProfileImageOptions: (show: boolean) => void;
   onEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
-  onCoverImageChange: (image: string) => void;
-  onProfileImageChange: (image: string) => void;
   onCoverImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onProfileImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   isSaving?: boolean;
@@ -27,15 +21,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   profile,
   editForm,
   isEditing,
-  showCoverImageOptions,
-  showProfileImageOptions,
-  setShowCoverImageOptions,
-  setShowProfileImageOptions,
   onEdit,
   onSave,
   onCancel,
-  onCoverImageChange,
-  onProfileImageChange,
   onCoverImageUpload,
   onProfileImageUpload,
   isSaving = false,
@@ -43,16 +31,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   uploadError = null,
   setUploadError
 }) => {
-  const availableCoverImages = [
-    "/assets/images/bg-trans.jpeg",
-    "/assets/images/bg-trans.jpg",
-  ];
-
-  const availableProfileImages = [
-    "/assets/images/profile-photo.png",
-    "/assets/images/student-photo.png",
-    "/assets/images/patient-photo.png",
-  ];
 
   return (
     <div className="relative mb-6">
@@ -64,81 +42,41 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           className="w-full h-full object-cover"
         />
         {isEditing && (
-          <button 
-            onClick={() => setShowCoverImageOptions(!showCoverImageOptions)}
-            className="absolute bottom-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors cover-image-button"
+          <label 
+            htmlFor="cover-image-upload"
+            className={`absolute bottom-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            <Camera className="w-5 h-5" />
-          </button>
+            {uploading ? (
+              <div className="w-5 h-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              <Camera className="w-5 h-5" />
+            )}
+          </label>
         )}
       </div>
       
-      {/* Cover Image Selection Dropdown */}
-      {isEditing && showCoverImageOptions && (
-        <div className="fixed top-32 md:top-44 right-6 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-50 w-64 cover-image-dropdown">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-gray-700">Choose Cover Image</h4>
-            <button 
-              onClick={() => setShowCoverImageOptions(false)}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          
-          {/* Upload from device option */}
-          <div className="mb-3">
-            <label className="block">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={onCoverImageUpload}
-                className="hidden"
-                disabled={uploading}
-              />
-              <div className={`border-2 border-dashed border-pink-300 rounded-lg p-3 text-center cursor-pointer hover:border-pink-500 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                {uploading ? (
-                  <div className="w-6 h-6 mx-auto mb-1 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
-                ) : (
-                  <Camera className="w-6 h-6 mx-auto mb-1 text-pink-500" />
-                )}
-                <p className="text-xs text-gray-600">
-                  {uploading ? 'Uploading...' : 'Upload from device'}
-                </p>
-              </div>
-            </label>
-          </div>
+      {/* Cover Image Upload */}
+      {isEditing && (
+        <input
+          type="file"
+          accept="image/*"
+          onChange={onCoverImageUpload}
+          className="hidden"
+          disabled={uploading}
+          id="cover-image-upload"
+        />
+      )}
 
-          {/* Upload error message */}
-          {uploadError && (
-            <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">
-              {uploadError}
-              <button
-                onClick={() => setUploadError?.(null)}
-                className="ml-2 text-red-400 hover:text-red-600"
-              >
-                ×
-              </button>
-            </div>
-          )}
-
-          {/* Predefined options */}
-          <p className="text-xs text-gray-500 mb-2">Or choose from options:</p>
-          <div className="grid grid-cols-2 gap-2">
-            {availableCoverImages.map((image, index) => (
-              <button
-                key={index}
-                onClick={() => onCoverImageChange(image)}
-                className="relative h-16 w-20 rounded overflow-hidden border-2 border-transparent hover:border-pink-500 transition-colors"
-              >
-                <img 
-                  src={image} 
-                  alt={`Cover option ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            ))}
-          </div>
+      {/* Upload error message for cover image */}
+      {isEditing && uploadError && (
+        <div className="absolute top-16 right-4 bg-red-50 border border-red-200 rounded p-2 text-xs text-red-600 shadow-lg z-50">
+          {uploadError}
+          <button
+            onClick={() => setUploadError?.(null)}
+            className="ml-2 text-red-400 hover:text-red-600"
+          >
+            ×
+          </button>
         </div>
       )}
 
@@ -153,81 +91,38 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             />
           </div>
           {isEditing && (
-            <button 
-              onClick={() => setShowProfileImageOptions(!showProfileImageOptions)}
-              className="absolute bottom-2 right-2 bg-slate-400 hover:bg-primary text-white p-2 rounded-full transition-colors shadow-lg profile-image-button"
-            >
-              <Camera className="w-4 h-4" />
-            </button>
+            <>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={onProfileImageUpload}
+                className="hidden"
+                disabled={uploading}
+                id="profile-image-upload"
+              />
+              <label 
+                htmlFor="profile-image-upload"
+                className={`absolute bottom-2 right-2 bg-slate-400 hover:bg-primary text-white p-2 rounded-full transition-colors shadow-lg cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {uploading ? (
+                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  <Camera className="w-4 h-4" />
+                )}
+              </label>
+            </>
           )}
           
-          {/* Profile Image Selection Dropdown */}
-          {isEditing && showProfileImageOptions && (
-            <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-50 w-72 profile-image-dropdown">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-medium text-gray-700">Choose Profile Image</h4>
-                <button 
-                  onClick={() => setShowProfileImageOptions(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              
-              {/* Upload from device option */}
-              <div className="mb-4">
-                <label className="block">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={onProfileImageUpload}
-                    className="hidden"
-                    disabled={uploading}
-                  />
-                  <div className={`border-2 border-dashed border-pink-300 rounded-lg p-4 text-center cursor-pointer hover:border-pink-500 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                    {uploading ? (
-                      <div className="w-8 h-8 mx-auto mb-2 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
-                    ) : (
-                      <Camera className="w-8 h-8 mx-auto mb-2 text-pink-500" />
-                    )}
-                    <p className="text-sm text-gray-600 font-medium">
-                      {uploading ? 'Uploading...' : 'Upload from device'}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">JPG, PNG up to 5MB</p>
-                  </div>
-                </label>
-              </div>
-
-              {/* Upload error message */}
-              {uploadError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-600">
-                  {uploadError}
-                  <button
-                    onClick={() => setUploadError?.(null)}
-                    className="ml-2 text-red-400 hover:text-red-600"
-                  >
-                    ×
-                  </button>
-                </div>
-              )}
-
-              {/* Predefined options */}
-              <p className="text-sm text-gray-600 font-medium mb-3">Or choose from options:</p>
-              <div className="grid grid-cols-3 gap-3">
-                {availableProfileImages.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => onProfileImageChange(image)}
-                    className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-transparent hover:border-pink-500 transition-colors"
-                  >
-                    <img 
-                      src={image} 
-                      alt={`Profile option ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
+          {/* Profile Image Upload Error */}
+          {isEditing && uploadError && (
+            <div className="absolute top-full left-0 mt-2 bg-red-50 border border-red-200 rounded p-2 text-xs text-red-600 shadow-lg z-50 w-64">
+              {uploadError}
+              <button
+                onClick={() => setUploadError?.(null)}
+                className="ml-2 text-red-400 hover:text-red-600"
+              >
+                ×
+              </button>
             </div>
           )}
         </div>

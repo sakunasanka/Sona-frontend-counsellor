@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavBar, Sidebar } from "../../components/layout";
 import type { CounsellorProfile as CounsellorProfileType } from './types';
+import { useProfile } from '../../contexts/ProfileContext';
 import { useProfileState, useImageHandlers, useLanguageHandlers, useSpecializationHandlers, useCredentialsHandlers, useAchievementHandlers } from './hooks';
 import { getCounsellorProfile, updateCounsellorProfile, type CounsellorProfileData } from '../../api/counsellorAPI';
 import ProfileHeader from './components/ProfileHeader';
@@ -18,6 +19,7 @@ const CounsellorProfile: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { refreshProfile } = useProfile();
 
   // Convert API data to component format
   const convertApiDataToProfile = (apiData: CounsellorProfileData): CounsellorProfileType => {
@@ -49,8 +51,6 @@ const CounsellorProfile: React.FC = () => {
       totalReviews: apiData.totalReviews || 0,
       totalSessions: apiData.totalSessions || 0,
       totalClients: apiData.totalClients || 0,
-      status: apiData.status === 'away' ? 'offline' : (apiData.status || 'available'),
-      lastActiveAt: apiData.lastActiveAt || new Date().toISOString(),
       socialLinks: apiData.socialLinks || { instagram: '', linkedin: '', x: '' },
       credentials: apiData.credentials || [],
       achievements: apiData.achievements || []
@@ -97,8 +97,6 @@ const CounsellorProfile: React.FC = () => {
     totalReviews: 0,
     totalSessions: 0,
     totalClients: 0,
-    status: 'available',
-    lastActiveAt: new Date().toISOString(),
     socialLinks: {
       instagram: "",
       linkedin: "",
@@ -262,6 +260,8 @@ const CounsellorProfile: React.FC = () => {
         
         if (result.success) {
           console.log('Profile updated successfully!');
+          // Refresh the profile context so navbar gets updated image
+          refreshProfile();
         }
         
       } catch (err: any) {
@@ -278,9 +278,7 @@ const CounsellorProfile: React.FC = () => {
   // Use custom hooks for state management
   const profileState = useProfileState(currentProfile);
   const imageHandlers = useImageHandlers(
-    profileState.setEditForm,
-    profileState.setShowCoverImageOptions,
-    profileState.setShowProfileImageOptions
+    profileState.setEditForm
   );
   const languageHandlers = useLanguageHandlers(
     profileState.editingLanguages,
@@ -313,21 +311,7 @@ const CounsellorProfile: React.FC = () => {
     profileState.setShowAddAchievement
   );
 
-  // Close image selection dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (profileState.showCoverImageOptions && !target.closest('.cover-image-dropdown') && !target.closest('.cover-image-button')) {
-        profileState.setShowCoverImageOptions(false);
-      }
-      if (profileState.showProfileImageOptions && !target.closest('.profile-image-dropdown') && !target.closest('.profile-image-button')) {
-        profileState.setShowProfileImageOptions(false);
-      }
-    };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [profileState.showCoverImageOptions, profileState.showProfileImageOptions]);
 
   const toggleSidebar = (): void => {
     setSidebarOpen(!sidebarOpen);
@@ -420,15 +404,9 @@ const CounsellorProfile: React.FC = () => {
                 profile={profileState.profile}
                 editForm={profileState.editForm}
                 isEditing={profileState.isEditing}
-                showCoverImageOptions={profileState.showCoverImageOptions}
-                showProfileImageOptions={profileState.showProfileImageOptions}
-                setShowCoverImageOptions={profileState.setShowCoverImageOptions}
-                setShowProfileImageOptions={profileState.setShowProfileImageOptions}
                 onEdit={profileState.handleEdit}
                 onSave={handleProfileSave}
                 onCancel={profileState.handleCancel}
-                onCoverImageChange={imageHandlers.handleCoverImageChange}
-                onProfileImageChange={imageHandlers.handleProfileImageChange}
                 onCoverImageUpload={imageHandlers.handleCoverImageUpload}
                 onProfileImageUpload={imageHandlers.handleProfileImageUpload}
                 isSaving={saving}
@@ -442,7 +420,6 @@ const CounsellorProfile: React.FC = () => {
                 editForm={profileState.editForm}
                 isEditing={profileState.isEditing}
                 onInputChange={profileState.handleInputChange}
-                onStatusChange={profileState.handleStatusChange}
               />
               
               <ProfileStats

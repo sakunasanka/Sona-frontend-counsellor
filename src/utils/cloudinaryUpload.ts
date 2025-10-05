@@ -1,4 +1,4 @@
-// Cloudinary upload utility for profile images
+// Cloudinary upload utility for images
 export interface CloudinaryResponse {
   secure_url: string;
   public_id: string;
@@ -8,7 +8,9 @@ export interface CloudinaryResponse {
   bytes: number;
 }
 
-export const uploadToCloudinary = async (file: File): Promise<string> => {
+export type ImageType = 'profile' | 'cover' | 'blog';
+
+export const uploadToCloudinary = async (file: File, imageType: ImageType = 'profile'): Promise<string> => {
   try {
     // Validate file
     if (!file) {
@@ -41,18 +43,29 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
       fileType: file.type
     });
 
-    return await uploadUnsigned(file, cloudName);
+    return await uploadUnsigned(file, cloudName, imageType);
   } catch (error) {
     console.error('Cloudinary upload error:', error);
     throw error instanceof Error ? error : new Error('Upload failed');
   }
 };
 
-// Fallback unsigned upload function
-const uploadUnsigned = async (file: File, cloudName: string): Promise<string> => {
+// Unsigned upload function with support for different image types
+const uploadUnsigned = async (file: File, cloudName: string, imageType: ImageType): Promise<string> => {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', 'counsellor_unsigned'); // Use the preset you create in dashboard
+  
+  // Use different upload presets for different image types
+  let uploadPreset = 'counsellor_unsigned'; // default
+  if (imageType === 'cover') {
+    uploadPreset = 'cover_pic';
+  } else if (imageType === 'blog') {
+    uploadPreset = 'blog_posts';
+  }
+  
+  formData.append('upload_preset', uploadPreset);
+  
+  console.log(`Uploading ${imageType} image with preset: ${uploadPreset}`);
   
   const response = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -67,7 +80,7 @@ const uploadUnsigned = async (file: File, cloudName: string): Promise<string> =>
     console.error('Cloudinary detailed error:', errorData);
     
     if (errorData.error?.message?.includes('Upload preset')) {
-      throw new Error(`Upload preset 'upload_preset' not found. Please create an unsigned preset named 'counsellor_unsigned' in your Cloudinary dashboard: Settings > Upload > Upload Presets > Add upload preset > Set Mode to 'Unsigned'`);
+      throw new Error(`Upload preset '${uploadPreset}' not found. Please create unsigned presets named 'counsellor_unsigned', 'cover_pic', and 'blog_posts' in your Cloudinary dashboard: Settings > Upload > Upload Presets > Add upload preset > Set Mode to 'Unsigned'`);
     }
     
     throw new Error(errorData.error?.message || 'Upload failed');
@@ -98,4 +111,17 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
   }
 
   return { valid: true };
+};
+
+// Specific functions for different image types
+export const uploadProfileImage = async (file: File): Promise<string> => {
+  return uploadToCloudinary(file, 'profile');
+};
+
+export const uploadCoverImage = async (file: File): Promise<string> => {
+  return uploadToCloudinary(file, 'cover');
+};
+
+export const uploadBlogImage = async (file: File): Promise<string> => {
+  return uploadToCloudinary(file, 'blog');
 };

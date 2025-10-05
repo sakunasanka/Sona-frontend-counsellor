@@ -1,4 +1,3 @@
-export { default as StatusIndicator } from './StatusIndicator';
 export { default as ProfileStats } from './ProfileStats';
 export { default as TabNavigation } from './TabNavigation';
 export { default as ProfileHeader } from './ProfileHeader';

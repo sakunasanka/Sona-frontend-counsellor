@@ -163,7 +163,6 @@ export interface ClientsResponse {
 
 export interface Blog {
   id: string;
-  title: string;
   content: string;
   excerpt: string;
   publishedDate: string;
@@ -1027,6 +1026,9 @@ export interface Post {
   stats: PostStats;
   backgroundColor: string;
   liked: boolean;
+  image?: string | null;
+  isAnonymous: boolean;
+  status?: 'pending' | 'approved' | 'rejected';
 }
 
 export interface PostsResponse {
@@ -1088,12 +1090,37 @@ export const getMyPosts = async (params?: {
   }
 };
 
+/**
+ * Get a single post by ID
+ */
+export const getPost = async (postId: string): Promise<Post> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: Post }> = await apiClient.get(`/posts/${postId}`, undefined, token, true);
+    
+    if (response.success && response.data) {
+      // Handle nested or direct response structure
+      return response.data.data || response.data;
+    }
+    
+    throw new Error('Failed to fetch post');
+  } catch (error) {
+    console.error('Get post error:', error);
+    throw error;
+  }
+};
+
 // Post creation and update interfaces
 export interface CreatePostData {
   content: string;
   hashtags: string[];
   backgroundColor?: string;
   image?: string;
+  isAnonymous?: boolean;
 }
 
 export interface UpdatePostData {
@@ -1101,6 +1128,7 @@ export interface UpdatePostData {
   hashtags: string[];
   backgroundColor?: string;
   image?: string;
+  isAnonymous?: boolean;
 }
 
 export interface CreatePostResponse {
@@ -1169,6 +1197,32 @@ export const updatePost = async (postId: string, postData: UpdatePostData): Prom
     throw new Error('Failed to update post');
   } catch (error) {
     console.error('Update post error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a post
+ */
+export const deletePost = async (postId: string): Promise<{ success: boolean; message?: string }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ message?: string }> = await apiClient.delete(`/posts/${postId}`, token, true);
+    
+    if (response.success) {
+      return {
+        success: true,
+        message: response.data?.message || 'Post deleted successfully'
+      };
+    }
+    
+    throw new Error('Failed to delete post');
+  } catch (error) {
+    console.error('Delete post error:', error);
     throw error;
   }
 };
@@ -1264,6 +1318,7 @@ export const toggleLikePost = async (postId: string): Promise<{ liked?: boolean;
 
 /**
  * Increment view count for a post after user views it
+ * The backend should handle checking if the viewer is the author
  */
 export const incrementPostView = async (postId: string): Promise<{ views?: number }> => {
   try {

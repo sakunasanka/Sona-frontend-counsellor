@@ -15,9 +15,7 @@ export const useProfileState = (initialProfile: CounsellorProfile) => {
     }
   }, [initialProfile, isEditing]);
   
-  // Image selection states
-  const [showCoverImageOptions, setShowCoverImageOptions] = useState<boolean>(false);
-  const [showProfileImageOptions, setShowProfileImageOptions] = useState<boolean>(false);
+
   
   // Language and specialization editing
   const [editingLanguages, setEditingLanguages] = useState<Language[]>([]);
@@ -78,8 +76,6 @@ export const useProfileState = (initialProfile: CounsellorProfile) => {
       
       setProfile(updatedProfileData);
       setIsEditing(false);
-      setShowCoverImageOptions(false);
-      setShowProfileImageOptions(false);
       
       return { success: true, data: updatedProfileData };
     } catch (error) {
@@ -99,24 +95,12 @@ export const useProfileState = (initialProfile: CounsellorProfile) => {
     setNewCredentialData({ title: '', institution: '', year: '' });
     setNewAchievementData({ title: '', description: '', date: '' });
     setIsEditing(false);
-    setShowCoverImageOptions(false);
-    setShowProfileImageOptions(false);
   }, [profile]);
 
   const handleInputChange = useCallback((field: string, value: any) => {
-    setEditForm(prev => {
-      if (prev[field as keyof CounsellorProfile] === value) {
-        return prev;
-      }
-      return { ...prev, [field]: value };
-    });
-  }, []);
-
-  const handleStatusChange = useCallback((newStatus: 'available' | 'busy' | 'offline') => {
-    setProfile(prev => ({
+    setEditForm(prev => ({
       ...prev,
-      status: newStatus,
-      lastActiveAt: newStatus !== 'offline' ? new Date().toISOString() : prev.lastActiveAt
+      [field]: value
     }));
   }, []);
 
@@ -127,10 +111,7 @@ export const useProfileState = (initialProfile: CounsellorProfile) => {
     setIsEditing,
     editForm,
     setEditForm,
-    showCoverImageOptions,
-    setShowCoverImageOptions,
-    showProfileImageOptions,
-    setShowProfileImageOptions,
+
     editingLanguages,
     setEditingLanguages,
     newSpecialization,
@@ -160,35 +141,24 @@ export const useProfileState = (initialProfile: CounsellorProfile) => {
     handleEdit,
     handleSave,
     handleCancel,
-    handleInputChange,
-    handleStatusChange
+    handleInputChange
   };
 };
 
 export const useImageHandlers = (
-  setEditForm: React.Dispatch<React.SetStateAction<Partial<CounsellorProfile>>>,
-  setShowCoverImageOptions: React.Dispatch<React.SetStateAction<boolean>>,
-  setShowProfileImageOptions: React.Dispatch<React.SetStateAction<boolean>>
+  setEditForm: React.Dispatch<React.SetStateAction<Partial<CounsellorProfile>>>
 ) => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const handleCoverImageChange = useCallback((newCoverImage: string) => {
-    setEditForm(prev => ({ ...prev, coverImage: newCoverImage }));
-    setShowCoverImageOptions(false);
-  }, [setEditForm, setShowCoverImageOptions]);
 
-  const handleProfileImageChange = useCallback((newProfileImage: string) => {
-    setEditForm(prev => ({ ...prev, profileImage: newProfileImage }));
-    setShowProfileImageOptions(false);
-  }, [setEditForm, setShowProfileImageOptions]);
 
   const handleCoverImageUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     // Import Cloudinary upload function
-    const { uploadToCloudinary, validateImageFile } = await import('../../utils/cloudinaryUpload');
+    const { uploadCoverImage, validateImageFile } = await import('../../utils/cloudinaryUpload');
     
     // Validate file
     const validation = validateImageFile(file);
@@ -202,25 +172,24 @@ export const useImageHandlers = (
     
     try {
       // Upload to Cloudinary
-      const imageUrl = await uploadToCloudinary(file);
+      const imageUrl = await uploadCoverImage(file);
       
       // Update form with Cloudinary URL
       setEditForm(prev => ({ ...prev, coverImage: imageUrl }));
-      setShowCoverImageOptions(false);
     } catch (error) {
       console.error('Cover image upload failed:', error);
       setUploadError(error instanceof Error ? error.message : 'Upload failed');
     } finally {
       setUploading(false);
     }
-  }, [setEditForm, setShowCoverImageOptions]);
+  }, [setEditForm]);
 
   const handleProfileImageUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     // Import Cloudinary upload function
-    const { uploadToCloudinary, validateImageFile } = await import('../../utils/cloudinaryUpload');
+    const { uploadProfileImage, validateImageFile } = await import('../../utils/cloudinaryUpload');
     
     // Validate file
     const validation = validateImageFile(file);
@@ -234,22 +203,19 @@ export const useImageHandlers = (
     
     try {
       // Upload to Cloudinary
-      const imageUrl = await uploadToCloudinary(file);
+      const imageUrl = await uploadProfileImage(file);
       
       // Update form with Cloudinary URL
       setEditForm(prev => ({ ...prev, profileImage: imageUrl }));
-      setShowProfileImageOptions(false);
     } catch (error) {
       console.error('Profile image upload failed:', error);
       setUploadError(error instanceof Error ? error.message : 'Upload failed');
     } finally {
       setUploading(false);
     }
-  }, [setEditForm, setShowProfileImageOptions]);
+  }, [setEditForm]);
 
   return {
-    handleCoverImageChange,
-    handleProfileImageChange,
     handleCoverImageUpload,
     handleProfileImageUpload,
     uploading,

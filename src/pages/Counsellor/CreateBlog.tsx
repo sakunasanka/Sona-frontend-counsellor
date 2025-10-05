@@ -15,13 +15,14 @@ import {
   Plus
 } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
+import FlashMessage from '../../components/ui/FlashMessage';
 import { createPost, CreatePostData } from '../../api/counsellorAPI';
 
 interface BlogFormData {
-  title: string;
   content: string;
   tags: string[];
   image: string;
+  isAnonymous: boolean;
 }
 
 const BlogCreator: React.FC = () => {
@@ -29,17 +30,17 @@ const BlogCreator: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [activeView, setActiveView] = useState<'write' | 'preview'>('write');
   const [newTag, setNewTag] = useState('');
-  const [showImageUpload, setShowImageUpload] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
   const [formData, setFormData] = useState<BlogFormData>({
-    title: '',
     content: '',
     tags: [],
-    image: ''
+    image: '',
+    isAnonymous: false
   });
 
 
@@ -83,14 +84,34 @@ const BlogCreator: React.FC = () => {
     }
   };
 
-  const handleImageUpload = () => {
-    if (imageUrl.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        image: imageUrl.trim()
-      }));
-      setImageUrl('');
-      setShowImageUpload(false);
+  const handleFileImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Import Cloudinary upload function
+    const { uploadBlogImage, validateImageFile } = await import('../../utils/cloudinaryUpload');
+    
+    // Validate file
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      setUploadError(validation.error || 'Invalid file');
+      return;
+    }
+
+    setUploading(true);
+    setUploadError(null);
+    
+    try {
+      // Upload to Cloudinary
+      const imageUrl = await uploadBlogImage(file);
+      
+      // Update form with Cloudinary URL
+      setFormData(prev => ({ ...prev, image: imageUrl }));
+    } catch (error) {
+      console.error('Blog image upload failed:', error);
+      setUploadError(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -141,8 +162,8 @@ const BlogCreator: React.FC = () => {
   };
 
   const handlePublish = async () => {
-    if (!formData.title.trim() || !formData.content.trim()) {
-      setPublishError('Title and content are required');
+    if (!formData.content.trim()) {
+      setPublishError('Content is required');
       return;
     }
 
@@ -151,14 +172,12 @@ const BlogCreator: React.FC = () => {
       setPublishError(null);
 
       // Prepare the post data according to the backend API structure
-      // Combine title and content since the API expects content to include everything
-      const fullContent = formData.title.trim() + '\n\n' + formData.content.trim();
-      
       const postData: CreatePostData = {
-        content: fullContent,
+        content: formData.content.trim(),
         hashtags: formData.tags,
         backgroundColor: '#FFFFFF', // Default background color
-        image: formData.image || undefined
+        image: formData.image || undefined,
+        isAnonymous: formData.isAnonymous
       };
 
       const response = await createPost(postData);
@@ -230,9 +249,7 @@ const BlogCreator: React.FC = () => {
           </div>
         )}
 
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">
-          {formData.title || 'Your Blog Title'}
-        </h1>
+        {/* Title removed - content speaks for itself */}
       </div>
 
       {formData.image && (
@@ -240,7 +257,7 @@ const BlogCreator: React.FC = () => {
           <div className="relative h-64 lg:h-80 rounded-xl overflow-hidden">
             <img 
               src={formData.image} 
-              alt={formData.title}
+              alt="Blog post image"
               className="w-full h-full object-cover"
             />
           </div>
@@ -322,25 +339,27 @@ const BlogCreator: React.FC = () => {
                 <div className="flex-1 flex flex-col lg:flex-row">
                   {/* Main Editor */}
                   <div className="flex-1 px-4 lg:px-6 py-6 space-y-6">
-                    {/* Title Input */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Blog Title
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.title}
-                        onChange={(e) => handleInputChange('title', e.target.value)}
-                        placeholder="Enter your blog title..."
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors text-lg font-medium"
-                      />
-                    </div>
+                    {/* Title input removed - content-focused approach */}
 
                     {/* Featured Image */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Featured Image (Optional)
                       </label>
+                      
+                      {/* Upload Error */}
+                      {uploadError && (
+                        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="text-red-600 text-sm">{uploadError}</p>
+                          <button
+                            onClick={() => setUploadError(null)}
+                            className="text-red-400 hover:text-red-600 text-xs ml-2"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                      
                       {formData.image ? (
                         <div className="relative">
                           <img 
@@ -351,45 +370,38 @@ const BlogCreator: React.FC = () => {
                           <button
                             onClick={() => setFormData(prev => ({ ...prev, image: '' }))}
                             className="absolute top-2 right-2 bg-white hover:bg-gray-100 p-2 rounded-full shadow-md transition-colors"
+                            disabled={uploading}
                           >
                             <X className="w-4 h-4 text-gray-600" />
                           </button>
                         </div>
                       ) : (
                         <div>
-                          {showImageUpload ? (
-                            <div className="border-2 border-dashed border-gray-300 rounded-xl p-4">
-                              <div className="flex gap-2">
-                                <input
-                                  type="url"
-                                  value={imageUrl}
-                                  onChange={(e) => setImageUrl(e.target.value)}
-                                  placeholder="Enter image URL..."
-                                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                                />
-                                <button
-                                  onClick={handleImageUpload}
-                                  className="bg-primary hover:bg-primaryLight text-white px-4 py-2 rounded-lg transition-colors"
-                                >
-                                  Add
-                                </button>
-                                <button
-                                  onClick={() => setShowImageUpload(false)}
-                                  className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg transition-colors"
-                                >
-                                  Cancel
-                                </button>
+                          <label 
+                            htmlFor="blog-image-upload"
+                            className={`w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-gray-400 transition-colors cursor-pointer block ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {uploading ? (
+                              <div className="flex flex-col items-center">
+                                <div className="w-8 h-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mb-2" />
+                                <p className="text-gray-600">Uploading image...</p>
                               </div>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => setShowImageUpload(true)}
-                              className="w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-gray-400 transition-colors"
-                            >
-                              <Image className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                              <p className="text-gray-600">Click to add a featured image</p>
-                            </button>
-                          )}
+                            ) : (
+                              <>
+                                <Image className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                <p className="text-gray-600 font-medium">Upload an image file</p>
+                                <p className="text-gray-500 text-sm mt-1">Drag & drop or click to browse</p>
+                              </>
+                            )}
+                          </label>
+                          <input
+                            type="file"
+                            id="blog-image-upload"
+                            accept="image/*"
+                            onChange={handleFileImageUpload}
+                            className="hidden"
+                            disabled={uploading}
+                          />
                         </div>
                       )}
                     </div>
@@ -525,6 +537,22 @@ const BlogCreator: React.FC = () => {
                       </div>
                     </div>
 
+                    {/* Anonymous Posting Option */}
+                    <div>
+                      <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={formData.isAnonymous}
+                          onChange={(e) => handleInputChange('isAnonymous', e.target.checked)}
+                          className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
+                        />
+                        <div>
+                          <div className="text-sm font-medium text-gray-700">Post Anonymously</div>
+                          <div className="text-xs text-gray-500">Your name won't be shown to readers</div>
+                        </div>
+                      </label>
+                    </div>
+
                     {/* Publish Button */}
                     <div className="pt-4">
                       {publishError && (
@@ -536,7 +564,7 @@ const BlogCreator: React.FC = () => {
                       <button
                         onClick={handlePublish}
                         className="w-full bg-primary hover:bg-primaryLight disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-                        disabled={!formData.title.trim() || !formData.content.trim() || isPublishing}
+                        disabled={!formData.content.trim() || isPublishing}
                       >
                         {isPublishing ? (
                           <>
@@ -578,6 +606,14 @@ const BlogCreator: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Flash Messages */}
+      <FlashMessage
+        type="error"
+        message={publishError || ''}
+        isVisible={!!publishError}
+        onClose={() => setPublishError(null)}
+      />
     </div>
   );
 };
