@@ -86,6 +86,11 @@ const ClientDetails: React.FC = () => {
   const [moodLoading, setMoodLoading] = useState(false);
   const [moodError, setMoodError] = useState<string | null>(null);
   
+  // Month navigation state for mood analysis
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [showAllTime, setShowAllTime] = useState<boolean>(true);
+  
   // PHQ-9 analysis state
   const [phq9Data, setPhq9Data] = useState<PHQ9AnalysisResponse | null>(null);
   const [phq9Loading, setPhq9Loading] = useState(false);
@@ -398,7 +403,11 @@ const ClientDetails: React.FC = () => {
       setMoodLoading(true);
       setMoodError(null);
       
-      const moodResponse = await getClientMoodAnalysis(clientId);
+      const moodResponse = await getClientMoodAnalysis(
+        clientId, 
+        showAllTime ? undefined : selectedMonth, 
+        showAllTime ? undefined : selectedYear
+      );
       setMoodData(moodResponse);
       
     } catch (err) {
@@ -438,11 +447,11 @@ const ClientDetails: React.FC = () => {
     if (activeTab === 'mood' && clientId) {
       if (moodSubTab === 'phq9' && !phq9Data) {
         fetchPHQ9Analysis();
-      } else if (moodSubTab === 'mood' && !moodData) {
+      } else if (moodSubTab === 'mood') {
         fetchMoodAnalysis();
       }
     }
-  }, [activeTab, clientId, moodSubTab, moodData, phq9Data]);
+  }, [activeTab, clientId, moodSubTab, showAllTime, selectedMonth, selectedYear]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -1047,6 +1056,22 @@ const ClientDetails: React.FC = () => {
                 <div class="stat-item" style="background: #E0E7FF;">
                     <div class="stat-number" style="color: #4F46E5;">${moodAnalysis.lastUpdated ? new Date(moodAnalysis.lastUpdated).toLocaleDateString() : 'N/A'}</div>
                     <div class="stat-label">Last Updated</div>
+                </div>
+            </div>
+            
+            <h4 style="color: #7C3AED; margin: 20px 0 10px 0;">Mood Dimensions:</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                <div style="background: #F0F9FF; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-weight: bold; font-size: 16px; color: #0369A1;">${moodAnalysis.averageValence}</div>
+                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Average Valence</div>
+                </div>
+                <div style="background: #FEF3C7; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-weight: bold; font-size: 16px; color: #D97706;">${moodAnalysis.averageArousal}</div>
+                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Average Arousal</div>
+                </div>
+                <div style="background: #FCE7F3; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-weight: bold; font-size: 16px; color: #BE185D;">${moodAnalysis.averageIntensity}</div>
+                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Average Intensity</div>
                 </div>
             </div>
             
@@ -2389,6 +2414,95 @@ const ClientDetails: React.FC = () => {
                 <TrendingUp className="w-4 h-4 mr-2" />
                 {moodLoading ? 'Loading...' : 'Refresh Data'}
               </button>
+            </div>
+
+            {/* Month Navigation Controls */}
+            <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="showAllTime"
+                      checked={showAllTime}
+                      onChange={(e) => setShowAllTime(e.target.checked)}
+                      className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    />
+                    <label htmlFor="showAllTime" className="ml-2 text-sm font-medium text-gray-700">
+                      Show All Time Data
+                    </label>
+                  </div>
+                  
+                  {!showAllTime && (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => {
+                          const newDate = new Date(selectedYear, selectedMonth - 1);
+                          setSelectedMonth(newDate.getMonth());
+                          setSelectedYear(newDate.getFullYear());
+                        }}
+                        className="p-2 bg-white hover:bg-gray-100 border border-gray-300 rounded-md transition-colors"
+                        title="Previous Month"
+                      >
+                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      
+                      <div className="flex items-center space-x-2">
+                        <select
+                          value={selectedMonth}
+                          onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                          className="px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        >
+                          {Array.from({ length: 12 }, (_, i) => (
+                            <option key={i} value={i}>
+                              {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                            </option>
+                          ))}
+                        </select>
+                        
+                        <select
+                          value={selectedYear}
+                          onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                          className="px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        >
+                          {Array.from({ length: 5 }, (_, i) => {
+                            const year = new Date().getFullYear() - 2 + i;
+                            return (
+                              <option key={year} value={year}>
+                                {year}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          const newDate = new Date(selectedYear, selectedMonth + 1);
+                          setSelectedMonth(newDate.getMonth());
+                          setSelectedYear(newDate.getFullYear());
+                        }}
+                        className="p-2 bg-white hover:bg-gray-100 border border-gray-300 rounded-md transition-colors"
+                        title="Next Month"
+                      >
+                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+                
+                {!showAllTime && (
+                  <div className="text-sm text-gray-600">
+                    Showing data for: <span className="font-medium">
+                      {new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {moodError && (

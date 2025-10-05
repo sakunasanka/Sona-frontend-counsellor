@@ -50,7 +50,12 @@ export interface MoodEntry {
   id: string;
   user_id: string;
   local_date: string;
+  valence: string;
+  arousal: string;
+  intensity: string;
   mood: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface MoodAnalysisResponse {
@@ -59,6 +64,9 @@ export interface MoodAnalysisResponse {
   recentMoods: MoodEntry[];
   moodTrends: MoodEntry[];
   averageMoodScore: number;
+  averageValence: number;
+  averageArousal: number;
+  averageIntensity: number;
   lastUpdated: string | null;
 }
 
@@ -346,16 +354,21 @@ export const getClientDetails = async (clientId: string): Promise<{ success: boo
 };
 
 /**
- * Get mood analysis for a client
+ * Get mood analysis for a client with optional month filtering
  */
-export const getClientMoodAnalysis = async (clientId: string): Promise<MoodAnalysisResponse> => {
+export const getClientMoodAnalysis = async (clientId: string, month?: number, year?: number): Promise<MoodAnalysisResponse> => {
   try {
     const token = localStorage.getItem('auth_token');
     if (!token) {
       throw new Error('Authentication token not found');
     }
 
-    const response: ApiResponse<any> = await apiClient.get(`/users/${clientId}/moods`, undefined, token, true);
+    // Build query parameters for month/year filtering
+    const params: Record<string, string> = {};
+    if (month !== undefined) params.month = month.toString();
+    if (year !== undefined) params.year = year.toString();
+
+    const response: ApiResponse<any> = await apiClient.get(`/users/${clientId}/moods`, params, token, true);
     
     console.log('Get client mood analysis response:', response);
     console.log('Response data type:', typeof response.data);
@@ -398,19 +411,28 @@ export const getClientMoodAnalysis = async (clientId: string): Promise<MoodAnaly
         moods = [];
       }
       
+      // Filter moods by month/year if specified
+      let filteredMoods = moods;
+      if (month !== undefined && year !== undefined) {
+        filteredMoods = moods.filter(mood => {
+          const moodDate = new Date(mood.local_date);
+          return moodDate.getMonth() === month && moodDate.getFullYear() === year;
+        });
+      }
+      
       // Process mood data for analysis
-      const moodCounts = moods.length > 0 ? moods.reduce((acc, mood) => {
+      const moodCounts = filteredMoods.length > 0 ? filteredMoods.reduce((acc, mood) => {
         const moodType = mood.mood || 'neutral';
         acc[moodType] = (acc[moodType] || 0) + 1;
         return acc;
       }, {} as Record<string, number>) : {};
       
       // Sort moods by date for trend analysis (only if we have moods)
-      const sortedMoods = moods.length > 0 ? [...moods].sort((a, b) => 
+      const sortedMoods = filteredMoods.length > 0 ? [...filteredMoods].sort((a, b) => 
         new Date(a.local_date).getTime() - new Date(b.local_date).getTime()
       ) : [];
       
-      // Get recent mood trends (last 30 days)
+      // Get recent mood trends (last 30 days or all entries for the selected month)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
@@ -419,11 +441,14 @@ export const getClientMoodAnalysis = async (clientId: string): Promise<MoodAnaly
       );
       
       return {
-        totalEntries: moods.length,
+        totalEntries: filteredMoods.length,
         moodDistribution: moodCounts,
         recentMoods,
         moodTrends: sortedMoods,
-        averageMoodScore: calculateAverageMoodScore(moods),
+        averageMoodScore: calculateAverageMoodScore(filteredMoods),
+        averageValence: calculateAverageValence(filteredMoods),
+        averageArousal: calculateAverageArousal(filteredMoods),
+        averageIntensity: calculateAverageIntensity(filteredMoods),
         lastUpdated: sortedMoods.length > 0 ? sortedMoods[sortedMoods.length - 1].local_date : null
       };
     }
@@ -439,12 +464,18 @@ export const getClientMoodAnalysis = async (clientId: string): Promise<MoodAnaly
 const calculateAverageMoodScore = (moods: MoodEntry[]): number => {
   if (!moods || moods.length === 0) return 0;
   
+  // Updated mood scores for the new mood system
   const moodScores: Record<string, number> = {
-    'very_sad': 1,
-    'sad': 2,
-    'neutral': 3,
-    'happy': 4,
-    'very_happy': 5
+    'Sad': 1,
+    'Anxious': 2,
+    'Unpleasant': 2,
+    'Neutral': 3,
+    'Alert': 3,
+    'Calm': 4,
+    'Pleasant': 4,
+    'Content': 4,
+    'Happy': 5,
+    'Excited': 5
   };
   
   const validMoods = moods.filter(mood => mood && mood.mood);
@@ -455,6 +486,39 @@ const calculateAverageMoodScore = (moods: MoodEntry[]): number => {
   }, 0);
   
   return Math.round((totalScore / validMoods.length) * 10) / 10; // Round to 1 decimal place
+};
+
+// Helper function to calculate average valence
+const calculateAverageValence = (moods: MoodEntry[]): number => {
+  if (!moods || moods.length === 0) return 0;
+  
+  const validMoods = moods.filter(mood => mood && mood.valence && !isNaN(parseFloat(mood.valence)));
+  if (validMoods.length === 0) return 0;
+  
+  const totalValence = validMoods.reduce((sum, mood) => sum + parseFloat(mood.valence), 0);
+  return Math.round((totalValence / validMoods.length) * 100) / 100; // Round to 2 decimal places
+};
+
+// Helper function to calculate average arousal
+const calculateAverageArousal = (moods: MoodEntry[]): number => {
+  if (!moods || moods.length === 0) return 0;
+  
+  const validMoods = moods.filter(mood => mood && mood.arousal && !isNaN(parseFloat(mood.arousal)));
+  if (validMoods.length === 0) return 0;
+  
+  const totalArousal = validMoods.reduce((sum, mood) => sum + parseFloat(mood.arousal), 0);
+  return Math.round((totalArousal / validMoods.length) * 100) / 100; // Round to 2 decimal places
+};
+
+// Helper function to calculate average intensity
+const calculateAverageIntensity = (moods: MoodEntry[]): number => {
+  if (!moods || moods.length === 0) return 0;
+  
+  const validMoods = moods.filter(mood => mood && mood.intensity && !isNaN(parseFloat(mood.intensity)));
+  if (validMoods.length === 0) return 0;
+  
+  const totalIntensity = validMoods.reduce((sum, mood) => sum + parseFloat(mood.intensity), 0);
+  return Math.round((totalIntensity / validMoods.length) * 100) / 100; // Round to 2 decimal places
 };
 
 /**
