@@ -432,6 +432,9 @@ const CounsellorProfile: React.FC = () => {
                 onCoverImageUpload={imageHandlers.handleCoverImageUpload}
                 onProfileImageUpload={imageHandlers.handleProfileImageUpload}
                 isSaving={saving}
+                uploading={imageHandlers.uploading}
+                uploadError={imageHandlers.uploadError}
+                setUploadError={imageHandlers.setUploadError}
               />
               
               <ProfileInfo

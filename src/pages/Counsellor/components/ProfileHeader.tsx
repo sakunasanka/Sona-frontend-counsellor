@@ -18,6 +18,9 @@ interface ProfileHeaderProps {
   onCoverImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onProfileImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   isSaving?: boolean;
+  uploading?: boolean;
+  uploadError?: string | null;
+  setUploadError?: (error: string | null) => void;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -35,7 +38,10 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onProfileImageChange,
   onCoverImageUpload,
   onProfileImageUpload,
-  isSaving = false
+  isSaving = false,
+  uploading = false,
+  uploadError = null,
+  setUploadError
 }) => {
   const availableCoverImages = [
     "/assets/images/bg-trans.jpeg",
@@ -88,13 +94,33 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 accept="image/*"
                 onChange={onCoverImageUpload}
                 className="hidden"
+                disabled={uploading}
               />
-              <div className="border-2 border-dashed border-pink-300 rounded-lg p-3 text-center cursor-pointer hover:border-pink-500 transition-colors">
-                <Camera className="w-6 h-6 mx-auto mb-1 text-pink-500" />
-                <p className="text-xs text-gray-600">Upload from device</p>
+              <div className={`border-2 border-dashed border-pink-300 rounded-lg p-3 text-center cursor-pointer hover:border-pink-500 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                {uploading ? (
+                  <div className="w-6 h-6 mx-auto mb-1 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
+                ) : (
+                  <Camera className="w-6 h-6 mx-auto mb-1 text-pink-500" />
+                )}
+                <p className="text-xs text-gray-600">
+                  {uploading ? 'Uploading...' : 'Upload from device'}
+                </p>
               </div>
             </label>
           </div>
+
+          {/* Upload error message */}
+          {uploadError && (
+            <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">
+              {uploadError}
+              <button
+                onClick={() => setUploadError?.(null)}
+                className="ml-2 text-red-400 hover:text-red-600"
+              >
+                ×
+              </button>
+            </div>
+          )}
 
           {/* Predefined options */}
           <p className="text-xs text-gray-500 mb-2">Or choose from options:</p>
@@ -156,14 +182,34 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     accept="image/*"
                     onChange={onProfileImageUpload}
                     className="hidden"
+                    disabled={uploading}
                   />
-                  <div className="border-2 border-dashed border-pink-300 rounded-lg p-4 text-center cursor-pointer hover:border-pink-500 transition-colors">
-                    <Camera className="w-8 h-8 mx-auto mb-2 text-pink-500" />
-                    <p className="text-sm text-gray-600 font-medium">Upload from device</p>
-                    <p className="text-xs text-gray-500 mt-1">JPG, PNG up to 10MB</p>
+                  <div className={`border-2 border-dashed border-pink-300 rounded-lg p-4 text-center cursor-pointer hover:border-pink-500 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    {uploading ? (
+                      <div className="w-8 h-8 mx-auto mb-2 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
+                    ) : (
+                      <Camera className="w-8 h-8 mx-auto mb-2 text-pink-500" />
+                    )}
+                    <p className="text-sm text-gray-600 font-medium">
+                      {uploading ? 'Uploading...' : 'Upload from device'}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">JPG, PNG up to 5MB</p>
                   </div>
                 </label>
               </div>
+
+              {/* Upload error message */}
+              {uploadError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+                  {uploadError}
+                  <button
+                    onClick={() => setUploadError?.(null)}
+                    className="ml-2 text-red-400 hover:text-red-600"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
 
               {/* Predefined options */}
               <p className="text-sm text-gray-600 font-medium mb-3">Or choose from options:</p>

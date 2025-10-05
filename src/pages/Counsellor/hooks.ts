@@ -170,6 +170,9 @@ export const useImageHandlers = (
   setShowCoverImageOptions: React.Dispatch<React.SetStateAction<boolean>>,
   setShowProfileImageOptions: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const handleCoverImageChange = useCallback((newCoverImage: string) => {
     setEditForm(prev => ({ ...prev, coverImage: newCoverImage }));
     setShowCoverImageOptions(false);
@@ -180,37 +183,78 @@ export const useImageHandlers = (
     setShowProfileImageOptions(false);
   }, [setEditForm, setShowProfileImageOptions]);
 
-  const handleCoverImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoverImageUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setEditForm(prev => ({ ...prev, coverImage: result }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Import Cloudinary upload function
+    const { uploadToCloudinary, validateImageFile } = await import('../../utils/cloudinaryUpload');
+    
+    // Validate file
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      setUploadError(validation.error || 'Invalid file');
+      return;
     }
-    setShowCoverImageOptions(false);
+
+    setUploading(true);
+    setUploadError(null);
+    
+    try {
+      // Upload to Cloudinary
+      const imageUrl = await uploadToCloudinary(file);
+      
+      // Update form with Cloudinary URL
+      setEditForm(prev => ({ ...prev, coverImage: imageUrl }));
+      setShowCoverImageOptions(false);
+    } catch (error) {
+      console.error('Cover image upload failed:', error);
+      setUploadError(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
   }, [setEditForm, setShowCoverImageOptions]);
 
-  const handleProfileImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileImageUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setEditForm(prev => ({ ...prev, profileImage: result }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Import Cloudinary upload function
+    const { uploadToCloudinary, validateImageFile } = await import('../../utils/cloudinaryUpload');
+    
+    // Validate file
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      setUploadError(validation.error || 'Invalid file');
+      return;
     }
-    setShowProfileImageOptions(false);
+
+    setUploading(true);
+    setUploadError(null);
+    
+    try {
+      // Upload to Cloudinary
+      const imageUrl = await uploadToCloudinary(file);
+      
+      // Update form with Cloudinary URL
+      setEditForm(prev => ({ ...prev, profileImage: imageUrl }));
+      setShowProfileImageOptions(false);
+    } catch (error) {
+      console.error('Profile image upload failed:', error);
+      setUploadError(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
   }, [setEditForm, setShowProfileImageOptions]);
 
   return {
     handleCoverImageChange,
     handleProfileImageChange,
     handleCoverImageUpload,
-    handleProfileImageUpload
+    handleProfileImageUpload,
+    uploading,
+    uploadError,
+    setUploadError
   };
 };
 
