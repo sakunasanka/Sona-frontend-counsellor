@@ -219,7 +219,7 @@ const CounsellorClients: React.FC = () => {
     return {
       id: apiClient.id,
       name: apiClient.name,
-      profileImage: apiClient.avatar || '/src/assets/images/patient-photo.png', // Default image
+      profileImage: apiClient.avatar || 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png', // Default image
       age: 25, // Default age as API doesn't provide this
       gender: 'Unknown', // Default gender as API doesn't provide this
       email: 'N/A', // API doesn't provide email

@@ -31,7 +31,7 @@ const CounsellorProfile: React.FC = () => {
       id: apiData.id || 0,
       firstName: nameWithoutDr, // Store full name without Dr. prefix
       lastName: '', // Keep empty for backward compatibility
-      profileImage: apiData.profileImage || '/assets/images/doctor__circle_2.png',
+      profileImage: (apiData.profileImage && apiData.profileImage.trim() !== '') ? apiData.profileImage : 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png',
       coverImage: apiData.coverImage || '/assets/images/counsellor-banner.jpg',
       bio: apiData.bio || '',
       location: apiData.location || '',
@@ -188,9 +188,15 @@ const CounsellorProfile: React.FC = () => {
         
         if (profileState.editForm.profileImage !== undefined && profileState.editForm.profileImage !== profileState.profile.profileImage) {
           const profileImageValue = String(profileState.editForm.profileImage || '').trim();
-          if (profileImageValue) {
-            changedFields.profileImage = profileImageValue.startsWith('http') ? profileImageValue : formatUrl(profileImageValue);
-          }
+          console.log('Profile image changed:', {
+            oldValue: profileState.profile.profileImage,
+            newValue: profileState.editForm.profileImage,
+            processedValue: profileImageValue
+          });
+          // Always send profileImage field if it changed, even if empty (to remove the image)
+          // Send space character for empty strings to properly remove the image
+          changedFields.profileImage = profileImageValue === '' ? ' ' : (profileImageValue.startsWith('http') ? profileImageValue : formatUrl(profileImageValue));
+          console.log('Setting profileImage in changedFields:', changedFields.profileImage);
         }
         
         if (profileState.editForm.coverImage !== undefined && profileState.editForm.coverImage !== profileState.profile.coverImage) {
@@ -264,7 +270,7 @@ const CounsellorProfile: React.FC = () => {
           refreshProfile();
         }
         
-      } catch (err: any) {
+        } catch (err: any) {
         console.error('Failed to update profile:', err);
         // Show the actual server error message
         const errorMessage = err.details?.message || err.message || 'Failed to update profile';
@@ -409,6 +415,7 @@ const CounsellorProfile: React.FC = () => {
                 onCancel={profileState.handleCancel}
                 onCoverImageUpload={imageHandlers.handleCoverImageUpload}
                 onProfileImageUpload={imageHandlers.handleProfileImageUpload}
+                onProfileImageRemove={imageHandlers.handleProfileImageRemove}
                 isSaving={saving}
                 uploading={imageHandlers.uploading}
                 uploadError={imageHandlers.uploadError}

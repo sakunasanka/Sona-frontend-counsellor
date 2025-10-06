@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, Edit3, X, Check } from 'lucide-react';
+import { Camera, Edit3, X, Check, Trash2 } from 'lucide-react';
 import { CounsellorProfile } from '../types';
 
 interface ProfileHeaderProps {
@@ -11,6 +11,7 @@ interface ProfileHeaderProps {
   onCancel: () => void;
   onCoverImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onProfileImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onProfileImageRemove?: () => void;
   isSaving?: boolean;
   uploading?: boolean;
   uploadError?: string | null;
@@ -26,6 +27,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onCancel,
   onCoverImageUpload,
   onProfileImageUpload,
+  onProfileImageRemove,
   isSaving = false,
   uploading = false,
   uploadError = null,
@@ -85,7 +87,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         <div className="relative">
           <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
             <img 
-              src={isEditing ? editForm.profileImage || profile.profileImage : profile.profileImage} 
+              src={isEditing ? (
+                editForm.profileImage === '' 
+                  ? 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png'
+                  : (editForm.profileImage || profile.profileImage || 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png')
+              ) : (profile.profileImage || 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png')} 
               alt={`Dr. ${profile.firstName}`}
               className="w-full h-full object-cover"
             />
@@ -100,16 +106,27 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 disabled={uploading}
                 id="profile-image-upload"
               />
-              <label 
-                htmlFor="profile-image-upload"
-                className={`absolute bottom-2 right-2 bg-slate-400 hover:bg-primary text-white p-2 rounded-full transition-colors shadow-lg cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {uploading ? (
-                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                ) : (
-                  <Camera className="w-4 h-4" />
+                            <div className="absolute bottom-2 right-2 flex gap-2 z-50">
+                <label 
+                  htmlFor="profile-image-upload"
+                  className={`bg-slate-400 hover:bg-primary text-white p-2 rounded-full transition-colors cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {uploading ? (
+                    <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  ) : (
+                    <Camera className="w-4 h-4" />
+                  )}
+                </label>
+                {onProfileImageRemove && (
+                  <button
+                    onClick={onProfileImageRemove}
+                    className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors border-2 border-white"
+                    title="Remove profile image"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 )}
-              </label>
+              </div>
             </>
           )}
           

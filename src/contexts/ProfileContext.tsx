@@ -32,7 +32,14 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
       setLoading(true);
       setError(null);
       const profileData = await getCounsellorProfile();
-      setProfile(profileData);
+      // Apply fallback logic for profile image
+      const processedProfileData = {
+        ...profileData,
+        profileImage: (profileData.profileImage && profileData.profileImage.trim() !== '') 
+          ? profileData.profileImage 
+          : 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png'
+      };
+      setProfile(processedProfileData);
     } catch (err: any) {
       console.error('Failed to fetch profile:', err);
       setError(err.message || 'Failed to load profile');

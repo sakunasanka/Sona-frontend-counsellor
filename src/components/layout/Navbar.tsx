@@ -241,7 +241,7 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
             onClick={() => handleProfile()}
           >
             <img 
-              src={profile?.profileImage || "/assets/images/profile-photo.png"} 
+              src={profile?.profileImage || "https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png"} 
               alt="Profile" 
               className="w-full h-full object-cover"
             />

@@ -151,6 +151,11 @@ export const useImageHandlers = (
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  const handleProfileImageRemove = useCallback(() => {
+    // Set profile image to empty string to indicate removal
+    setEditForm(prev => ({ ...prev, profileImage: '' }));
+  }, [setEditForm]);
+
 
 
   const handleCoverImageUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -218,6 +223,7 @@ export const useImageHandlers = (
   return {
     handleCoverImageUpload,
     handleProfileImageUpload,
+    handleProfileImageRemove,
     uploading,
     uploadError,
     setUploadError

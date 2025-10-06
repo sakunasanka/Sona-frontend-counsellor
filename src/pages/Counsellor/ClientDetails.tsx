@@ -221,7 +221,7 @@ const ClientDetails: React.FC = () => {
     {
       id: 1,
       name: "Sarath Perera",
-      profileImage: "/assets/images/student-photo.png",
+      profileImage: "https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png",
       age: 22,
       gender: "Female",
       email: "sarath.perera@example.com",
@@ -278,7 +278,7 @@ const ClientDetails: React.FC = () => {
       student: true, // Assuming all clients are students based on student_id field
       institution: apiClient.institution || 'University',
       joinDate: apiClient.join_date ? new Date(apiClient.join_date).toLocaleDateString() : 'Unknown',
-      profileImage: apiClient.avatar || '/assets/images/student-photo.png',
+      profileImage: apiClient.avatar || 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png',
     };
 
     if (apiClient.is_anonymous) {

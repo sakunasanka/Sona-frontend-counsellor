@@ -319,7 +319,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
       name: 'Sameera Nuwanaka',
       lastMessage: 'Thank you for the session yesterday. I feel much better now.',
       time: '2m',
-      avatar: '/assets/images/profile-photo.png',
+      avatar: 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png',
       isOnline: true,
       unreadCount: 2
     },
@@ -328,7 +328,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
       name: 'Nadun Piyadasa',
       lastMessage: 'Can we reschedule our appointment for next week?',
       time: '1h',
-      avatar: '/assets/images/student-photo.png',
+      avatar: 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png',
       isOnline: false,
       unreadCount: 0
     },
@@ -337,7 +337,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
       name: 'Naveen Udantha',
       lastMessage: 'The breathing exercises you taught me are really helping!',
       time: '3h',
-      avatar: '/assets/images/profile-photo.png',
+      avatar: 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png',
       isOnline: true,
       unreadCount: 1
     },
@@ -346,7 +346,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
       name: 'Kamindu Perera',
       lastMessage: 'Looking forward to our session tomorrow.',
       time: '1d',
-      avatar: '/assets/images/student-photo.png',
+      avatar: 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png',
       isOnline: false,
       unreadCount: 0
     }

@@ -71,7 +71,7 @@ const CounsellorSessionDetails: React.FC = () => {
         mood: 'concerned',
         notes: "Emergency session due to panic attack. Client was stabilized and provided with immediate coping techniques. Discussed breathing exercises and grounding methods. Client showed improvement by end of session. Scheduled follow-up for tomorrow.",
         followUpRequired: true,
-        profileImage: "/assets/images/patient-photo.png",
+        profileImage: "https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png",
         institution: "University of Colombo",
         concerns: ["Anxiety", "Panic Attacks", "Academic Stress"],
         previousSessions: 5,
