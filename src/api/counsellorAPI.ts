@@ -38,6 +38,7 @@ export interface Client {
   avatar: string;
   student_id: string;
   is_anonymous: boolean;
+  concerns: string[]; // Add concerns property
   status: 'active' | 'inactive' | 'new';
   last_session: string | null;
   total_sessions: number;

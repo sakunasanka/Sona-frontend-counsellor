@@ -12,7 +12,7 @@ const ClientSearch: React.FC<ClientSearchProps> = ({ searchQuery, onSearchChange
       <div className="relative w-full">
         <input
           type="text"
-          placeholder="Search clients by name, email, phone..."
+          placeholder="Search clients by name or id..."
           className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary focus:border-opacity-50 transition-all"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}

@@ -227,7 +227,7 @@ const CounsellorClients: React.FC = () => {
       sessionCount: apiClient.total_sessions,
       lastSession: apiClient.last_session ? new Date(apiClient.last_session).toLocaleDateString() : 'No sessions',
       nextSession: apiClient.next_appointment ? new Date(apiClient.next_appointment).toLocaleDateString() : undefined,
-      concerns: [], // API doesn't provide concerns, could be added later
+      concerns: apiClient.concerns || [], // Get concerns from API response
       status: apiClient.status,
       notes: '', // API doesn't provide notes
       anonymous: apiClient.is_anonymous,
@@ -246,7 +246,6 @@ const CounsellorClients: React.FC = () => {
       const response = await getClients({
         page: 1,
         limit: 100, // Get all clients for now
-        search: searchQuery || undefined,
       });
 
       if (response.success && response.data) {
@@ -261,21 +260,10 @@ const CounsellorClients: React.FC = () => {
     }
   };
 
-  // Fetch clients on component mount and when search changes
+  // Fetch clients on component mount
   useEffect(() => {
     fetchClients();
   }, []);
-
-  // Debounced search effect
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchQuery !== undefined) {
-        fetchClients();
-      }
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter clients based on search query, active filter, anonymous status, and student status
   const filteredClients = filterClients(
