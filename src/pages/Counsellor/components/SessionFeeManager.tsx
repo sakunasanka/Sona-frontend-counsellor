@@ -16,6 +16,7 @@ const SessionFeeManager: React.FC<SessionFeeManagerProps> = ({ isOpen, onClose, 
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingData, setLoadingData] = useState<boolean>(false);
   const [currentConfig, setCurrentConfig] = useState<string>('');
+  const [feeError, setFeeError] = useState<string>('');
 
   // Load current volunteer status when modal opens
   useEffect(() => {
@@ -31,12 +32,20 @@ const SessionFeeManager: React.FC<SessionFeeManagerProps> = ({ isOpen, onClose, 
       setIsVolunteer(status.isVolunteer);
       setSessionFee(status.sessionFee);
       updateCurrentConfig(status.isVolunteer, status.sessionFee);
+      
+      // Check for validation error
+      if (status.sessionFee === 0 && !status.isVolunteer) {
+        setFeeError('Session fee cannot be 0 unless volunteer status is enabled');
+      } else {
+        setFeeError('');
+      }
     } catch (error) {
       console.error('Failed to load volunteer status:', error);
       // Set default values if API fails
       setIsVolunteer(false);
       setSessionFee(2500);
       updateCurrentConfig(false, 2500);
+      setFeeError('');
     } finally {
       setLoadingData(false);
     }
@@ -57,14 +66,35 @@ const SessionFeeManager: React.FC<SessionFeeManagerProps> = ({ isOpen, onClose, 
   const handleVolunteerChange = (volunteer: boolean) => {
     setIsVolunteer(volunteer);
     updateCurrentConfig(volunteer, sessionFee);
+    // Clear fee error when volunteer status changes
+    if (volunteer) {
+      setFeeError('');
+    } else if (sessionFee === 0) {
+      setFeeError('Session fee cannot be 0 unless volunteer status is enabled');
+    }
   };
 
   const handleFeeChange = (fee: number) => {
+    // Prevent setting fee to 0 unless volunteer status is enabled
+    if (fee === 0 && !isVolunteer) {
+      setFeeError('Session fee cannot be 0 unless volunteer status is enabled');
+      return;
+    }
+    
     setSessionFee(fee);
     updateCurrentConfig(isVolunteer, fee);
+    // Clear error if fee is valid
+    if (fee > 0 || isVolunteer) {
+      setFeeError('');
+    }
   };
 
   const handleSave = async () => {
+    // Prevent saving if there's a validation error
+    if (feeError) {
+      return;
+    }
+    
     setLoading(true);
     try {
       const payload: VolunteerStatusData = {
@@ -151,6 +181,9 @@ const SessionFeeManager: React.FC<SessionFeeManagerProps> = ({ isOpen, onClose, 
               />
               <span className="absolute right-3 top-2.5 text-sm text-gray-400 font-medium">LKR</span>
             </div>
+            {feeError && (
+              <p className="text-xs text-red-600 mt-1">{feeError}</p>
+            )}
             <p className="text-xs text-gray-500 mt-1">
               Set to 0 for free sessions
             </p>
@@ -182,7 +215,7 @@ const SessionFeeManager: React.FC<SessionFeeManagerProps> = ({ isOpen, onClose, 
             </button>
             <button
               onClick={handleSave}
-              disabled={loading}
+              disabled={loading || !!feeError}
               className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm font-medium"
             >
               {loading ? (

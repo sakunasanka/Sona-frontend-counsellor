@@ -1104,7 +1104,10 @@ const ClientDetails: React.FC = () => {
             ${moodAnalysis.recentMoods.length > 0 ? `
             <h4 style="color: #7C3AED; margin: 20px 0 10px 0;">Recent Mood Entries:</h4>
             <div style="max-height: 200px; overflow-y: auto;">
-                ${moodAnalysis.recentMoods.slice(0, 10).map(mood => {
+                ${moodAnalysis.recentMoods
+                  .sort((a, b) => new Date(b.local_date).getTime() - new Date(a.local_date).getTime())
+                  .slice(0, 10)
+                  .map(mood => {
                   const moodLabels: Record<string, string> = {
                     'very_sad': 'Very Sad',
                     'sad': 'Sad',
@@ -2608,29 +2611,47 @@ const ClientDetails: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {moodData.recentMoods.slice(0, 10).map((mood, index) => {
+                          {moodData.recentMoods
+                            .sort((a, b) => new Date(b.local_date).getTime() - new Date(a.local_date).getTime())
+                            .slice(0, 10)
+                            .map((mood, index) => {
                             const moodLabels: Record<string, string> = {
-                              'very_sad': 'Very Sad',
-                              'sad': 'Sad',
-                              'neutral': 'Neutral',
-                              'happy': 'Happy',
-                              'very_happy': 'Very Happy'
+                              'Sad': 'Sad',
+                              'Anxious': 'Anxious',
+                              'Unpleasant': 'Unpleasant',
+                              'Neutral': 'Neutral',
+                              'Alert': 'Alert',
+                              'Calm': 'Calm',
+                              'Pleasant': 'Pleasant',
+                              'Content': 'Content',
+                              'Happy': 'Happy',
+                              'Excited': 'Excited'
                             };
                             
                             const moodColors: Record<string, string> = {
-                              'very_sad': 'text-red-600 bg-red-100',
-                              'sad': 'text-orange-600 bg-orange-100',
-                              'neutral': 'text-yellow-600 bg-yellow-100',
-                              'happy': 'text-green-600 bg-green-100',
-                              'very_happy': 'text-emerald-600 bg-emerald-100'
+                              'Sad': 'text-red-600 bg-red-100',
+                              'Anxious': 'text-orange-600 bg-orange-100',
+                              'Unpleasant': 'text-orange-600 bg-orange-100',
+                              'Neutral': 'text-gray-600 bg-gray-100',
+                              'Alert': 'text-blue-600 bg-blue-100',
+                              'Calm': 'text-cyan-600 bg-cyan-100',
+                              'Pleasant': 'text-green-600 bg-green-100',
+                              'Content': 'text-green-600 bg-green-100',
+                              'Happy': 'text-emerald-600 bg-emerald-100',
+                              'Excited': 'text-red-600 bg-red-100'
                             };
                             
                             const moodScores: Record<string, number> = {
-                              'very_sad': 1,
-                              'sad': 2,
-                              'neutral': 3,
-                              'happy': 4,
-                              'very_happy': 5
+                              'Sad': 1,
+                              'Anxious': 2,
+                              'Unpleasant': 2,
+                              'Neutral': 3,
+                              'Alert': 3,
+                              'Calm': 4,
+                              'Pleasant': 4,
+                              'Content': 4,
+                              'Happy': 5,
+                              'Excited': 5
                             };
 
                             return (
@@ -2761,6 +2782,9 @@ const ClientDetails: React.FC = () => {
                         : currentClient.name
                       }
                     </h1>
+                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-sm font-medium">
+                      ID: {currentClient.id}
+                    </span>
                     {currentClient.anonymous && (
                       <span className="px-2 py-0.5 rounded-full bg-primary bg-opacity-10 text-primary text-xs font-medium">
                         Anonymous
