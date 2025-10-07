@@ -1401,3 +1401,64 @@ export const incrementPostView = async (postId: string): Promise<{ views?: numbe
   }
 };
 
+// Volunteer status interface
+export interface VolunteerStatusData {
+  isVolunteer: boolean;
+  sessionFee: number;
+}
+
+/**
+ * Update counsellor volunteer status and session fee
+ */
+export const updateCounsellorVolunteerStatus = async (volunteerData: VolunteerStatusData): Promise<{ success: boolean; message: string }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    console.log('Updating volunteer status with data:', volunteerData);
+
+    const response: ApiResponse<{ message: string }> = await apiClient.put('/counselors/volunteer-status', volunteerData, token, true);
+
+    console.log('Update volunteer status response:', response);
+
+    if (response.success) {
+      return {
+        success: true,
+        message: response.data?.message || 'Volunteer status updated successfully'
+      };
+    }
+
+    throw new Error('Failed to update volunteer status');
+  } catch (error) {
+    console.error('Update volunteer status error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get counsellor volunteer status and session fee
+ */
+export const getCounsellorVolunteerStatus = async (): Promise<VolunteerStatusData> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: VolunteerStatusData }> = await apiClient.get('/counselors/volunteer-status', undefined, token, true);
+
+    console.log('Get volunteer status response:', response);
+
+    if (response.success && response.data) {
+      return response.data.data || response.data;
+    }
+
+    throw new Error('Failed to fetch volunteer status');
+  } catch (error) {
+    console.error('Get volunteer status error:', error);
+    throw error;
+  }
+};
+

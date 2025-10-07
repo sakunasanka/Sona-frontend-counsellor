@@ -10,7 +10,8 @@ import {
   Minus,
   CheckCircle,
   XCircle,
-  User
+  User,
+  Settings
 } from 'lucide-react';
 import { 
   getMonthlyAvailability, 
@@ -21,6 +22,7 @@ import {
   type Session,
   type AvailabilityRequest
 } from '../../api/calendarAPI';
+import SessionFeeManager from './components/SessionFeeManager';
 
 const CounsellorCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -34,7 +36,6 @@ const CounsellorCalendar: React.FC = () => {
   const [monthlyLoading, setMonthlyLoading] = useState(false);
   // const [sessionsLoading, setSessionsLoading] = useState(false);
   
-  // Flash message state
   const [flashMessage, setFlashMessage] = useState<{
     type: 'success' | 'error' | 'warning' | 'info';
     message: string;
@@ -44,6 +45,9 @@ const CounsellorCalendar: React.FC = () => {
     message: '',
     isVisible: false
   });
+  
+  // Session Fee Manager Modal State
+  const [isSessionFeeModalOpen, setIsSessionFeeModalOpen] = useState(false);
   
   // TODO: Get counselor ID from auth context or user profile
   // For now using hardcoded ID - replace with actual user's counselor ID
@@ -348,8 +352,19 @@ const CounsellorCalendar: React.FC = () => {
           <div className="p-4 lg:p-6">
             {/* Header */}
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">My Calendar</h1>
-              <p className="text-gray-600">Manage your availability and view your sessions</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">My Calendar</h1>
+                  <p className="text-gray-600">Manage your availability and view your sessions</p>
+                </div>
+                <button
+                  onClick={() => setIsSessionFeeModalOpen(true)}
+                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Session Fees
+                </button>
+              </div>
             </div>
 
             {/* Monthly Availability Summary */}
@@ -987,6 +1002,14 @@ const CounsellorCalendar: React.FC = () => {
         message={flashMessage.message}
         isVisible={flashMessage.isVisible}
         onClose={hideFlashMessage}
+      />
+
+      {/* Session Fee Manager Modal */}
+      <SessionFeeManager
+        isOpen={isSessionFeeModalOpen}
+        onClose={() => setIsSessionFeeModalOpen(false)}
+        onSuccess={() => showFlashMessage('success', 'Session fee settings updated successfully!')}
+        onError={(error) => showFlashMessage('error', error)}
       />
     </div>
   );
