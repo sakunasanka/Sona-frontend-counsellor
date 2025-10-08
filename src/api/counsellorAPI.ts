@@ -1465,12 +1465,15 @@ export const getCounsellorVolunteerStatus = async (): Promise<VolunteerStatusDat
       throw new Error('Authentication token not found');
     }
 
-    const response: ApiResponse<{ data: VolunteerStatusData }> = await apiClient.get('/counsellors/volunteer-status', undefined, token, true);
+    const response: ApiResponse<{ data: VolunteerStatusData }> = await apiClient.get('/counselors/volunteer-status', undefined, token, true);
 
-    console.log('Get volunteer status response:', response);
+    console.log('Get volunteer status API response:', response);
+    console.log('Response data:', response.data);
 
     if (response.success && response.data) {
-      return response.data.data || response.data;
+      const volunteerData = response.data.data || response.data;
+      console.log('Extracted volunteer data:', volunteerData);
+      return volunteerData;
     }
 
     throw new Error('Failed to fetch volunteer status');

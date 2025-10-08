@@ -29,6 +29,8 @@ const SessionFeeManager: React.FC<SessionFeeManagerProps> = ({ isOpen, onClose, 
     setLoadingData(true);
     try {
       const status = await getCounsellorVolunteerStatus();
+      console.log('Loaded volunteer status:', status);
+      console.log('isVolunteer value:', status.isVolunteer);
       setIsVolunteer(status.isVolunteer);
       setSessionFee(status.sessionFee);
       updateCurrentConfig(status.isVolunteer, status.sessionFee);
