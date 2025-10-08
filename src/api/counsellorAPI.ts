@@ -230,7 +230,7 @@ export const getRecentSessions = async (counselorId: number, limit: number = 10)
       // Sort by date and limit the results to get recent sessions
       const sessions = response.data.data || [];
       const recentSessions = sessions
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .sort((a, b) => new Date(b.date + (b.date.includes('T') ? '' : 'T00:00:00')).getTime() - new Date(a.date + (a.date.includes('T') ? '' : 'T00:00:00')).getTime())
         .slice(0, limit);
       
       return recentSessions;
@@ -270,10 +270,10 @@ export const getSessions = async (counselorId: number, params?: {
           sessions = sessions.filter(session => session.status === params.status);
         }
         if (params.startDate && params.endDate) {
-          const startDate = new Date(params.startDate);
-          const endDate = new Date(params.endDate);
+          const startDate = new Date(params.startDate + (params.startDate.includes('T') ? '' : 'T00:00:00'));
+          const endDate = new Date(params.endDate + (params.endDate.includes('T') ? '' : 'T00:00:00'));
           sessions = sessions.filter(session => {
-            const sessionDate = new Date(session.date);
+            const sessionDate = new Date(session.date + (session.date.includes('T') ? '' : 'T00:00:00'));
             return sessionDate >= startDate && sessionDate <= endDate;
           });
         }
@@ -416,8 +416,10 @@ export const getClientMoodAnalysis = async (clientId: string, month?: number, ye
       let filteredMoods = moods;
       if (month !== undefined && year !== undefined) {
         filteredMoods = moods.filter(mood => {
-          const moodDate = new Date(mood.local_date);
-          return moodDate.getMonth() === month && moodDate.getFullYear() === year;
+          const moodDate = new Date(mood.local_date + (mood.local_date.includes('T') ? '' : 'T00:00:00'));
+          // Convert to Asia/Colombo timezone for comparison
+          const colomboDate = new Date(moodDate.toLocaleString('en-US', { timeZone: 'Asia/Colombo' }));
+          return colomboDate.getMonth() === month && colomboDate.getFullYear() === year;
         });
       }
       
@@ -430,16 +432,17 @@ export const getClientMoodAnalysis = async (clientId: string, month?: number, ye
       
       // Sort moods by date for trend analysis (only if we have moods)
       const sortedMoods = filteredMoods.length > 0 ? [...filteredMoods].sort((a, b) => 
-        new Date(a.local_date).getTime() - new Date(b.local_date).getTime()
+        new Date(a.local_date + (a.local_date.includes('T') ? '' : 'T00:00:00')).getTime() - new Date(b.local_date + (b.local_date.includes('T') ? '' : 'T00:00:00')).getTime()
       ) : [];
       
       // Get recent mood trends (last 30 days or all entries for the selected month)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      const recentMoods = sortedMoods.filter(mood => 
-        mood.local_date && new Date(mood.local_date) >= thirtyDaysAgo
-      );
+      const recentMoods = sortedMoods.filter(mood => {
+        const moodDate = new Date(mood.local_date + (mood.local_date.includes('T') ? '' : 'T00:00:00'));
+        return moodDate >= thirtyDaysAgo;
+      });
       
       return {
         totalEntries: filteredMoods.length,
@@ -581,16 +584,17 @@ export const getClientPHQ9Analysis = async (clientId: string): Promise<PHQ9Analy
       
       // Sort entries by date for trend analysis
       const sortedEntries = phq9Entries.length > 0 ? [...phq9Entries].sort((a, b) => 
-        new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime()
+        new Date(a.completedAt + (a.completedAt.includes('T') ? '' : 'T00:00:00')).getTime() - new Date(b.completedAt + (b.completedAt.includes('T') ? '' : 'T00:00:00')).getTime()
       ) : [];
       
       // Get recent entries (last 6 months)
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
       
-      const recentEntries = sortedEntries.filter(entry => 
-        entry.completedAt && new Date(entry.completedAt) >= sixMonthsAgo
-      );
+      const recentEntries = sortedEntries.filter(entry => {
+        const entryDate = new Date(entry.completedAt + (entry.completedAt.includes('T') ? '' : 'T00:00:00'));
+        return entryDate >= sixMonthsAgo;
+      });
       
       // Calculate score history
       const scoreHistory = sortedEntries.map(entry => ({

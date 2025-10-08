@@ -62,8 +62,15 @@ const ClientTable: React.FC<ClientTableProps> = ({ clients, onViewDetails }) => 
         bValue = b.sessionCount;
         break;
       case 'lastSession':
-        aValue = new Date(a.lastSession === 'No sessions' ? '1970-01-01' : a.lastSession).getTime();
-        bValue = new Date(b.lastSession === 'No sessions' ? '1970-01-01' : b.lastSession).getTime();
+        // Parse date string and convert to timestamp in Asia/Colombo timezone
+        const parseDateForSorting = (dateStr: string) => {
+          if (dateStr === 'No sessions') return new Date('1970-01-01').getTime();
+          // Create date object and ensure it's treated as Asia/Colombo time
+          const date = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'));
+          return date.getTime();
+        };
+        aValue = parseDateForSorting(a.lastSession);
+        bValue = parseDateForSorting(b.lastSession);
         break;
       case 'concerns':
         aValue = a.concerns.length;

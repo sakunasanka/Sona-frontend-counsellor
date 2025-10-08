@@ -225,8 +225,8 @@ const CounsellorClients: React.FC = () => {
       email: 'N/A', // API doesn't provide email
       phone: 'N/A', // API doesn't provide phone
       sessionCount: apiClient.total_sessions,
-      lastSession: apiClient.last_session ? new Date(apiClient.last_session).toLocaleDateString() : 'No sessions',
-      nextSession: apiClient.next_appointment ? new Date(apiClient.next_appointment).toLocaleDateString() : undefined,
+      lastSession: apiClient.last_session ? new Date(apiClient.last_session + (apiClient.last_session.includes('T') ? '' : 'T00:00:00')).toLocaleDateString('en-US', { timeZone: 'Asia/Colombo' }) : 'No sessions',
+      nextSession: apiClient.next_appointment ? new Date(apiClient.next_appointment + (apiClient.next_appointment.includes('T') ? '' : 'T00:00:00')).toLocaleDateString('en-US', { timeZone: 'Asia/Colombo' }) : undefined,
       concerns: apiClient.concerns || [], // Get concerns from API response
       status: apiClient.status,
       notes: '', // API doesn't provide notes
