@@ -8,6 +8,10 @@ export interface DashboardStats {
   averageRating: number;
   monthlyEarnings: number;
   totalBlogs: number;
+  sessionCompletionRate: number;
+  clientSatisfaction: number;
+  averageResponseTime: string;
+  responseTimeHours?: number;
 }
 
 export interface User {
@@ -127,6 +131,7 @@ export interface ClientDetails extends Client {
   };
   notes: ClientNote[];
   sessions: ClientSession[];
+  earnings?: number;
   analytics: {
     attendance_rate: number;
     average_rating: number | null;
@@ -154,6 +159,7 @@ export interface ClientSession {
   concerns: string[];
   notes: string;
   rating?: number;
+  price?: number;
 }
 
 export interface ClientsResponse {
@@ -201,10 +207,17 @@ export interface PerformanceMetrics {
  */
 export const getDashboardStats = async (): Promise<DashboardStats> => {
   try {
-    const response: ApiResponse<DashboardStats> = await apiClient.get('/counsellor/dashboard/stats', undefined, undefined, true);
+    const response: ApiResponse<DashboardStats> = await apiClient.get('/counselors/dashboard/stats', undefined, undefined, true);
+    
+    console.log('Dashboard stats API response:', response);
     
     if (response.success && response.data) {
-      return response.data;
+      console.log('Dashboard stats data:', response.data);
+      // The API returns { success: true, message: "...", data: { ... } }
+      // So response.data is the wrapped response, we need response.data.data
+      const dashboardData = (response.data as any).data || response.data;
+      console.log('Extracted dashboard data:', dashboardData);
+      return dashboardData;
     }
     
     throw new Error('Failed to fetch dashboard stats');
@@ -1452,7 +1465,7 @@ export const getCounsellorVolunteerStatus = async (): Promise<VolunteerStatusDat
       throw new Error('Authentication token not found');
     }
 
-    const response: ApiResponse<{ data: VolunteerStatusData }> = await apiClient.get('/counselors/volunteer-status', undefined, token, true);
+    const response: ApiResponse<{ data: VolunteerStatusData }> = await apiClient.get('/counsellors/volunteer-status', undefined, token, true);
 
     console.log('Get volunteer status response:', response);
 
@@ -1463,6 +1476,105 @@ export const getCounsellorVolunteerStatus = async (): Promise<VolunteerStatusDat
     throw new Error('Failed to fetch volunteer status');
   } catch (error) {
     console.error('Get volunteer status error:', error);
+    throw error;
+  }
+};
+
+// Earnings interfaces
+export interface EarningsSummary {
+  totalEarnings: number;
+  thisMonth: number;
+  lastMonth: number;
+  pendingAmount: number;
+  totalSessions: number;
+  avgPerSession: number;
+}
+
+export interface MonthlyEarning {
+  month: string;
+  earnings: number;
+  sessions: number;
+}
+
+/**
+ * Get counsellor earnings summary
+ */
+export const getEarningsSummary = async (): Promise<EarningsSummary> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: EarningsSummary }> = await apiClient.get('/counselors/earnings/summary', undefined, token, true);
+
+    console.log('Get earnings summary response:', response);
+
+    if (response.success && response.data) {
+      return response.data.data || response.data;
+    }
+
+    throw new Error('Failed to fetch earnings summary');
+  } catch (error) {
+    console.error('Get earnings summary error:', error);
+    throw error;
+  }
+};
+
+export interface ClientEarnings {
+  clientId: number;
+  clientName: string;
+  totalEarnings: number;
+  totalSessions: number;
+  lastSessionDate: string;
+}
+
+/**
+ * Get counsellor monthly earnings data
+ */
+export const getMonthlyEarnings = async (): Promise<MonthlyEarning[]> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: MonthlyEarning[] }> = await apiClient.get('/counselors/earnings/monthly', undefined, token, true);
+
+    console.log('Get monthly earnings response:', response);
+
+    if (response.success && response.data) {
+      return response.data.data || response.data;
+    }
+
+    throw new Error('Failed to fetch monthly earnings');
+  } catch (error) {
+    console.error('Get monthly earnings error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get earnings data for a specific client
+ */
+export const getClientEarnings = async (clientId: number): Promise<{ totalEarnings: number; totalSessions: number }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: { totalEarnings: number; totalSessions: number } }> = await apiClient.get(`/counselors/earnings/per-client/${clientId}`, undefined, token, true);
+
+    console.log('Get client earnings response:', response);
+
+    if (response.success && response.data) {
+      return response.data.data || response.data;
+    }
+
+    throw new Error('Failed to fetch client earnings');
+  } catch (error) {
+    console.error('Get client earnings error:', error);
     throw error;
   }
 };
