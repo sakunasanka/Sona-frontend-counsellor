@@ -1,7 +1,6 @@
 import React from 'react';
 import { MapPin, Calendar, Globe, Instagram, Linkedin } from 'lucide-react';
 import { CounsellorProfile } from '../types';
-import StatusIndicator from './StatusIndicator';
 
 // Custom X logo component
 const XLogo: React.FC<{ className?: string }> = ({ className }) => (
@@ -20,15 +19,13 @@ interface ProfileInfoProps {
   editForm: Partial<CounsellorProfile>;
   isEditing: boolean;
   onInputChange: (field: string, value: any) => void;
-  onStatusChange: (status: 'available' | 'busy' | 'offline') => void;
 }
 
 const ProfileInfo: React.FC<ProfileInfoProps> = ({
   profile,
   editForm,
   isEditing,
-  onInputChange,
-  onStatusChange
+  onInputChange
 }) => {
   return (
     <div className="mt-20 mb-6">
@@ -40,11 +37,6 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                   Dr. {profile.firstName}
                 </h1>
-                <StatusIndicator 
-                  status={profile.status}
-                  lastActiveAt={profile.lastActiveAt}
-                  onStatusChange={onStatusChange}
-                />
               </div>
               <p className="text-gray-600 mb-4 leading-relaxed">{profile.bio}</p>
             </>

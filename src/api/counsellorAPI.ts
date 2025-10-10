@@ -8,6 +8,10 @@ export interface DashboardStats {
   averageRating: number;
   monthlyEarnings: number;
   totalBlogs: number;
+  sessionCompletionRate: number;
+  clientSatisfaction: number;
+  averageResponseTime: string;
+  responseTimeHours?: number;
 }
 
 export interface User {
@@ -38,6 +42,7 @@ export interface Client {
   avatar: string;
   student_id: string;
   is_anonymous: boolean;
+  concerns: string[]; // Add concerns property
   status: 'active' | 'inactive' | 'new';
   last_session: string | null;
   total_sessions: number;
@@ -50,7 +55,12 @@ export interface MoodEntry {
   id: string;
   user_id: string;
   local_date: string;
+  valence: string;
+  arousal: string;
+  intensity: string;
   mood: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface MoodAnalysisResponse {
@@ -59,6 +69,9 @@ export interface MoodAnalysisResponse {
   recentMoods: MoodEntry[];
   moodTrends: MoodEntry[];
   averageMoodScore: number;
+  averageValence: number;
+  averageArousal: number;
+  averageIntensity: number;
   lastUpdated: string | null;
 }
 
@@ -118,6 +131,7 @@ export interface ClientDetails extends Client {
   };
   notes: ClientNote[];
   sessions: ClientSession[];
+  earnings?: number;
   analytics: {
     attendance_rate: number;
     average_rating: number | null;
@@ -145,6 +159,7 @@ export interface ClientSession {
   concerns: string[];
   notes: string;
   rating?: number;
+  price?: number;
 }
 
 export interface ClientsResponse {
@@ -163,7 +178,6 @@ export interface ClientsResponse {
 
 export interface Blog {
   id: string;
-  title: string;
   content: string;
   excerpt: string;
   publishedDate: string;
@@ -193,10 +207,17 @@ export interface PerformanceMetrics {
  */
 export const getDashboardStats = async (): Promise<DashboardStats> => {
   try {
-    const response: ApiResponse<DashboardStats> = await apiClient.get('/counsellor/dashboard/stats', undefined, undefined, true);
+    const response: ApiResponse<DashboardStats> = await apiClient.get('/counselors/dashboard/stats', undefined, undefined, true);
+    
+    console.log('Dashboard stats API response:', response);
     
     if (response.success && response.data) {
-      return response.data;
+      console.log('Dashboard stats data:', response.data);
+      // The API returns { success: true, message: "...", data: { ... } }
+      // So response.data is the wrapped response, we need response.data.data
+      const dashboardData = (response.data as any).data || response.data;
+      console.log('Extracted dashboard data:', dashboardData);
+      return dashboardData;
     }
     
     throw new Error('Failed to fetch dashboard stats');
@@ -222,7 +243,7 @@ export const getRecentSessions = async (counselorId: number, limit: number = 10)
       // Sort by date and limit the results to get recent sessions
       const sessions = response.data.data || [];
       const recentSessions = sessions
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .sort((a, b) => new Date(b.date + (b.date.includes('T') ? '' : 'T00:00:00')).getTime() - new Date(a.date + (a.date.includes('T') ? '' : 'T00:00:00')).getTime())
         .slice(0, limit);
       
       return recentSessions;
@@ -262,10 +283,10 @@ export const getSessions = async (counselorId: number, params?: {
           sessions = sessions.filter(session => session.status === params.status);
         }
         if (params.startDate && params.endDate) {
-          const startDate = new Date(params.startDate);
-          const endDate = new Date(params.endDate);
+          const startDate = new Date(params.startDate + (params.startDate.includes('T') ? '' : 'T00:00:00'));
+          const endDate = new Date(params.endDate + (params.endDate.includes('T') ? '' : 'T00:00:00'));
           sessions = sessions.filter(session => {
-            const sessionDate = new Date(session.date);
+            const sessionDate = new Date(session.date + (session.date.includes('T') ? '' : 'T00:00:00'));
             return sessionDate >= startDate && sessionDate <= endDate;
           });
         }
@@ -347,16 +368,21 @@ export const getClientDetails = async (clientId: string): Promise<{ success: boo
 };
 
 /**
- * Get mood analysis for a client
+ * Get mood analysis for a client with optional month filtering
  */
-export const getClientMoodAnalysis = async (clientId: string): Promise<MoodAnalysisResponse> => {
+export const getClientMoodAnalysis = async (clientId: string, month?: number, year?: number): Promise<MoodAnalysisResponse> => {
   try {
     const token = localStorage.getItem('auth_token');
     if (!token) {
       throw new Error('Authentication token not found');
     }
 
-    const response: ApiResponse<any> = await apiClient.get(`/users/${clientId}/moods`, undefined, token, true);
+    // Build query parameters for month/year filtering
+    const params: Record<string, string> = {};
+    if (month !== undefined) params.month = month.toString();
+    if (year !== undefined) params.year = year.toString();
+
+    const response: ApiResponse<any> = await apiClient.get(`/users/${clientId}/moods`, params, token, true);
     
     console.log('Get client mood analysis response:', response);
     console.log('Response data type:', typeof response.data);
@@ -399,32 +425,47 @@ export const getClientMoodAnalysis = async (clientId: string): Promise<MoodAnaly
         moods = [];
       }
       
+      // Filter moods by month/year if specified
+      let filteredMoods = moods;
+      if (month !== undefined && year !== undefined) {
+        filteredMoods = moods.filter(mood => {
+          const moodDate = new Date(mood.local_date + (mood.local_date.includes('T') ? '' : 'T00:00:00'));
+          // Convert to Asia/Colombo timezone for comparison
+          const colomboDate = new Date(moodDate.toLocaleString('en-US', { timeZone: 'Asia/Colombo' }));
+          return colomboDate.getMonth() === month && colomboDate.getFullYear() === year;
+        });
+      }
+      
       // Process mood data for analysis
-      const moodCounts = moods.length > 0 ? moods.reduce((acc, mood) => {
+      const moodCounts = filteredMoods.length > 0 ? filteredMoods.reduce((acc, mood) => {
         const moodType = mood.mood || 'neutral';
         acc[moodType] = (acc[moodType] || 0) + 1;
         return acc;
       }, {} as Record<string, number>) : {};
       
       // Sort moods by date for trend analysis (only if we have moods)
-      const sortedMoods = moods.length > 0 ? [...moods].sort((a, b) => 
-        new Date(a.local_date).getTime() - new Date(b.local_date).getTime()
+      const sortedMoods = filteredMoods.length > 0 ? [...filteredMoods].sort((a, b) => 
+        new Date(a.local_date + (a.local_date.includes('T') ? '' : 'T00:00:00')).getTime() - new Date(b.local_date + (b.local_date.includes('T') ? '' : 'T00:00:00')).getTime()
       ) : [];
       
-      // Get recent mood trends (last 30 days)
+      // Get recent mood trends (last 30 days or all entries for the selected month)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      const recentMoods = sortedMoods.filter(mood => 
-        mood.local_date && new Date(mood.local_date) >= thirtyDaysAgo
-      );
+      const recentMoods = sortedMoods.filter(mood => {
+        const moodDate = new Date(mood.local_date + (mood.local_date.includes('T') ? '' : 'T00:00:00'));
+        return moodDate >= thirtyDaysAgo;
+      });
       
       return {
-        totalEntries: moods.length,
+        totalEntries: filteredMoods.length,
         moodDistribution: moodCounts,
         recentMoods,
         moodTrends: sortedMoods,
-        averageMoodScore: calculateAverageMoodScore(moods),
+        averageMoodScore: calculateAverageMoodScore(filteredMoods),
+        averageValence: calculateAverageValence(filteredMoods),
+        averageArousal: calculateAverageArousal(filteredMoods),
+        averageIntensity: calculateAverageIntensity(filteredMoods),
         lastUpdated: sortedMoods.length > 0 ? sortedMoods[sortedMoods.length - 1].local_date : null
       };
     }
@@ -440,12 +481,18 @@ export const getClientMoodAnalysis = async (clientId: string): Promise<MoodAnaly
 const calculateAverageMoodScore = (moods: MoodEntry[]): number => {
   if (!moods || moods.length === 0) return 0;
   
+  // Updated mood scores for the new mood system
   const moodScores: Record<string, number> = {
-    'very_sad': 1,
-    'sad': 2,
-    'neutral': 3,
-    'happy': 4,
-    'very_happy': 5
+    'Sad': 1,
+    'Anxious': 2,
+    'Unpleasant': 2,
+    'Neutral': 3,
+    'Alert': 3,
+    'Calm': 4,
+    'Pleasant': 4,
+    'Content': 4,
+    'Happy': 5,
+    'Excited': 5
   };
   
   const validMoods = moods.filter(mood => mood && mood.mood);
@@ -456,6 +503,39 @@ const calculateAverageMoodScore = (moods: MoodEntry[]): number => {
   }, 0);
   
   return Math.round((totalScore / validMoods.length) * 10) / 10; // Round to 1 decimal place
+};
+
+// Helper function to calculate average valence
+const calculateAverageValence = (moods: MoodEntry[]): number => {
+  if (!moods || moods.length === 0) return 0;
+  
+  const validMoods = moods.filter(mood => mood && mood.valence && !isNaN(parseFloat(mood.valence)));
+  if (validMoods.length === 0) return 0;
+  
+  const totalValence = validMoods.reduce((sum, mood) => sum + parseFloat(mood.valence), 0);
+  return Math.round((totalValence / validMoods.length) * 100) / 100; // Round to 2 decimal places
+};
+
+// Helper function to calculate average arousal
+const calculateAverageArousal = (moods: MoodEntry[]): number => {
+  if (!moods || moods.length === 0) return 0;
+  
+  const validMoods = moods.filter(mood => mood && mood.arousal && !isNaN(parseFloat(mood.arousal)));
+  if (validMoods.length === 0) return 0;
+  
+  const totalArousal = validMoods.reduce((sum, mood) => sum + parseFloat(mood.arousal), 0);
+  return Math.round((totalArousal / validMoods.length) * 100) / 100; // Round to 2 decimal places
+};
+
+// Helper function to calculate average intensity
+const calculateAverageIntensity = (moods: MoodEntry[]): number => {
+  if (!moods || moods.length === 0) return 0;
+  
+  const validMoods = moods.filter(mood => mood && mood.intensity && !isNaN(parseFloat(mood.intensity)));
+  if (validMoods.length === 0) return 0;
+  
+  const totalIntensity = validMoods.reduce((sum, mood) => sum + parseFloat(mood.intensity), 0);
+  return Math.round((totalIntensity / validMoods.length) * 100) / 100; // Round to 2 decimal places
 };
 
 /**
@@ -517,16 +597,17 @@ export const getClientPHQ9Analysis = async (clientId: string): Promise<PHQ9Analy
       
       // Sort entries by date for trend analysis
       const sortedEntries = phq9Entries.length > 0 ? [...phq9Entries].sort((a, b) => 
-        new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime()
+        new Date(a.completedAt + (a.completedAt.includes('T') ? '' : 'T00:00:00')).getTime() - new Date(b.completedAt + (b.completedAt.includes('T') ? '' : 'T00:00:00')).getTime()
       ) : [];
       
       // Get recent entries (last 6 months)
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
       
-      const recentEntries = sortedEntries.filter(entry => 
-        entry.completedAt && new Date(entry.completedAt) >= sixMonthsAgo
-      );
+      const recentEntries = sortedEntries.filter(entry => {
+        const entryDate = new Date(entry.completedAt + (entry.completedAt.includes('T') ? '' : 'T00:00:00'));
+        return entryDate >= sixMonthsAgo;
+      });
       
       // Calculate score history
       const scoreHistory = sortedEntries.map(entry => ({
@@ -1027,6 +1108,9 @@ export interface Post {
   stats: PostStats;
   backgroundColor: string;
   liked: boolean;
+  image?: string | null;
+  isAnonymous: boolean;
+  status?: 'pending' | 'approved' | 'rejected';
 }
 
 export interface PostsResponse {
@@ -1088,12 +1172,37 @@ export const getMyPosts = async (params?: {
   }
 };
 
+/**
+ * Get a single post by ID
+ */
+export const getPost = async (postId: string): Promise<Post> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: Post }> = await apiClient.get(`/posts/${postId}`, undefined, token, true);
+    
+    if (response.success && response.data) {
+      // Handle nested or direct response structure
+      return response.data.data || response.data;
+    }
+    
+    throw new Error('Failed to fetch post');
+  } catch (error) {
+    console.error('Get post error:', error);
+    throw error;
+  }
+};
+
 // Post creation and update interfaces
 export interface CreatePostData {
   content: string;
   hashtags: string[];
   backgroundColor?: string;
   image?: string;
+  isAnonymous?: boolean;
 }
 
 export interface UpdatePostData {
@@ -1101,6 +1210,7 @@ export interface UpdatePostData {
   hashtags: string[];
   backgroundColor?: string;
   image?: string;
+  isAnonymous?: boolean;
 }
 
 export interface CreatePostResponse {
@@ -1169,6 +1279,32 @@ export const updatePost = async (postId: string, postData: UpdatePostData): Prom
     throw new Error('Failed to update post');
   } catch (error) {
     console.error('Update post error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a post
+ */
+export const deletePost = async (postId: string): Promise<{ success: boolean; message?: string }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ message?: string }> = await apiClient.delete(`/posts/${postId}`, token, true);
+    
+    if (response.success) {
+      return {
+        success: true,
+        message: response.data?.message || 'Post deleted successfully'
+      };
+    }
+    
+    throw new Error('Failed to delete post');
+  } catch (error) {
+    console.error('Delete post error:', error);
     throw error;
   }
 };
@@ -1264,6 +1400,7 @@ export const toggleLikePost = async (postId: string): Promise<{ liked?: boolean;
 
 /**
  * Increment view count for a post after user views it
+ * The backend should handle checking if the viewer is the author
  */
 export const incrementPostView = async (postId: string): Promise<{ views?: number }> => {
   try {
@@ -1278,6 +1415,169 @@ export const incrementPostView = async (postId: string): Promise<{ views?: numbe
     throw new Error('Failed to increment post view');
   } catch (error) {
     console.error('Increment post view error:', error);
+    throw error;
+  }
+};
+
+// Volunteer status interface
+export interface VolunteerStatusData {
+  isVolunteer: boolean;
+  sessionFee: number;
+}
+
+/**
+ * Update counsellor volunteer status and session fee
+ */
+export const updateCounsellorVolunteerStatus = async (volunteerData: VolunteerStatusData): Promise<{ success: boolean; message: string }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    console.log('Updating volunteer status with data:', volunteerData);
+
+    const response: ApiResponse<{ message: string }> = await apiClient.put('/counselors/volunteer-status', volunteerData, token, true);
+
+    console.log('Update volunteer status response:', response);
+
+    if (response.success) {
+      return {
+        success: true,
+        message: response.data?.message || 'Volunteer status updated successfully'
+      };
+    }
+
+    throw new Error('Failed to update volunteer status');
+  } catch (error) {
+    console.error('Update volunteer status error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get counsellor volunteer status and session fee
+ */
+export const getCounsellorVolunteerStatus = async (): Promise<VolunteerStatusData> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: VolunteerStatusData }> = await apiClient.get('/counselors/volunteer-status', undefined, token, true);
+
+    console.log('Get volunteer status API response:', response);
+    console.log('Response data:', response.data);
+
+    if (response.success && response.data) {
+      const volunteerData = response.data.data || response.data;
+      console.log('Extracted volunteer data:', volunteerData);
+      return volunteerData;
+    }
+
+    throw new Error('Failed to fetch volunteer status');
+  } catch (error) {
+    console.error('Get volunteer status error:', error);
+    throw error;
+  }
+};
+
+// Earnings interfaces
+export interface EarningsSummary {
+  totalEarnings: number;
+  thisMonth: number;
+  lastMonth: number;
+  pendingAmount: number;
+  totalSessions: number;
+  avgPerSession: number;
+}
+
+export interface MonthlyEarning {
+  month: string;
+  earnings: number;
+  sessions: number;
+}
+
+/**
+ * Get counsellor earnings summary
+ */
+export const getEarningsSummary = async (): Promise<EarningsSummary> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: EarningsSummary }> = await apiClient.get('/counselors/earnings/summary', undefined, token, true);
+
+    console.log('Get earnings summary response:', response);
+
+    if (response.success && response.data) {
+      return response.data.data || response.data;
+    }
+
+    throw new Error('Failed to fetch earnings summary');
+  } catch (error) {
+    console.error('Get earnings summary error:', error);
+    throw error;
+  }
+};
+
+export interface ClientEarnings {
+  clientId: number;
+  clientName: string;
+  totalEarnings: number;
+  totalSessions: number;
+  lastSessionDate: string;
+}
+
+/**
+ * Get counsellor monthly earnings data
+ */
+export const getMonthlyEarnings = async (): Promise<MonthlyEarning[]> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: MonthlyEarning[] }> = await apiClient.get('/counselors/earnings/monthly', undefined, token, true);
+
+    console.log('Get monthly earnings response:', response);
+
+    if (response.success && response.data) {
+      return response.data.data || response.data;
+    }
+
+    throw new Error('Failed to fetch monthly earnings');
+  } catch (error) {
+    console.error('Get monthly earnings error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get earnings data for a specific client
+ */
+export const getClientEarnings = async (clientId: number): Promise<{ totalEarnings: number; totalSessions: number }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: { totalEarnings: number; totalSessions: number } }> = await apiClient.get(`/counselors/earnings/per-client/${clientId}`, undefined, token, true);
+
+    console.log('Get client earnings response:', response);
+
+    if (response.success && response.data) {
+      return response.data.data || response.data;
+    }
+
+    throw new Error('Failed to fetch client earnings');
+  } catch (error) {
+    console.error('Get client earnings error:', error);
     throw error;
   }
 };

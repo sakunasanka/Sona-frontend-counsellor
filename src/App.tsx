@@ -1,6 +1,7 @@
 import Home from './pages/Home';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import { ProfileProvider } from './contexts/ProfileContext';
 import NotFoundPage from './pages/Error/NotFoundPage';
 import ForbiddenPage from './pages/Error/ForbiddenPage';
 import SignUp from "./pages/Auth/SignUp";
@@ -34,8 +35,9 @@ import ViewPrescription from './pages/Psychiatrist/ViewPrescription';
 function App() {
 
   return (
-    <Router>
-      <Routes>
+    <ProfileProvider>
+      <Router>
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/example-use" element={<ExampleUse />} />
         <Route path="/signup" element={<SignUp/>} ></Route>
@@ -72,8 +74,9 @@ function App() {
         <Route path="/psychiatrist/create-prescription" element={<CreatePrescription />} />
         <Route path="/psychiatrist/view-prescription/:prescriptionId" element={<ViewPrescription />} />
         
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </ProfileProvider>
   );
 }
 

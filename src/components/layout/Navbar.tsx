@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Menu, Bell, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useProfile } from '../../contexts/ProfileContext';
 
 const initialNotifications = [
   {
@@ -42,6 +43,7 @@ const initialNotifications = [
 const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
   const navigate = useNavigate();
   const handleProfile = () => navigate("/counsellor-profile");
+  const { profile } = useProfile();
   
   const [notifications, setNotifications] = useState(initialNotifications);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -68,11 +70,7 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
     };
   }, [showDropdown]);
 
-  const formatDate = (iso: string) =>
-    new Date(iso).toLocaleString(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    });
+
 
   const handleMarkAllAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
@@ -243,7 +241,7 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
             onClick={() => handleProfile()}
           >
             <img 
-              src="/assets/images/profile-photo.png" 
+              src={profile?.profileImage || "https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png"} 
               alt="Profile" 
               className="w-full h-full object-cover"
             />

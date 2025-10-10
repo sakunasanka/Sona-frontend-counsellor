@@ -219,15 +219,15 @@ const CounsellorClients: React.FC = () => {
     return {
       id: apiClient.id,
       name: apiClient.name,
-      profileImage: apiClient.avatar || '/src/assets/images/patient-photo.png', // Default image
+      profileImage: apiClient.avatar || 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png', // Default image
       age: 25, // Default age as API doesn't provide this
       gender: 'Unknown', // Default gender as API doesn't provide this
       email: 'N/A', // API doesn't provide email
       phone: 'N/A', // API doesn't provide phone
       sessionCount: apiClient.total_sessions,
-      lastSession: apiClient.last_session ? new Date(apiClient.last_session).toLocaleDateString() : 'No sessions',
-      nextSession: apiClient.next_appointment ? new Date(apiClient.next_appointment).toLocaleDateString() : undefined,
-      concerns: [], // API doesn't provide concerns, could be added later
+      lastSession: apiClient.last_session ? new Date(apiClient.last_session + (apiClient.last_session.includes('T') ? '' : 'T00:00:00')).toLocaleDateString('en-US', { timeZone: 'Asia/Colombo' }) : 'No sessions',
+      nextSession: apiClient.next_appointment ? new Date(apiClient.next_appointment + (apiClient.next_appointment.includes('T') ? '' : 'T00:00:00')).toLocaleDateString('en-US', { timeZone: 'Asia/Colombo' }) : undefined,
+      concerns: apiClient.concerns || [], // Get concerns from API response
       status: apiClient.status,
       notes: '', // API doesn't provide notes
       anonymous: apiClient.is_anonymous,
@@ -246,7 +246,6 @@ const CounsellorClients: React.FC = () => {
       const response = await getClients({
         page: 1,
         limit: 100, // Get all clients for now
-        search: searchQuery || undefined,
       });
 
       if (response.success && response.data) {
@@ -261,21 +260,10 @@ const CounsellorClients: React.FC = () => {
     }
   };
 
-  // Fetch clients on component mount and when search changes
+  // Fetch clients on component mount
   useEffect(() => {
     fetchClients();
   }, []);
-
-  // Debounced search effect
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchQuery !== undefined) {
-        fetchClients();
-      }
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter clients based on search query, active filter, anonymous status, and student status
   const filteredClients = filterClients(

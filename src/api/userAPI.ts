@@ -26,6 +26,26 @@ export const signinCounselor = async (credentials: SigninRequest): Promise<Couns
       const { token } = response.data.data;
       apiClient.setAuthToken(token);
       
+      // Store token in localStorage
+      localStorage.setItem('auth_token', token);
+      
+      // Decode JWT token to extract counsellor_id
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const payload = JSON.parse(jsonPayload);
+        
+        if (payload && payload.id) {
+          localStorage.setItem('counsellor_id', payload.id.toString());
+        }
+      } catch (decodeError) {
+        console.error('Error decoding token for counsellor_id:', decodeError);
+      }
+      
       return response.data;
     }
     

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Users } from 'lucide-react';
-import ClientCard, { Client } from './ClientCard';
+import ClientTable, { Client } from './ClientTable';
 
 interface ClientListProps {
   clients: Client[];
@@ -17,15 +17,10 @@ const ClientList: React.FC<ClientListProps> = ({
 }) => {
   if (clients.length > 0) {
     return (
-      <div className="space-y-4 lg:space-y-6">
-        {clients.map(client => (
-          <ClientCard 
-            key={client.id} 
-            client={client} 
-            onViewDetails={onViewDetails} 
-          />
-        ))}
-      </div>
+      <ClientTable
+        clients={clients}
+        onViewDetails={onViewDetails}
+      />
     );
   }
 

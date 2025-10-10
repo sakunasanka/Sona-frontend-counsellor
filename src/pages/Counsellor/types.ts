@@ -19,8 +19,6 @@ export interface CounsellorProfile {
   totalReviews: number;
   totalSessions: number;
   totalClients: number;
-  status: 'available' | 'busy' | 'offline';
-  lastActiveAt?: string;
   socialLinks: {
     instagram?: string;
     linkedin?: string;

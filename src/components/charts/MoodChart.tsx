@@ -32,28 +32,43 @@ interface MoodChartProps {
 
 const MoodChart: React.FC<MoodChartProps> = ({ moodData, type, className = '' }) => {
   const moodColors = {
-    'very_sad': '#ef4444',
-    'sad': '#f97316',
-    'neutral': '#eab308',
-    'happy': '#22c55e',
-    'very_happy': '#16a34a'
+    'Sad': '#ef4444',
+    'Anxious': '#f59e0b',
+    'Unpleasant': '#f97316',
+    'Neutral': '#6b7280',
+    'Alert': '#3b82f6',
+    'Calm': '#06b6d4',
+    'Pleasant': '#10b981',
+    'Content': '#22c55e',
+    'Happy': '#16a34a',
+    'Excited': '#dc2626'
   };
 
   const moodLabels = {
-    'very_sad': 'Very Sad',
-    'sad': 'Sad',
-    'neutral': 'Neutral',
-    'happy': 'Happy',
-    'very_happy': 'Very Happy'
+    'Sad': 'Sad',
+    'Anxious': 'Anxious',
+    'Unpleasant': 'Unpleasant',
+    'Neutral': 'Neutral',
+    'Alert': 'Alert',
+    'Calm': 'Calm',
+    'Pleasant': 'Pleasant',
+    'Content': 'Content',
+    'Happy': 'Happy',
+    'Excited': 'Excited'
   };
 
   const getMoodScore = (mood: string): number => {
     const scores = {
-      'very_sad': 1,
-      'sad': 2,
-      'neutral': 3,
-      'happy': 4,
-      'very_happy': 5
+      'Sad': 1,
+      'Anxious': 2,
+      'Unpleasant': 2,
+      'Neutral': 3,
+      'Alert': 3,
+      'Calm': 4,
+      'Pleasant': 4,
+      'Content': 4,
+      'Happy': 5,
+      'Excited': 5
     };
     return scores[mood as keyof typeof scores] || 3;
   };
@@ -103,6 +118,11 @@ const MoodChart: React.FC<MoodChartProps> = ({ moodData, type, className = '' })
         <div className="mt-4 text-center text-sm text-gray-600">
           <p>Total Entries: <span className="font-semibold">{moodData.totalEntries}</span></p>
           <p>Average Score: <span className="font-semibold">{moodData.averageMoodScore}/5</span></p>
+          <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+            <p>Valence: <span className="font-semibold">{moodData.averageValence?.toFixed(2)}</span></p>
+            <p>Arousal: <span className="font-semibold">{moodData.averageArousal?.toFixed(2)}</span></p>
+            <p>Intensity: <span className="font-semibold">{moodData.averageIntensity?.toFixed(2)}</span></p>
+          </div>
         </div>
       </div>
     );
@@ -165,9 +185,14 @@ const MoodChart: React.FC<MoodChartProps> = ({ moodData, type, className = '' })
           },
           label: function(context: any) {
             const index = context.dataIndex;
-            const mood = last30Days[index].mood;
-            const moodLabel = moodLabels[mood as keyof typeof moodLabels] || mood;
-            return `Mood: ${moodLabel} (${context.raw}/5)`;
+            const moodEntry = last30Days[index];
+            const moodLabel = moodLabels[moodEntry.mood as keyof typeof moodLabels] || moodEntry.mood;
+            return [
+              `Mood: ${moodLabel} (${context.raw}/5)`,
+              `Valence: ${parseFloat(moodEntry.valence).toFixed(2)}`,
+              `Arousal: ${parseFloat(moodEntry.arousal).toFixed(2)}`,
+              `Intensity: ${parseFloat(moodEntry.intensity).toFixed(2)}`
+            ];
           }
         }
       }
@@ -198,11 +223,27 @@ const MoodChart: React.FC<MoodChartProps> = ({ moodData, type, className = '' })
   return (
     <div className={`bg-white p-6 rounded-lg shadow-sm ${className}`}>
       <Line data={chartData} options={options} />
-      <div className="mt-4 flex justify-between text-sm text-gray-600">
-        <p>Showing last {last30Days.length} entries</p>
-        {moodData.lastUpdated && (
-          <p>Last updated: {new Date(moodData.lastUpdated).toLocaleDateString()}</p>
-        )}
+      <div className="mt-4 space-y-2">
+        <div className="flex justify-between text-sm text-gray-600">
+          <p>Showing last {last30Days.length} entries</p>
+          {moodData.lastUpdated && (
+            <p>Last updated: {new Date(moodData.lastUpdated).toLocaleDateString()}</p>
+          )}
+        </div>
+        <div className="grid grid-cols-3 gap-4 text-xs text-gray-600 bg-gray-50 p-2 rounded">
+          <div className="text-center">
+            <p className="font-medium">Avg Valence</p>
+            <p>{moodData.averageValence?.toFixed(2)}</p>
+          </div>
+          <div className="text-center">
+            <p className="font-medium">Avg Arousal</p>
+            <p>{moodData.averageArousal?.toFixed(2)}</p>
+          </div>
+          <div className="text-center">
+            <p className="font-medium">Avg Intensity</p>
+            <p>{moodData.averageIntensity?.toFixed(2)}</p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -9,13 +9,17 @@ export const filterClients = (
 ): Client[] => {
   return clients.filter(client => {
     // Filter by search query
-    const matchesSearch = client.anonymous 
-      ? (client.nickname?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-         "anonymous client".includes(searchQuery.toLowerCase()) ||
-         (client.institution && client.institution.toLowerCase().includes(searchQuery.toLowerCase())))
-      : client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (client.institution && client.institution.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch = searchQuery === '' || (
+      client.anonymous
+        ? (client.nickname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           "anonymous client".includes(searchQuery.toLowerCase()) ||
+           (client.institution && client.institution.toLowerCase().includes(searchQuery.toLowerCase())) ||
+           client.id.toString().includes(searchQuery))
+        : (client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           (client.institution && client.institution.toLowerCase().includes(searchQuery.toLowerCase())) ||
+           client.id.toString().includes(searchQuery))
+    );
     
     // Filter by status
     const matchesFilter = activeFilter === 'all' || client.status === activeFilter;

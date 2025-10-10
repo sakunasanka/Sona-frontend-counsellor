@@ -18,12 +18,10 @@ import {
   getDashboardStats,
   getRecentSessions,
   getRecentActivities,
-  getPerformanceMetrics,
   getCounsellorProfile,
   type DashboardStats,
   type Session,
   type Activity as ActivityType,
-  type PerformanceMetrics
 } from "../../api/counsellorAPI";
 
 const CounsellorDashboard = () => {
@@ -34,7 +32,6 @@ const CounsellorDashboard = () => {
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [recentSessions, setRecentSessions] = useState<Session[]>([]);
   const [recentActivities, setRecentActivities] = useState<ActivityType[]>([]);
-  const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics | null>(null);
   const [counsellorProfile, setCounsellorProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,18 +92,17 @@ const CounsellorDashboard = () => {
           statsResponse,
           sessionsResponse,
           activitiesResponse,
-          metricsResponse,
           profileResponse
         ] = await Promise.allSettled([
           getDashboardStats(),
           getRecentSessions(counselorId, 4),
           getRecentActivities(4),
-          getPerformanceMetrics(),
           getCounsellorProfile()
         ]);
 
         // Handle dashboard stats
         if (statsResponse.status === 'fulfilled') {
+          console.log('Dashboard stats response value:', statsResponse.value);
           setDashboardStats(statsResponse.value);
         } else {
           console.error('Failed to fetch dashboard stats:', statsResponse.reason);
@@ -124,13 +120,6 @@ const CounsellorDashboard = () => {
           setRecentActivities(activitiesResponse.value);
         } else {
           console.error('Failed to fetch recent activities:', activitiesResponse.reason);
-        }
-
-        // Handle performance metrics
-        if (metricsResponse.status === 'fulfilled') {
-          setPerformanceMetrics(metricsResponse.value);
-        } else {
-          console.error('Failed to fetch performance metrics:', metricsResponse.reason);
         }
 
         // Handle counsellor profile
@@ -165,7 +154,7 @@ const CounsellorDashboard = () => {
     sessionCompletionRate: 0,
     clientSatisfaction: 0,
     averageResponseTime: "0 hours",
-    responseTimeHours: 0
+    responseTimeHours: 0,
   };
 
   // Calculate stats from sessions data if API stats aren't available
@@ -197,11 +186,14 @@ const CounsellorDashboard = () => {
     totalBlogs: dashboardStats?.totalBlogs ?? fallbackStats.totalBlogs,
   };
   
+  console.log('Calculated stats:', stats);
+  console.log('Dashboard stats:', dashboardStats);
+  
   const metrics = {
-    sessionCompletionRate: performanceMetrics?.sessionCompletionRate ?? fallbackMetrics.sessionCompletionRate,
-    clientSatisfaction: performanceMetrics?.clientSatisfaction ?? fallbackMetrics.clientSatisfaction,
-    averageResponseTime: performanceMetrics?.averageResponseTime ?? fallbackMetrics.averageResponseTime,
-    responseTimeHours: performanceMetrics?.responseTimeHours ?? fallbackMetrics.responseTimeHours,
+    sessionCompletionRate: dashboardStats?.sessionCompletionRate ?? fallbackMetrics.sessionCompletionRate,
+    clientSatisfaction: dashboardStats?.clientSatisfaction ?? fallbackMetrics.clientSatisfaction,
+    averageResponseTime: dashboardStats?.averageResponseTime ?? fallbackMetrics.averageResponseTime,
+    responseTimeHours: dashboardStats?.responseTimeHours ?? (dashboardStats?.averageResponseTime ? parseInt(dashboardStats.averageResponseTime.split(' ')[0]) : fallbackMetrics.responseTimeHours),
   };
 
   // Helper functions
@@ -522,13 +514,13 @@ const CounsellorDashboard = () => {
                     <div className="bg-slateButton-300 h-2 rounded-full" style={{ width: `${(metrics.clientSatisfaction / 5) * 100}%` }}></div>
                   </div>
                   
-                  <div className="flex items-center justify-between">
+                  {/* <div className="flex items-center justify-between">
                     <span className="text-gray-600">Response Time</span>
                     <span className="font-semibold text-gray-900">{metrics.averageResponseTime}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div className="bg-slateButton-300 h-2 rounded-full" style={{ width: `${Math.min((24 - metrics.responseTimeHours) / 24 * 100, 100)}%` }}></div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 

@@ -70,7 +70,7 @@ const ClientFilters: React.FC<ClientFiltersProps> = ({
       </div>
 
       {/* Desktop: Full filter bar */}
-      <div className="border-t border-gray-100 px-4 py-2 hidden lg:flex flex-wrap gap-2 items-center relative overflow-visible">
+      {/* <div className="border-t border-gray-100 px-4 py-2 hidden lg:flex flex-wrap gap-2 items-center relative overflow-visible">
         <div className="flex items-center flex-wrap gap-2">
           <span className="text-sm text-gray-700 mr-1">Status:</span>
           <button 
@@ -181,7 +181,7 @@ const ClientFilters: React.FC<ClientFiltersProps> = ({
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${filterOpen ? 'rotate-180' : ''}`} />
           </button>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

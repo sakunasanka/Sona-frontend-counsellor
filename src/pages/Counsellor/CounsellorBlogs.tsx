@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Heart, MessageCircle, Share2, Eye, MoreHorizontal, Calendar, Edit, Trash2, FileText, PenTool, Search, Filter, ChevronDown, Users, Tag } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
-import { getPosts, getMyPosts, getPostLikeStatus, toggleLikePost, incrementPostView } from '../../api/counsellorAPI';
+import FlashMessage from '../../components/ui/FlashMessage';
+import { getPosts, getMyPosts, getPostLikeStatus, toggleLikePost, incrementPostView, deletePost } from '../../api/counsellorAPI';
+import { useProfile } from '../../contexts/ProfileContext';
 
 interface Blog {
   id: string;
@@ -23,6 +25,7 @@ interface Blog {
   backgroundColor: string;
   liked: boolean;
   status?: 'edited' | 'pending' | 'approved' | 'rejected';
+  isAnonymous: boolean;
 }
 
 interface BlogCardProps {
@@ -32,12 +35,25 @@ interface BlogCardProps {
   onDelete: (blogId: string) => void;
   onShare: (blogId: string) => void;
   showStatus?: boolean;
+  isOwnPost?: boolean;
 }
 
 const CounsellorBlogs: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { profile } = useProfile();
   // Track posts we've already incremented views for in this session
   const viewedPostsRef = React.useRef<Set<string>>(new Set());
+  
+  // Helper to check if a post belongs to current user
+  const isOwnPost = (blog: Blog) => {
+    if (!profile) return false;
+    // Compare author name with current user's name
+    const currentUserName = `${profile.firstName} ${profile.lastName}`.trim();
+    const authorName = blog.author.name;
+    return currentUserName === authorName;
+  };
+  
   // Helper to format large counts like 1.6K, 2.3M
   const formatCount = (num: number) => {
     if (num < 1000) return num.toString();
@@ -57,6 +73,32 @@ const CounsellorBlogs: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePostId, setDeletePostId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [flashMessage, setFlashMessage] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Handle flash messages from navigation state
+  useEffect(() => {
+    if (location.state?.message) {
+      setFlashMessage({
+        message: location.state.message,
+        type: location.state.type || 'success'
+      });
+      // Clear the state to prevent showing message on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
+
+  // Auto-hide flash message after 5 seconds
+  useEffect(() => {
+    if (flashMessage) {
+      const timer = setTimeout(() => {
+        setFlashMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [flashMessage]);
 
   // Fetch posts from API and enrich with like status
   useEffect(() => {
@@ -107,19 +149,20 @@ const CounsellorBlogs: React.FC = () => {
 
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
-  const BlogCard: React.FC<BlogCardProps> = ({ blog, onLike, onEdit, onDelete, onShare, showStatus = false }) => {
+  const BlogCard: React.FC<BlogCardProps> = ({ blog, onLike, onEdit, onDelete, onShare, showStatus = false, isOwnPost = false }) => {
     const [showFullContent, setShowFullContent] = useState(false);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
     const cardRef = React.useRef<HTMLDivElement | null>(null);
     const hasIncrementedRef = React.useRef<boolean>(false);
     const timerRef = React.useRef<number | null>(null);
 
-    // Increment view after 2s of visibility (once per session per post)
+    // Increment view after 2s of visibility (once per session per post) - skip for own posts
     useEffect(() => {
       const el = cardRef.current;
       if (!el) return;
       if (hasIncrementedRef.current) return;
       if (viewedPostsRef.current.has(blog.id)) return;
+      if (isOwnPost) return; // Don't increment views for own posts
 
       const observer = new IntersectionObserver(
         (entries) => {
@@ -168,29 +211,33 @@ const CounsellorBlogs: React.FC = () => {
         }
         observer.disconnect();
       };
-    }, [blog.id]);
+    }, [blog.id, isOwnPost]);
 
     return (
   <div ref={cardRef} className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 lg:mb-6 overflow-hidden">
         {/* Blog Header */}
         <div className="p-4 md:p-6">
           <div className="flex items-start gap-3 mb-4">
-            <img 
-              src={blog.author.avatar} 
-              alt={blog.author.name}
-              className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
-              onError={(e) => {
-                e.currentTarget.src = '/assets/images/profile-photo.png';
-              }}
-            />
+            {!blog.isAnonymous && (
+              <img 
+                src={blog.author.avatar} 
+                alt={blog.author.name}
+                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                onError={(e) => {
+                  e.currentTarget.src = '/assets/images/profile-photo.png';
+                }}
+              />
+            )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-semibold text-gray-900 text-sm md:text-base">
-                  {blog.author.name}
+                  {blog.isAnonymous ? 'Anonymous' : blog.author.name}
                 </h3>
-                <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-xs font-medium">
-                  {blog.author.role}
-                </span>
+                {!blog.isAnonymous && (
+                  <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-xs font-medium">
+                    {blog.author.role}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2 text-gray-500 text-xs md:text-sm">
                 <Calendar className="w-3 h-3" />
@@ -198,21 +245,24 @@ const CounsellorBlogs: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => onEdit(blog.id)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <Edit className="w-4 h-4 text-gray-400" />
-              </button>
-              
-              {/* More Actions Dropdown */}
-              <div className="relative">
-                <button 
-                  onClick={() => setShowMoreMenu(!showMoreMenu)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <MoreHorizontal className="w-4 h-4 text-gray-400" />
-                </button>
+              {/* Only show edit/delete buttons for own posts */}
+              {isOwnPost && (
+                <>
+                  <button
+                    onClick={() => onEdit(blog.id)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <Edit className="w-4 h-4 text-gray-400" />
+                  </button>
+                  
+                  {/* More Actions Dropdown */}
+                  <div className="relative">
+                    <button 
+                      onClick={() => setShowMoreMenu(!showMoreMenu)}
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <MoreHorizontal className="w-4 h-4 text-gray-400" />
+                    </button>
                 
                 {showMoreMenu && (
                   <>
@@ -235,10 +285,12 @@ const CounsellorBlogs: React.FC = () => {
                         <Trash2 className="w-4 h-4" />
                         Delete
                       </button>
-                    </div>
-                  </>
-                )}
-              </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </>
+              )}
             </div>
           </div>
 
@@ -374,11 +426,51 @@ const CounsellorBlogs: React.FC = () => {
   };
 
   const handleEdit = (blogId: string) => {
-    navigate(`/counsellor/edit-blog/${blogId}`);
+    const post = blogs.find(b => b.id === blogId) || null;
+    if (post) {
+      try {
+        sessionStorage.setItem(`edit_post_${blogId}`, JSON.stringify(post));
+      } catch {}
+    }
+    navigate(`/counsellor/edit-blog/${blogId}`, { state: { post } });
   };
 
   const handleDelete = (blogId: string) => {
-    console.log('Delete blog:', blogId);
+    setDeletePostId(blogId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletePostId) return;
+
+    try {
+      setIsDeleting(true);
+      await deletePost(deletePostId);
+      
+      // Remove the post from the local state
+      setBlogs(prev => prev.filter(blog => blog.id !== deletePostId));
+      
+      setFlashMessage({
+        message: 'Post deleted successfully!',
+        type: 'success'
+      });
+      
+      setShowDeleteModal(false);
+      setDeletePostId(null);
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      setFlashMessage({
+        message: 'Failed to delete post. Please try again.',
+        type: 'error'
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setDeletePostId(null);
   };
 
   const handleShare = (blogId: string) => {
@@ -400,8 +492,9 @@ const CounsellorBlogs: React.FC = () => {
   // Filter blogs based on search query and status
   const filteredBlogs = blogs.filter(blog => {
     // Search filter (by author name or content)
+    const authorName = blog.isAnonymous ? 'Anonymous' : blog.author.name;
     const matchesSearch = searchQuery === '' || 
-      blog.author.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      authorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       blog.content.toLowerCase().includes(searchQuery.toLowerCase());
     
     // Status filter based on active tab
@@ -473,6 +566,8 @@ const CounsellorBlogs: React.FC = () => {
                 <span className="hidden sm:inline">New Blog</span>
               </button>
             </div>
+
+
 
             {/* Stats Cards - Desktop Only */}
             <div className="hidden lg:grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -719,6 +814,7 @@ const CounsellorBlogs: React.FC = () => {
                     onDelete={handleDelete}
                     onShare={handleShare}
                     showStatus={activeFilter === 'my-posts'}
+                    isOwnPost={isOwnPost(blog)}
                   />
                 ))}
               </div>
@@ -777,6 +873,59 @@ const CounsellorBlogs: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Delete Post</h3>
+                <p className="text-gray-600">Are you sure you want to delete this post?</p>
+              </div>
+            </div>
+            
+            <p className="text-sm text-gray-500 mb-6">
+              This action cannot be undone. The post will be permanently removed from your blog.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={cancelDelete}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Flash Message */}
+      <FlashMessage
+        type={flashMessage?.type || 'success'}
+        message={flashMessage?.message || ''}
+        isVisible={!!flashMessage}
+        onClose={() => setFlashMessage(null)}
+      />
     </div>
   );
 };

@@ -149,6 +149,8 @@ const Sidebar: React.FC<SidebarProps> = ({
               icon={<LogOut size={20} className="text-gray-600 group-hover:text-red-600 transition-colors duration-200" />}
               onClick={() => {
                 console.log('Logout clicked');
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('counsellor_id');
                 navigate('/signin');
                 onClose();
               }}

@@ -167,7 +167,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
         {session.notes && (
           <div className="mb-4">
             <div className="bg-secondary bg-opacity-20 border-l-4 border-secondary rounded-r-lg p-3">
-              <h4 className="text-xs font-semibold text-gray-800 mb-1 uppercase tracking-wide">Session Notes</h4>
+              <h4 className="text-xs font-semibold text-gray-800 mb-1 uppercase tracking-wide">Additional Notes</h4>
               <p className="text-sm text-gray-700 line-clamp-2">
                 {session.notes}
               </p>

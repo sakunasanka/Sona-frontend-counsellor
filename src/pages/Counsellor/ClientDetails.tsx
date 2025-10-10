@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavBar, Sidebar } from '../../components/layout';
 import { FlashMessage } from '../../components/ui';
 import { useParams } from 'react-router-dom';
-import { getClientDetails, createClientNote, deleteClientNote, updateClientNote, addClientConcern, removeClientConcern, getClientMoodAnalysis, getClientPHQ9Analysis, getSessions, type ClientDetails as APIClientDetails, type MoodAnalysisResponse, type PHQ9AnalysisResponse } from '../../api/counsellorAPI';
+import { getClientDetails, createClientNote, deleteClientNote, updateClientNote, addClientConcern, removeClientConcern, getClientMoodAnalysis, getClientPHQ9Analysis, getSessions, type ClientDetails as APIClientDetails, type MoodAnalysisResponse, type PHQ9AnalysisResponse, getClientEarnings } from '../../api/counsellorAPI';
 import { MoodChart, PHQ9Chart } from '../../components/charts';
 import { 
   Calendar, 
@@ -44,6 +44,7 @@ interface Session {
   concerns: string[];
   notes?: string;
   rating?: number;
+  price?: number; // Session fee
 }
 
 interface ClientDetailsParams {
@@ -85,6 +86,11 @@ const ClientDetails: React.FC = () => {
   const [moodData, setMoodData] = useState<MoodAnalysisResponse | null>(null);
   const [moodLoading, setMoodLoading] = useState(false);
   const [moodError, setMoodError] = useState<string | null>(null);
+  
+  // Month navigation state for mood analysis
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [showAllTime, setShowAllTime] = useState<boolean>(true);
   
   // PHQ-9 analysis state
   const [phq9Data, setPhq9Data] = useState<PHQ9AnalysisResponse | null>(null);
@@ -184,6 +190,7 @@ const ClientDetails: React.FC = () => {
     joinDate: string;
     profileImage?: string;
     nickname?: string;
+    earnings?: number;
   }
 
   interface IdentifiedClient extends BaseClient {
@@ -216,7 +223,7 @@ const ClientDetails: React.FC = () => {
     {
       id: 1,
       name: "Sarath Perera",
-      profileImage: "/assets/images/student-photo.png",
+      profileImage: "https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png",
       age: 22,
       gender: "Female",
       email: "sarath.perera@example.com",
@@ -273,7 +280,7 @@ const ClientDetails: React.FC = () => {
       student: true, // Assuming all clients are students based on student_id field
       institution: apiClient.institution || 'University',
       joinDate: apiClient.join_date ? new Date(apiClient.join_date).toLocaleDateString() : 'Unknown',
-      profileImage: apiClient.avatar || '/assets/images/student-photo.png',
+      profileImage: apiClient.avatar || 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png',
     };
 
     if (apiClient.is_anonymous) {
@@ -330,6 +337,16 @@ const ClientDetails: React.FC = () => {
         const transformedClient = transformApiClient(response.data);
         console.log('Transformed client concerns:', transformedClient.concerns);
         
+        // Fetch earnings data
+        try {
+          const earningsResponse = await getClientEarnings(parseInt(clientId));
+          console.log('Earnings response:', earningsResponse);
+          transformedClient.earnings = earningsResponse.totalEarnings;
+        } catch (earningsError) {
+          console.warn('Could not fetch earnings data:', earningsError);
+          transformedClient.earnings = 0;
+        }
+        
         setCurrentClient(transformedClient);
         
         // Transform API notes to component format and apply privacy filtering
@@ -358,27 +375,65 @@ const ClientDetails: React.FC = () => {
           });
         setNotes(transformedNotes);
 
-        // Transform API sessions to component format
-        const transformedSessions: Session[] = response.data.sessions.map(session => ({
-          id: session.id,
-          date: new Date(session.date).toLocaleDateString('en-US', { 
-            month: 'long', 
-            day: 'numeric', 
-            year: 'numeric' 
-          }) + ' • ' + new Date(session.date).toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-          }),
-          status: session.status === 'scheduled' ? 'upcoming' : 
-                  session.status === 'no_show' ? 'cancelled' : 
-                  session.status as 'completed' | 'cancelled',
-          duration: session.duration,
-          concerns: session.concerns,
-          notes: session.notes || '',
-          rating: session.rating
-        }));
-        setSessions(transformedSessions);
+        // Fetch sessions with price data from the sessions API
+        try {
+          const counselorId = parseInt(localStorage.getItem('counsellor_id') || '38');
+          const sessionsResponse = await getSessions(counselorId);
+          console.log('Sessions API response:', sessionsResponse);
+          
+          // Filter sessions for this specific client
+          const clientSessions = sessionsResponse.filter(session => session.userId === parseInt(clientId));
+          console.log('Filtered client sessions:', clientSessions);
+          
+          // Transform API sessions to component format with price data
+          const transformedSessions: Session[] = clientSessions.map(session => ({
+            id: session.id,
+            date: new Date(session.date + 'T' + session.timeSlot).toLocaleDateString('en-US', { 
+              month: 'long', 
+              day: 'numeric', 
+              year: 'numeric' 
+            }) + ' • ' + new Date(session.date + 'T' + session.timeSlot).toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            }),
+            status: session.status === 'scheduled' ? 'upcoming' : 
+                    session.status === 'no-show' ? 'cancelled' : 
+                    session.status as 'completed' | 'cancelled',
+            duration: session.duration,
+            concerns: [], // Sessions API doesn't include concerns, using empty array
+            notes: session.notes || '',
+            rating: undefined, // Sessions API doesn't include rating
+            price: session.price
+          }));
+          
+          console.log('Transformed sessions:', transformedSessions);
+          setSessions(transformedSessions);
+        } catch (sessionsError) {
+          console.warn('Could not fetch sessions with price data, using client details sessions:', sessionsError);
+          // Fallback to client details sessions
+          const transformedSessions: Session[] = response.data.sessions.map(session => ({
+            id: session.id,
+            date: new Date(session.date).toLocaleDateString('en-US', { 
+              month: 'long', 
+              day: 'numeric', 
+              year: 'numeric' 
+            }) + ' • ' + new Date(session.date).toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            }),
+            status: session.status === 'scheduled' ? 'upcoming' : 
+                    session.status === 'no_show' ? 'cancelled' : 
+                    session.status as 'completed' | 'cancelled',
+            duration: session.duration,
+            concerns: session.concerns,
+            notes: session.notes || '',
+            rating: session.rating,
+            price: session.price
+          }));
+          setSessions(transformedSessions);
+        }
       }
     } catch (err) {
       console.error('Error fetching client details:', err);
@@ -398,7 +453,11 @@ const ClientDetails: React.FC = () => {
       setMoodLoading(true);
       setMoodError(null);
       
-      const moodResponse = await getClientMoodAnalysis(clientId);
+      const moodResponse = await getClientMoodAnalysis(
+        clientId, 
+        showAllTime ? undefined : selectedMonth, 
+        showAllTime ? undefined : selectedYear
+      );
       setMoodData(moodResponse);
       
     } catch (err) {
@@ -438,11 +497,11 @@ const ClientDetails: React.FC = () => {
     if (activeTab === 'mood' && clientId) {
       if (moodSubTab === 'phq9' && !phq9Data) {
         fetchPHQ9Analysis();
-      } else if (moodSubTab === 'mood' && !moodData) {
+      } else if (moodSubTab === 'mood') {
         fetchMoodAnalysis();
       }
     }
-  }, [activeTab, clientId, moodSubTab, moodData, phq9Data]);
+  }, [activeTab, clientId, moodSubTab, showAllTime, selectedMonth, selectedYear]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -1050,6 +1109,22 @@ const ClientDetails: React.FC = () => {
                 </div>
             </div>
             
+            <h4 style="color: #7C3AED; margin: 20px 0 10px 0;">Mood Dimensions:</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                <div style="background: #F0F9FF; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-weight: bold; font-size: 16px; color: #0369A1;">${moodAnalysis.averageValence}</div>
+                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Average Valence</div>
+                </div>
+                <div style="background: #FEF3C7; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-weight: bold; font-size: 16px; color: #D97706;">${moodAnalysis.averageArousal}</div>
+                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Average Arousal</div>
+                </div>
+                <div style="background: #FCE7F3; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-weight: bold; font-size: 16px; color: #BE185D;">${moodAnalysis.averageIntensity}</div>
+                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Average Intensity</div>
+                </div>
+            </div>
+            
             <h4 style="color: #7C3AED; margin: 20px 0 10px 0;">Mood Distribution:</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px;">
                 ${Object.entries(moodAnalysis.moodDistribution).map(([mood, count]) => {
@@ -1079,7 +1154,10 @@ const ClientDetails: React.FC = () => {
             ${moodAnalysis.recentMoods.length > 0 ? `
             <h4 style="color: #7C3AED; margin: 20px 0 10px 0;">Recent Mood Entries:</h4>
             <div style="max-height: 200px; overflow-y: auto;">
-                ${moodAnalysis.recentMoods.slice(0, 10).map(mood => {
+                ${moodAnalysis.recentMoods
+                  .sort((a, b) => new Date(b.local_date).getTime() - new Date(a.local_date).getTime())
+                  .slice(0, 10)
+                  .map(mood => {
                   const moodLabels: Record<string, string> = {
                     'very_sad': 'Very Sad',
                     'sad': 'Sad',
@@ -1420,9 +1498,6 @@ const ClientDetails: React.FC = () => {
               <Clock className="w-6 h-6 text-green-500" />
             </div>
           </div>
-          <div className="mt-2 text-xs text-gray-500">
-            {currentClient.nextSession ? "Upcoming appointment" : "Schedule a session"}
-          </div>
         </div>
         
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
@@ -1435,36 +1510,22 @@ const ClientDetails: React.FC = () => {
               <UserCheck className="w-6 h-6 text-purple-500" />
             </div>
           </div>
-          <div className="mt-2 text-xs text-gray-500">
-            {Math.floor((new Date().getTime() - new Date(currentClient.joinDate).getTime()) / (1000 * 3600 * 24))} days
-          </div>
         </div>
         
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm mb-1">Status</p>
-              <p className="text-lg font-semibold text-gray-900 capitalize">{currentClient.status}</p>
+              <p className="text-gray-500 text-sm mb-1">Total Earnings</p>
+              <p className="text-2xl font-semibold text-green-600">Rs {currentClient.earnings?.toFixed(2) || '0.00'}</p>
             </div>
-            <div className={`p-2 rounded-lg ${
-              currentClient.status === 'active' ? 'bg-[rgb(174,175,247)] bg-opacity-25' : 
-              currentClient.status === 'new' ? 'bg-blue-50' :
-              'bg-orange-50'
-            }`}>
-              <span className={`w-6 h-6 ${
-                currentClient.status === 'active' ? 'text-indigo-500' : 
-                currentClient.status === 'new' ? 'text-blue-500' :
-                'text-orange-500'
-              }`}>
-                {currentClient.status === 'active' && <UserCheck className="w-6 h-6" />}
-                {currentClient.status === 'new' && <User className="w-6 h-6" />}
-                {currentClient.status === 'inactive' && <Clock className="w-6 h-6" />}
-              </span>
+            <div className="bg-green-50 p-2 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>
             </div>
           </div>
           <div className="mt-2 text-xs text-gray-500">
-            {currentClient.status === 'active' ? 'Regular client' : 
-             currentClient.status === 'new' ? 'New client' : 'Inactive client'}
+            From {currentClient.sessionCount} sessions
           </div>
         </div>
       </div>
@@ -1821,18 +1882,37 @@ const ClientDetails: React.FC = () => {
                   Duration
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Fee
+                </th>
+                {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Topics
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                </th> */}
+                {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Rating
-                </th>
+                </th> */}
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {sessions.map((session) => (
+              {sessions
+                .sort((a, b) => {
+                  // Parse the formatted date string (e.g., "July 25, 2025 • 12:00 PM")
+                  const parseDateString = (dateStr: string) => {
+                    const [datePart, timePart] = dateStr.split(' • ');
+                    if (!datePart || !timePart) return new Date(0);
+                    
+                    // Convert "July 25, 2025 • 12:00 PM" to "July 25, 2025 12:00 PM"
+                    const fullDateStr = `${datePart} ${timePart}`;
+                    return new Date(fullDateStr);
+                  };
+                  
+                  const dateA = parseDateString(a.date);
+                  const dateB = parseDateString(b.date);
+                  return dateB.getTime() - dateA.getTime(); // Descending order (newest first)
+                })
+                .map((session) => (
                 <tr key={session.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{session.date}</div>
@@ -1854,7 +1934,10 @@ const ClientDetails: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{session.duration} min</div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-green-600">Rs {session.price?.toFixed(2) || '0.00'}</div>
+                  </td>
+                  {/* <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1">
                       {session.concerns.map((concern, idx) => (
                         <span
@@ -1870,8 +1953,8 @@ const ClientDetails: React.FC = () => {
                         </span>
                       )}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  </td> */}
+                  {/* <td className="px-6 py-4 whitespace-nowrap">
                     {session.rating ? (
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (
@@ -1888,7 +1971,7 @@ const ClientDetails: React.FC = () => {
                     ) : (
                       <span className="text-gray-400 text-sm">N/A</span>
                     )}
-                  </td>
+                  </td> */}
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
                       <button 
@@ -1925,259 +2008,8 @@ const ClientDetails: React.FC = () => {
     </div>
   );
 
-  const renderDetailsTab = () => {
-    if (!currentClient) return null;
-    
-    return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Personal Information */}
-        <div className="md:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
-          
-          {currentClient.anonymous ? (
-            <div className="bg-primary bg-opacity-5 rounded-lg p-4 mb-6">
-              <div className="flex items-start">
-                <Shield className="w-5 h-5 text-indigo-600 mr-2 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-indigo-800">Anonymous Profile</h4>
-                  <p className="text-sm text-gray-600 mt-1">
-                    This client has opted for anonymity. Personal details are hidden to protect their privacy.
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : null}
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <div className="mb-4">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Full Name</label>
-                {!currentClient.anonymous ? (
-                  <p className="text-gray-900">{currentClient.name}</p>
-                ) : (
-                  <p className="text-gray-900">
-                    <span className="italic">{currentClient.nickname}</span>
-                    <span className="ml-2 text-xs bg-primary bg-opacity-10 text-primary px-2 py-0.5 rounded-full">
-                      Nickname
-                    </span>
-                  </p>
-                )}
-              </div>
-              
-              {!currentClient.anonymous && (
-                <>
-                  <div className="mb-4">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Age</label>
-                    <p className="text-gray-900">{currentClient.age} years</p>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Gender</label>
-                    <p className="text-gray-900">{currentClient.gender}</p>
-                  </div>
-                </>
-              )}
-              
-              {currentClient.student && (
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Institution</label>
-                  <p className="text-gray-900 flex items-center">
-                    <span>{currentClient.institution}</span>
-                    <span className="ml-2 inline-flex items-center px-2 py-0.5 bg-[rgb(174,175,247)] bg-opacity-25 text-indigo-500 text-xs rounded-full">
-                      Student
-                    </span>
-                  </p>
-                </div>
-              )}
-              
-              <div className="mb-4">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Client Since</label>
-                <p className="text-gray-900">{currentClient.joinDate}</p>
-              </div>
-            </div>
-            
-            <div>
-              {!currentClient.anonymous && (
-                <>
-                  <div className="mb-4">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                      <div className="flex items-center">
-                        <Mail className="w-3.5 h-3.5 mr-1 text-gray-400" />
-                        Email Address
-                      </div>
-                    </label>
-                    <p className="text-gray-900">{currentClient.email}</p>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                      <div className="flex items-center">
-                        <Phone className="w-3.5 h-3.5 mr-1 text-gray-400" />
-                        Phone Number
-                      </div>
-                    </label>
-                    <p className="text-gray-900">{currentClient.phone}</p>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                      <div className="flex items-center">
-                        <MapPin className="w-3.5 h-3.5 mr-1 text-gray-400" />
-                        Address
-                      </div>
-                    </label>
-                    <p className="text-gray-900">{currentClient.address}</p>
-                  </div>
-                  
-                  {currentClient.emergencyContact && (
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Emergency Contact</label>
-                      <p className="text-gray-900">{currentClient.emergencyContact.name}</p>
-                      <p className="text-gray-600 text-sm">{currentClient.emergencyContact.relationship}</p>
-                      <p className="text-gray-600 text-sm">{currentClient.emergencyContact.phone}</p>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-          
-          {currentClient.anonymous && (
-            <div className="border-t border-gray-100 pt-4 mt-4">
-              <div className="flex items-center text-sm text-gray-600">
-                <Flag className="w-4 h-4 mr-2 text-amber-500" />
-                <p>For ethical and privacy reasons, contact information and personal details are not visible for anonymous clients.</p>
-              </div>
-            </div>
-          )}
-        </div>
-        
-        {/* Session Progress */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold mb-4">Therapy Progress</h3>
-          
-          <div className="mb-6">
-            <div className="flex justify-between mb-1">
-              <span className="text-sm text-gray-600">Session Attendance</span>
-              <span className="text-sm font-medium text-gray-900">100%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div className="bg-green-500 h-2.5 rounded-full" style={{ width: '100%' }}></div>
-            </div>
-          </div>
-          
-          <div className="mb-6">
-            <div className="flex justify-between mb-1">
-              <span className="text-sm text-gray-600">Reported Mood</span>
-              <span className="text-sm font-medium text-gray-900">Improving</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div className="bg-primary h-2.5 rounded-full" style={{ width: '65%' }}></div>
-            </div>
-          </div>
-          
-          <div className="mt-8">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Session Ratings</h4>
-            <div className="flex items-center mb-2">
-              <span className="text-xs text-gray-500 w-8">5★</span>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '60%' }}></div>
-              </div>
-              <span className="text-xs text-gray-500 w-8 text-right">60%</span>
-            </div>
-            <div className="flex items-center mb-2">
-              <span className="text-xs text-gray-500 w-8">4★</span>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '30%' }}></div>
-              </div>
-              <span className="text-xs text-gray-500 w-8 text-right">30%</span>
-            </div>
-            <div className="flex items-center mb-2">
-              <span className="text-xs text-gray-500 w-8">3★</span>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '10%' }}></div>
-              </div>
-              <span className="text-xs text-gray-500 w-8 text-right">10%</span>
-            </div>
-            <div className="flex items-center mb-2">
-              <span className="text-xs text-gray-500 w-8">2★</span>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '0%' }}></div>
-              </div>
-              <span className="text-xs text-gray-500 w-8 text-right">0%</span>
-            </div>
-            <div className="flex items-center mb-2">
-              <span className="text-xs text-gray-500 w-8">1★</span>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '0%' }}></div>
-              </div>
-              <span className="text-xs text-gray-500 w-8 text-right">0%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Detailed Analytics Section - Full Width */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mt-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center">
-          <BarChart2 className="w-5 h-5 mr-2 text-primary" />
-          Detailed Analytics
-        </h3>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Session Timeline */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Session Timeline</h4>
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-              <div className="h-36 flex items-end justify-between space-x-1">
-                {[70, 45, 80, 65, 90, 75, 85].map((height, idx) => (
-                  <div 
-                    key={idx} 
-                    className="bg-buttonBlue-500 opacity-80 hover:opacity-100 rounded-t w-full transition-all"
-                    style={{ height: `${height}%` }}
-                  ></div>
-                ))}
-              </div>
-              <div className="flex justify-between mt-3 text-xs text-gray-500">
-                <span>Jan</span>
-                <span>Feb</span>
-                <span>Mar</span>
-                <span>Apr</span>
-                <span>May</span>
-                <span>Jun</span>
-                <span>Jul</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Primary Concerns Distribution */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Primary Concerns Distribution</h4>
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="bg-primary h-4 rounded-full" style={{ width: '40%' }}></div>
-                <span className="text-sm text-gray-700">Anxiety (40%)</span>
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="bg-buttonBlue-500 h-4 rounded-full" style={{ width: '30%' }}></div>
-                <span className="text-sm text-gray-700">Stress (30%)</span>
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="bg-buttonGreen-500 h-4 rounded-full" style={{ width: '20%' }}></div>
-                <span className="text-sm text-gray-700">Sleep Issues (20%)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="bg-buttonOrange-500 h-4 rounded-full" style={{ width: '10%' }}></div>
-                <span className="text-sm text-gray-700">Other (10%)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    );
-  };
+  // const renderDetailsTab = () => {
+  //   if (!currentClient) return null;
 
   const renderMoodTab = () => {
     if (!currentClient) return null;
@@ -2391,6 +2223,95 @@ const ClientDetails: React.FC = () => {
               </button>
             </div>
 
+            {/* Month Navigation Controls */}
+            <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="showAllTime"
+                      checked={showAllTime}
+                      onChange={(e) => setShowAllTime(e.target.checked)}
+                      className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    />
+                    <label htmlFor="showAllTime" className="ml-2 text-sm font-medium text-gray-700">
+                      Show All Time Data
+                    </label>
+                  </div>
+                  
+                  {!showAllTime && (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => {
+                          const newDate = new Date(selectedYear, selectedMonth - 1);
+                          setSelectedMonth(newDate.getMonth());
+                          setSelectedYear(newDate.getFullYear());
+                        }}
+                        className="p-2 bg-white hover:bg-gray-100 border border-gray-300 rounded-md transition-colors"
+                        title="Previous Month"
+                      >
+                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      
+                      <div className="flex items-center space-x-2">
+                        <select
+                          value={selectedMonth}
+                          onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                          className="px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        >
+                          {Array.from({ length: 12 }, (_, i) => (
+                            <option key={i} value={i}>
+                              {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                            </option>
+                          ))}
+                        </select>
+                        
+                        <select
+                          value={selectedYear}
+                          onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                          className="px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        >
+                          {Array.from({ length: 5 }, (_, i) => {
+                            const year = new Date().getFullYear() - 2 + i;
+                            return (
+                              <option key={year} value={year}>
+                                {year}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          const newDate = new Date(selectedYear, selectedMonth + 1);
+                          setSelectedMonth(newDate.getMonth());
+                          setSelectedYear(newDate.getFullYear());
+                        }}
+                        className="p-2 bg-white hover:bg-gray-100 border border-gray-300 rounded-md transition-colors"
+                        title="Next Month"
+                      >
+                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+                
+                {!showAllTime && (
+                  <div className="text-sm text-gray-600">
+                    Showing data for: <span className="font-medium">
+                      {new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {moodError && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <div className="flex items-center">
@@ -2494,29 +2415,47 @@ const ClientDetails: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {moodData.recentMoods.slice(0, 10).map((mood, index) => {
+                          {moodData.recentMoods
+                            .sort((a, b) => new Date(b.local_date).getTime() - new Date(a.local_date).getTime())
+                            .slice(0, 10)
+                            .map((mood, index) => {
                             const moodLabels: Record<string, string> = {
-                              'very_sad': 'Very Sad',
-                              'sad': 'Sad',
-                              'neutral': 'Neutral',
-                              'happy': 'Happy',
-                              'very_happy': 'Very Happy'
+                              'Sad': 'Sad',
+                              'Anxious': 'Anxious',
+                              'Unpleasant': 'Unpleasant',
+                              'Neutral': 'Neutral',
+                              'Alert': 'Alert',
+                              'Calm': 'Calm',
+                              'Pleasant': 'Pleasant',
+                              'Content': 'Content',
+                              'Happy': 'Happy',
+                              'Excited': 'Excited'
                             };
                             
                             const moodColors: Record<string, string> = {
-                              'very_sad': 'text-red-600 bg-red-100',
-                              'sad': 'text-orange-600 bg-orange-100',
-                              'neutral': 'text-yellow-600 bg-yellow-100',
-                              'happy': 'text-green-600 bg-green-100',
-                              'very_happy': 'text-emerald-600 bg-emerald-100'
+                              'Sad': 'text-red-600 bg-red-100',
+                              'Anxious': 'text-orange-600 bg-orange-100',
+                              'Unpleasant': 'text-orange-600 bg-orange-100',
+                              'Neutral': 'text-gray-600 bg-gray-100',
+                              'Alert': 'text-blue-600 bg-blue-100',
+                              'Calm': 'text-cyan-600 bg-cyan-100',
+                              'Pleasant': 'text-green-600 bg-green-100',
+                              'Content': 'text-green-600 bg-green-100',
+                              'Happy': 'text-emerald-600 bg-emerald-100',
+                              'Excited': 'text-red-600 bg-red-100'
                             };
                             
                             const moodScores: Record<string, number> = {
-                              'very_sad': 1,
-                              'sad': 2,
-                              'neutral': 3,
-                              'happy': 4,
-                              'very_happy': 5
+                              'Sad': 1,
+                              'Anxious': 2,
+                              'Unpleasant': 2,
+                              'Neutral': 3,
+                              'Alert': 3,
+                              'Calm': 4,
+                              'Pleasant': 4,
+                              'Content': 4,
+                              'Happy': 5,
+                              'Excited': 5
                             };
 
                             return (
@@ -2647,25 +2586,19 @@ const ClientDetails: React.FC = () => {
                         : currentClient.name
                       }
                     </h1>
+                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-sm font-medium">
+                      ID: {currentClient.id}
+                    </span>
                     {currentClient.anonymous && (
                       <span className="px-2 py-0.5 rounded-full bg-primary bg-opacity-10 text-primary text-xs font-medium">
                         Anonymous
                       </span>
                     )}
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                      currentClient.status === 'active' ? 'bg-primary bg-opacity-10 text-primary' : 
-                      currentClient.status === 'new' ? 'bg-primary bg-opacity-10 text-primary' : 
-                      'bg-primary bg-opacity-10 text-primary'
-                    }`}>
-                      {currentClient.status === 'active' ? 'Active' : 
-                      currentClient.status === 'new' ? 'New Client' : 
-                      'Inactive'}
-                    </span>
                   </div>
                   <div className="mt-1 flex items-center gap-2 flex-wrap">
-                    {!currentClient.anonymous && (
-                      <span className="text-gray-600 text-sm">{currentClient.age} yrs • {currentClient.gender}</span>
-                    )}
+                    <span className="text-sm text-gray-600">
+                      Client since: <span className="font-medium">{currentClient.joinDate}</span>
+                    </span>
                     {currentClient.student && (
                       <div className="flex items-center gap-1">
                         <span className="inline-flex items-center px-2 py-0.5 bg-primary bg-opacity-10 text-primary text-xs rounded-full">
@@ -2674,9 +2607,6 @@ const ClientDetails: React.FC = () => {
                           </svg>
                           Student
                         </span>
-                        {currentClient.institution && (
-                          <span className="text-xs text-gray-500">• {currentClient.institution}</span>
-                        )}
                       </div>
                     )}
                   </div>
@@ -2722,12 +2652,12 @@ const ClientDetails: React.FC = () => {
                 >
                   Mood Analysis
                 </button>
-                <button 
+                {/* <button 
                   className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'details' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
                   onClick={() => setActiveTab('details')}
                 >
                   Client Details
-                </button>
+                </button> */}
               </nav>
             </div>
           </div>
@@ -2739,7 +2669,7 @@ const ClientDetails: React.FC = () => {
             {activeTab === 'notes' && renderNotesTab()}
             {activeTab === 'sessions' && renderSessionsTab()}
             {activeTab === 'mood' && renderMoodTab()}
-            {activeTab === 'details' && renderDetailsTab()}
+            {/* {activeTab === 'details' && renderDetailsTab()} */}
           </div>
 
           {/* Session Details Modal */}
@@ -2786,43 +2716,11 @@ const ClientDetails: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500">Topics/Concerns</h4>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {selectedSession.concerns.map((concern, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center px-2.5 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full"
-                          >
-                            {concern}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    
                     {selectedSession.notes && (
                       <div>
                         <h4 className="text-sm font-medium text-gray-500">Session Notes</h4>
                         <div className="mt-1 p-3 bg-gray-50 rounded-lg text-gray-700">
                           {selectedSession.notes}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {selectedSession.rating && (
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-500">Client Rating</h4>
-                        <div className="mt-1 flex">
-                          {[...Array(5)].map((_, i) => (
-                            <svg 
-                              key={i} 
-                              className={`w-5 h-5 ${i < selectedSession.rating! ? 'text-yellow-400' : 'text-gray-300'}`}
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          ))}
                         </div>
                       </div>
                     )}
