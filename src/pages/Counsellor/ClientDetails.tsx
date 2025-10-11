@@ -8,22 +8,24 @@ import {
   Calendar, 
   Clock, 
   MessageCircle, 
-  Phone, 
-  User, 
   FileText, 
   BarChart2, 
   Shield, 
   PenLine, 
   X,
-  Mail,
-  MapPin,
   UserCheck,
   FileSymlink,
   Flag,
   FileDown,
   CalendarDays,
   Brain,
-  TrendingUp
+  TrendingUp,
+  Upload,
+  FileImage,
+  Pill,
+  Download,
+  Eye,
+  Trash2
 } from 'lucide-react';
 
 interface Note {
@@ -47,6 +49,17 @@ interface Session {
   price?: number; // Session fee
 }
 
+interface Prescription {
+  id: number;
+  fileName: string;
+  fileType: 'pdf' | 'image';
+  fileUrl: string;
+  fileSize: number;
+  uploadedAt: string;
+  uploadedBy: string;
+  description?: string;
+}
+
 interface ClientDetailsParams {
   clientId: string;
 }
@@ -57,7 +70,7 @@ const ClientDetails: React.FC = () => {
   const recentNotesRef = React.useRef<HTMLDivElement>(null);
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'sessions' | 'details' | 'mood'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'sessions' | 'details' | 'mood' | 'prescriptions'>('overview');
   const [newNote, setNewNote] = useState('');
   const [isPrivateNote, setIsPrivateNote] = useState(false);
   
@@ -99,6 +112,11 @@ const ClientDetails: React.FC = () => {
   
   // Mood analysis sub-tab state
   const [moodSubTab, setMoodSubTab] = useState<'phq9' | 'mood'>('phq9');
+  
+  // Prescription state (will be initialized after mock data)
+  const [uploadingPrescription, setUploadingPrescription] = useState(false);
+  const [prescriptionDescription, setPrescriptionDescription] = useState('');
+  const [dragActive, setDragActive] = useState(false);
   
   // Flash message state
   const [flashMessage, setFlashMessage] = useState<{
@@ -175,6 +193,33 @@ const ClientDetails: React.FC = () => {
       notes: "Focus on sleep hygiene and relaxation techniques"
     }
   ]);
+
+  // Mock prescription data - this would be fetched from API in real implementation
+  const mockPrescriptions: Prescription[] = [
+    {
+      id: 1,
+      fileName: "anxiety_medication_prescription.pdf",
+      fileType: 'pdf',
+      fileUrl: "https://example.com/prescriptions/anxiety_medication.pdf",
+      fileSize: 156000, // bytes
+      uploadedAt: "June 28, 2025",
+      uploadedBy: "Dr. Nilukshi Karunaratne",
+      description: "Sertraline 50mg for anxiety management - 30 day supply"
+    },
+    {
+      id: 2,
+      fileName: "therapy_recommendations.jpg",
+      fileType: 'image',
+      fileUrl: "https://example.com/prescriptions/therapy_recommendations.jpg",
+      fileSize: 234000, // bytes
+      uploadedAt: "June 15, 2025",
+      uploadedBy: "Dr. Nilukshi Karunaratne",
+      description: "Cognitive behavioral therapy exercises and home practice guidelines"
+    }
+  ];
+
+  // Initialize prescriptions with mock data
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>(mockPrescriptions);
 
   // Define client types that can accommodate both anonymous and identified clients
   interface BaseClient {
@@ -1466,6 +1511,307 @@ const ClientDetails: React.FC = () => {
     }
   };
   
+  // Prescription handlers
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      showFlashMessage('error', 'Only PDF and image files (JPEG, PNG, GIF) are allowed.');
+      return;
+    }
+    
+    // Validate file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      showFlashMessage('error', 'File size must be less than 10MB.');
+      return;
+    }
+    
+    setUploadingPrescription(true);
+    
+    try {
+      // Simulate upload delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Create new prescription entry
+      const newPrescription: Prescription = {
+        id: prescriptions.length + 1,
+        fileName: file.name,
+        fileType: file.type.includes('pdf') ? 'pdf' : 'image',
+        fileUrl: URL.createObjectURL(file), // In real app, this would be the server URL
+        fileSize: file.size,
+        uploadedAt: new Date().toLocaleDateString('en-US', { 
+          month: 'long', 
+          day: 'numeric', 
+          year: 'numeric' 
+        }),
+        uploadedBy: "Dr. Nilukshi Karunaratne", // This would come from auth context
+        description: prescriptionDescription.trim() || undefined
+      };
+      
+      setPrescriptions([newPrescription, ...prescriptions]);
+      setPrescriptionDescription('');
+      showFlashMessage('success', 'Prescription uploaded successfully!');
+      
+    } catch (error) {
+      console.error('Error uploading prescription:', error);
+      showFlashMessage('error', 'Failed to upload prescription. Please try again.');
+    } finally {
+      setUploadingPrescription(false);
+    }
+  };
+  
+  const handleDeletePrescription = (prescriptionId: number) => {
+    setPrescriptions(prescriptions.filter(p => p.id !== prescriptionId));
+    showFlashMessage('success', 'Prescription deleted successfully.');
+  };
+  
+  const handleViewPrescription = (prescription: Prescription) => {
+    // In a real app, this would open the file in a new tab or download it
+    window.open(prescription.fileUrl, '_blank');
+  };
+  
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+  
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(true);
+  };
+  
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+  };
+  
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+    handleFileUpload(e.dataTransfer.files);
+  };
+  
+  const renderPrescriptionsTab = () => {
+    return (
+      <div className="space-y-6">
+        {/* Upload Section */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <Pill className="w-6 h-6 text-purple-600 mr-3" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Prescription Management</h3>
+                <p className="text-sm text-gray-600">Upload and manage prescription documents and therapy resources</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Upload Zone */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Upload New Prescription
+            </label>
+            
+            {/* Drag and Drop Area */}
+            <div
+              className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                dragActive 
+                  ? 'border-purple-400 bg-purple-50' 
+                  : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50'
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.gif"
+                onChange={(e) => handleFileUpload(e.target.files)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={uploadingPrescription}
+              />
+              
+              <div className="space-y-3">
+                <div className="flex justify-center">
+                  <div className="bg-purple-100 p-3 rounded-full">
+                    <Upload className="w-8 h-8 text-purple-600" />
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="text-lg font-medium text-gray-900 mb-1">
+                    {uploadingPrescription ? 'Uploading...' : 'Drop files here or click to browse'}
+                  </h4>
+                  <p className="text-sm text-gray-500">
+                    Support for PDF, JPEG, PNG, GIF files up to 10MB
+                  </p>
+                </div>
+                
+                {uploadingPrescription && (
+                  <div className="flex justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Description Input */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description (Optional)
+              </label>
+              <textarea
+                value={prescriptionDescription}
+                onChange={(e) => setPrescriptionDescription(e.target.value)}
+                placeholder="Add a description for this prescription..."
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                disabled={uploadingPrescription}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Prescriptions List */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <FileImage className="w-5 h-5 text-gray-500 mr-2" />
+                <h4 className="text-lg font-semibold text-gray-900">
+                  Uploaded Prescriptions ({prescriptions.length})
+                </h4>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6">
+            {prescriptions.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <FileImage className="w-8 h-8 text-gray-400" />
+                </div>
+                <h4 className="text-lg font-medium text-gray-900 mb-2">No prescriptions uploaded</h4>
+                <p className="text-gray-600 text-sm">
+                  Upload prescription documents, therapy guidelines, or treatment resources to get started.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {prescriptions.map((prescription) => (
+                  <div
+                    key={prescription.id}
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow group"
+                  >
+                    {/* File Icon and Type */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center">
+                        <div className={`p-2 rounded-lg ${
+                          prescription.fileType === 'pdf' 
+                            ? 'bg-red-100' 
+                            : 'bg-blue-100'
+                        }`}>
+                          {prescription.fileType === 'pdf' ? (
+                            <FileText className={`w-6 h-6 ${
+                              prescription.fileType === 'pdf' 
+                                ? 'text-red-600' 
+                                : 'text-blue-600'
+                            }`} />
+                          ) : (
+                            <FileImage className="w-6 h-6 text-blue-600" />
+                          )}
+                        </div>
+                        <div className="ml-3">
+                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            prescription.fileType === 'pdf'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {prescription.fileType.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Actions */}
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                        <button
+                          onClick={() => handleViewPrescription(prescription)}
+                          className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                          title="View prescription"
+                        >
+                          <Eye className="w-4 h-4 text-gray-600" />
+                        </button>
+                        <button
+                          onClick={() => handleDeletePrescription(prescription.id)}
+                          className="p-1.5 hover:bg-red-100 rounded-md transition-colors"
+                          title="Delete prescription"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* File Details */}
+                    <div className="space-y-2">
+                      <h5 className="font-medium text-gray-900 text-sm truncate" title={prescription.fileName}>
+                        {prescription.fileName}
+                      </h5>
+                      
+                      {prescription.description && (
+                        <p className="text-xs text-gray-600 break-words overflow-hidden" style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical' as any
+                        }}>
+                          {prescription.description}
+                        </p>
+                      )}
+                      
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{formatFileSize(prescription.fileSize)}</span>
+                        <span>{prescription.uploadedAt}</span>
+                      </div>
+                      
+                      <div className="text-xs text-gray-500">
+                        Uploaded by: {prescription.uploadedBy}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex space-x-2 mt-4">
+                      <button
+                        onClick={() => handleViewPrescription(prescription)}
+                        className="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-600 py-2 px-3 rounded-md text-xs font-medium transition-colors flex items-center justify-center"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleViewPrescription(prescription)}
+                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 py-2 px-3 rounded-md text-xs font-medium transition-colors flex items-center justify-center"
+                      >
+                        <Download className="w-3 h-3 mr-1" />
+                        Download
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
   const renderOverviewTab = () => {
     if (!currentClient) return null;
     
@@ -2652,6 +2998,12 @@ const ClientDetails: React.FC = () => {
                 >
                   Mood Analysis
                 </button>
+                <button 
+                  className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'prescriptions' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
+                  onClick={() => setActiveTab('prescriptions')}
+                >
+                  Prescriptions
+                </button>
                 {/* <button 
                   className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'details' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
                   onClick={() => setActiveTab('details')}
@@ -2669,6 +3021,7 @@ const ClientDetails: React.FC = () => {
             {activeTab === 'notes' && renderNotesTab()}
             {activeTab === 'sessions' && renderSessionsTab()}
             {activeTab === 'mood' && renderMoodTab()}
+            {activeTab === 'prescriptions' && renderPrescriptionsTab()}
             {/* {activeTab === 'details' && renderDetailsTab()} */}
           </div>
 
