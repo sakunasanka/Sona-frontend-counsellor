@@ -51,8 +51,9 @@ const CounsellorCalendar: React.FC = () => {
   
   // TODO: Get counselor ID from auth context or user profile
   // For now using hardcoded ID - replace with actual user's counselor ID
-  const counselorId = 38;
-  
+  const counselorIdString = localStorage.getItem('counsellor_id');
+  const counselorId = counselorIdString ? parseInt(counselorIdString, 10) : null;
+
   console.log('Using counselor ID:', counselorId);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -85,8 +86,15 @@ const CounsellorCalendar: React.FC = () => {
     return sessions.filter(session => session.date === today);
   };
 
-  // No longer need to load individual time slots since we show all 24 hours directly from monthly data  // Load time slots for all days in the current month
+  // Load time slots for all days in the current month
   const loadMonthlyTimeSlots = async () => {
+    if (!counselorId) {
+      console.error('No counselor ID available');
+      setMonthlyTimeSlots({});
+      setMonthlyLoading(false);
+      return;
+    }
+
     setMonthlyLoading(true);
     console.log('Starting to load monthly availability...');
     
@@ -131,6 +139,12 @@ const CounsellorCalendar: React.FC = () => {
 
   // Load sessions
   const loadSessions = async () => {
+    if (!counselorId) {
+      console.error('No counselor ID available');
+      setSessions([]);
+      return;
+    }
+
     try {
       const sessionData = await getCounselorSessions(counselorId);
       setSessions(sessionData);
@@ -242,7 +256,12 @@ const CounsellorCalendar: React.FC = () => {
 
   // Handle setting availability
   const handleSetAvailability = async (isAvailable: boolean) => {
-    if (!selectedDate) return;
+    if (!selectedDate || !counselorId) {
+      if (!counselorId) {
+        showFlashMessage('error', 'No counselor ID available. Please log in again.');
+      }
+      return;
+    }
     
     setLoading(true);
     try {
