@@ -179,7 +179,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
         <div className="pt-2 border-t border-gray-100">
           <Button 
               variant="calendar" 
-              onClick={() => navigate(`/counsellor-clients/${session.user.id}`)}
+              onClick={() => navigate(`/clients/${session.user.id}`)}
               icon={<Eye className="w-4 h-4" />}
           >
               <span className="hidden sm:inline">View Client</span>
@@ -399,7 +399,7 @@ const CounsellorSessions = () => {
                             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Recent Sessions</h1>
                             <Button 
                                 variant="calendar" 
-                                onClick={() => navigate('/counsellor-calendar')} 
+                                onClick={() => navigate('/calendar')} 
                                 icon={<Calendar className="w-4 h-4" />}
                             >
                                 <span className="hidden sm:inline">View Calendar</span>
