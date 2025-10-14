@@ -939,6 +939,9 @@ export interface CounsellorProfileData {
     linkedin?: string;
     x?: string;
   };
+  instagram?: string;
+  linkedin?: string;
+  x?: string;
   credentials: Credential[];
   achievements: Achievement[];
 }
@@ -994,21 +997,30 @@ export const updateCounsellorProfile = async (profileData: Partial<CounsellorPro
       throw new Error('Authentication token not found');
     }
 
-    console.log('Updating profile with data:', profileData);
-    
-    const response: ApiResponse<any> = await apiClient.put('/counselors/profile', profileData, token, true);
+    // Flatten socialLinks from nested object to top-level fields
+    const flattenedData: any = { ...profileData };
+    if (profileData.socialLinks) {
+      flattenedData.instagram = profileData.socialLinks.instagram;
+      flattenedData.linkedin = profileData.socialLinks.linkedin;
+      flattenedData.x = profileData.socialLinks.x;
+      delete flattenedData.socialLinks;
+    }
+
+    console.log('Updating profile with flattened data:', flattenedData);
+
+    const response: ApiResponse<any> = await apiClient.put('/counselors/profile', flattenedData, token, true);
     console.log('Update profile response:', response);
-    
+
     if (response.success && response.data) {
       // Check if data is nested or direct
       const updatedProfileData = response.data.data || response.data;
       return updatedProfileData;
     }
-    
+
     // If response has an error message, throw it with proper details
     const errorMessage = response.data?.message || response.message || 'Failed to update counsellor profile';
     const errorDetails = response.data || {};
-    
+
     const error = new Error(errorMessage);
     (error as any).details = errorDetails;
     throw error;

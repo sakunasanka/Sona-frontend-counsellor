@@ -23,7 +23,9 @@ import {
   FileDown,
   CalendarDays,
   Brain,
-  TrendingUp
+  TrendingUp,
+  ArrowUpDown,
+  Video
 } from 'lucide-react';
 
 interface Note {
@@ -50,6 +52,130 @@ interface Session {
 interface ClientDetailsParams {
   clientId: string;
 }
+
+// Helper functions for session sorting and date labels
+const getDaysFromToday = (dateStr: string): number => {
+  const [datePart, timePart] = dateStr.split(' • ');
+  if (!datePart || !timePart) return 999; // Invalid date, put at end
+  
+  const fullDateStr = `${datePart} ${timePart}`;
+  const sessionDate = new Date(fullDateStr);
+  const today = new Date();
+  
+  // Reset time to start of day for comparison
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const sessionStart = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
+  
+  const diffTime = sessionStart.getTime() - todayStart.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays;
+};
+
+const getDateLabel = (daysFromToday: number): string => {
+  if (daysFromToday === 0) return "Today";
+  if (daysFromToday === 1) return "Tomorrow";
+  if (daysFromToday === 2) return "Day After Tomorrow";
+  if (daysFromToday > 2 && daysFromToday <= 19) return "Near Future";
+  if (daysFromToday > 19) return "Far Future";
+  if (daysFromToday < 0) return "Past";
+  return "Unknown";
+};
+
+const sortSessionsByProximity = (sessions: Session[]): Session[] => {
+  return sessions.sort((a, b) => {
+    const daysA = getDaysFromToday(a.date);
+    const daysB = getDaysFromToday(b.date);
+    
+    // First, separate past and future sessions
+    const isPastA = daysA < 0;
+    const isPastB = daysB < 0;
+    
+    if (isPastA && !isPastB) return 1; // Past sessions go after future
+    if (!isPastA && isPastB) return -1; // Future sessions go before past
+    
+    // If both are past or both are future, sort by proximity
+    const absDaysA = Math.abs(daysA);
+    const absDaysB = Math.abs(daysB);
+    
+    if (absDaysA !== absDaysB) {
+      return absDaysA - absDaysB; // Closer dates first
+    }
+    
+    // If same proximity, sort by actual date (newest first for past, oldest first for future)
+    const dateA = new Date(a.date.replace(' • ', ' '));
+    const dateB = new Date(b.date.replace(' • ', ' '));
+    
+    if (isPastA) {
+      return dateB.getTime() - dateA.getTime(); // Past: newest first
+    } else {
+      return dateA.getTime() - dateB.getTime(); // Future: oldest first
+    }
+  });
+};
+
+const filterAndSortSessions = (sessions: Session[], filter: string, sortField: string | null, sortDirection: string): Session[] => {
+  // First, filter sessions
+  let filteredSessions = sessions;
+  if (filter !== 'all') {
+    filteredSessions = sessions.filter(session => session.status === filter);
+  }
+  
+  // Then, sort sessions
+  if (sortField === null) {
+    // Use proximity sorting when no column is selected
+    return sortSessionsByProximity(filteredSessions);
+  } else {
+    // Use column sorting when a field is selected
+    return filteredSessions.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+      
+      switch (sortField) {
+        case 'date':
+          // Parse date and time for sorting
+          aValue = new Date(a.date.replace(' • ', ' ')).getTime();
+          bValue = new Date(b.date.replace(' • ', ' ')).getTime();
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        case 'duration':
+          aValue = a.duration;
+          bValue = b.duration;
+          break;
+        case 'fee':
+          aValue = a.price || 0;
+          bValue = b.price || 0;
+          break;
+        default:
+          return 0;
+      }
+      
+      if (sortDirection === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+  }
+};
+
+// Helper function to check if session is joinable (within 10 minutes before or 1.5 hours after start time)
+const isSessionJoinable = (sessionDate: string): boolean => {
+  try {
+    const now = new Date();
+    const sessionDateTime = new Date(sessionDate.replace(' • ', ' '));
+    const diffInMinutes = (sessionDateTime.getTime() - now.getTime()) / (1000 * 60);
+    
+    // Show button if session is within 10 minutes before start OR within 1.5 hours (90 minutes) after start
+    return (diffInMinutes >= -90 && diffInMinutes <= 10);
+  } catch (error) {
+    console.error('Error parsing session date:', error);
+    return false;
+  }
+};
 
 const ClientDetails: React.FC = () => {
   const { clientId } = useParams<keyof ClientDetailsParams>() as ClientDetailsParams;
@@ -100,6 +226,11 @@ const ClientDetails: React.FC = () => {
   // Mood analysis sub-tab state
   const [moodSubTab, setMoodSubTab] = useState<'phq9' | 'mood'>('phq9');
   
+  // Session filtering and sorting state
+  const [sessionFilter, setSessionFilter] = useState<'all' | 'completed' | 'upcoming' | 'cancelled'>('all');
+  const [sortField, setSortField] = useState<'date' | 'status' | 'duration' | 'fee' | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  
   // Flash message state
   const [flashMessage, setFlashMessage] = useState<{
     type: 'success' | 'error' | 'warning' | 'info';
@@ -110,8 +241,25 @@ const ClientDetails: React.FC = () => {
     message: '',
     isVisible: false
   });
-  
-  const [notes, setNotes] = useState<Note[]>([
+
+  const handleSort = (field: 'date' | 'status' | 'duration' | 'fee') => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc'); // Default to descending for new fields
+    }
+  };
+
+  const SortButton: React.FC<{ field: 'date' | 'status' | 'duration' | 'fee'; children: React.ReactNode }> = ({ field, children }) => (
+    <button
+      onClick={() => handleSort(field)}
+      className="flex items-center gap-1 hover:text-indigo-600 transition-colors font-medium text-gray-700 group"
+    >
+      {children}
+      <ArrowUpDown className={`w-4 h-4 transition-transform ${sortField === field ? 'text-indigo-600' : 'text-gray-400'} ${sortField === field && sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+    </button>
+  );  const [notes, setNotes] = useState<Note[]>([
     {
       id: 1,
       content: "MY NOTE (Nilukshi): Client showed significant progress in anxiety management techniques.",
@@ -1858,8 +2006,19 @@ const ClientDetails: React.FC = () => {
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">All Sessions</h3>
-          <button 
+          <div className="sm:w-48">
+            <select
+              value={sessionFilter}
+              onChange={(e) => setSessionFilter(e.target.value as 'all' | 'completed' | 'upcoming' | 'cancelled')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+            >
+              <option value="all">All Sessions</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <button
             className="px-4 py-2 bg-primary hover:bg-opacity-90 text-white rounded-md text-sm font-medium flex items-center"
             onClick={() => window.location.href = '/calendar'}
           >
@@ -1873,49 +2032,55 @@ const ClientDetails: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date & Time
+                  <SortButton field="date">Date & Time</SortButton>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  <SortButton field="status">Status</SortButton>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Duration
+                  <SortButton field="duration">Duration</SortButton>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Fee
+                  <SortButton field="fee">Fee</SortButton>
                 </th>
-                {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Topics
-                </th> */}
-                {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Rating
-                </th> */}
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {sessions
-                .sort((a, b) => {
-                  // Parse the formatted date string (e.g., "July 25, 2025 • 12:00 PM")
-                  const parseDateString = (dateStr: string) => {
-                    const [datePart, timePart] = dateStr.split(' • ');
-                    if (!datePart || !timePart) return new Date(0);
-                    
-                    // Convert "July 25, 2025 • 12:00 PM" to "July 25, 2025 12:00 PM"
-                    const fullDateStr = `${datePart} ${timePart}`;
-                    return new Date(fullDateStr);
-                  };
-                  
-                  const dateA = parseDateString(a.date);
-                  const dateB = parseDateString(b.date);
-                  return dateB.getTime() - dateA.getTime(); // Descending order (newest first)
-                })
-                .map((session) => (
+              {(() => {
+                const filteredSessions = filterAndSortSessions(sessions, sessionFilter, sortField, sortDirection);
+                if (filteredSessions.length === 0) {
+                  return (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center">
+                          <svg className="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">No Sessions Found</h3>
+                          <p className="text-gray-600">
+                            {sessionFilter === 'all' 
+                              ? 'This client has no sessions yet.' 
+                              : `No ${sessionFilter} sessions found for this client.`
+                            }
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                }
+                return filteredSessions.map((session) => {
+                  const daysFromToday = getDaysFromToday(session.date);
+                  const dateLabel = getDateLabel(daysFromToday);
+                  return (
                 <tr key={session.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{session.date}</div>
+                    {(sortField === 'date' || sortField === null) && daysFromToday <= 2 && daysFromToday >= 0 && (
+                      <div className="text-xs text-indigo-600 font-medium mt-1">{dateLabel}</div>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
@@ -1937,43 +2102,18 @@ const ClientDetails: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-green-600">Rs {session.price?.toFixed(2) || '0.00'}</div>
                   </td>
-                  {/* <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {session.concerns.map((concern, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full"
-                        >
-                          {concern}
-                        </span>
-                      )).slice(0, 2)}
-                      {session.concerns.length > 2 && (
-                        <span className="inline-flex items-center px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full">
-                          +{session.concerns.length - 2}
-                        </span>
-                      )}
-                    </div>
-                  </td> */}
-                  {/* <td className="px-6 py-4 whitespace-nowrap">
-                    {session.rating ? (
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <svg 
-                            key={i} 
-                            className={`w-4 h-4 ${i < session.rating! ? 'text-yellow-400' : 'text-gray-300'}`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400 text-sm">N/A</span>
-                    )}
-                  </td> */}
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
+                      {isSessionJoinable(session.date) && session.status === 'upcoming' && (
+                        <button 
+                          className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center gap-2 transition-colors"
+                          onClick={() => console.log('Join session:', session.id)}
+                          aria-label="Join session now"
+                        >
+                          <Video className="h-3.5 w-3.5" />
+                          Join Now
+                        </button>
+                      )}
                       <button 
                         className="px-2 py-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded flex items-center transition-colors"
                         onClick={() => handleViewSessionDetails(session)}
@@ -2000,7 +2140,9 @@ const ClientDetails: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              });
+              })()}
             </tbody>
           </table>
         </div>

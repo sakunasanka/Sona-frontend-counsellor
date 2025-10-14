@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavBar, Sidebar } from "../../components/layout";
-import { Search, Calendar, Clock, User, Eye, ChevronDown, CheckCircle2, MapPin, X, AlertCircle } from "lucide-react";
+import { Search, Calendar, Clock, User, Eye, ChevronDown, CheckCircle2, MapPin, X, AlertCircle, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui";
 import { apiClient } from "../../api/apiBase";
@@ -38,9 +38,11 @@ interface TokenPayload {
 
 interface SessionCardProps {
   session: Session;
+  showDateLabel?: boolean;
+  dateLabel?: string;
 }
 
-const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
+const SessionCard: React.FC<SessionCardProps> = ({ session, showDateLabel = false, dateLabel }) => {
   const navigate = useNavigate();
   
   const getStatusColor = (status: string) => {
@@ -80,19 +82,16 @@ const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
         {/* Header Section - Client Name and Status */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900 text-lg mb-1">
-              {session.user.name}
-            </h3>
-            <p className="text-sm text-slate-400 font-medium">
-              Booked Date: {new Date(session.createdAt).toLocaleString('en-GB', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-              })}
-            </p>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-gray-900 text-lg">
+                {session.user.name}
+              </h3>
+              {showDateLabel && dateLabel && (
+                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                  {dateLabel}
+                </span>
+              )}
+            </div>
           </div>
           <div className="gap-2 flex items-center">
             <div className="flex flex-col items-end gap-2">
@@ -156,10 +155,19 @@ const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
         </div>
 
         {/* Additional Details */}
-        <div className="flex flex-wrap items-center gap-4 mb-4">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <MapPin className="w-4 h-4 text-gray-400" />
             <span>Price: {session.price} LKR</span>
+          </div>
+          <div className="text-xs text-gray-400">
+            Booked: {new Date(session.createdAt).toLocaleString('en-GB', {
+              day: 'numeric',
+              month: 'short',
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true,
+            })}
           </div>
         </div>
 
@@ -177,17 +185,90 @@ const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
 
         {/* Action Button */}
         <div className="pt-2 border-t border-gray-100">
-          <Button 
-              variant="calendar" 
-              onClick={() => navigate(`/clients/${session.user.id}`)}
-              icon={<Eye className="w-4 h-4" />}
-          >
-              <span className="hidden sm:inline">View Client</span>
-          </Button>
+          <div className="flex gap-2">
+            {isSessionJoinable(session.date, session.timeSlot) && session.status === 'scheduled' && (
+              <button 
+                onClick={() => console.log('Join session:', session.id)}
+                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 px-4 py-2 font-medium transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5 rounded-xl cursor-pointer"
+              >
+                <Video className="w-4 h-4" />
+                <span className="hidden sm:inline">Join Now</span>
+              </button>
+            )}
+            <Button 
+                variant="calendar" 
+                onClick={() => navigate(`/clients/${session.user.id}`)}
+                icon={<Eye className="w-4 h-4" />}
+            >
+                <span className="hidden sm:inline">View Client</span>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
   );
+};
+
+const getDaysFromToday = (dateString: string): number => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const sessionDate = new Date(dateString);
+  sessionDate.setHours(0, 0, 0, 0);
+  const diffTime = sessionDate.getTime() - today.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
+const getDateLabel = (daysFromToday: number): string | null => {
+  if (daysFromToday === 0) return "Today";
+  if (daysFromToday === 1) return "Tomorrow";
+  if (daysFromToday === 2) return "Day After Tomorrow";
+  return null;
+};
+
+const sortSessionsByProximity = (sessions: Session[]): Session[] => {
+  return [...sessions].sort((a, b) => {
+    const daysA = getDaysFromToday(a.date);
+    const daysB = getDaysFromToday(b.date);
+
+    // Helper function to get sort priority
+    const getPriority = (days: number): number => {
+      if (days < 0) return 1000 + Math.abs(days); // Past sessions: higher number = older
+      if (days === 0) return 0; // Today
+      if (days === 1) return 1; // Tomorrow
+      if (days === 2) return 2; // Day after tomorrow
+      if (days >= 20) return 100 + days; // Far future (20+ days)
+      return 10 + days; // Near future (3-19 days)
+    };
+
+    const priorityA = getPriority(daysA);
+    const priorityB = getPriority(daysB);
+
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB;
+    }
+
+    // If same priority, sort by time within the same day
+    if (daysA === daysB) {
+      return a.timeSlot.localeCompare(b.timeSlot);
+    }
+
+    return 0;
+  });
+};
+
+// Helper function to check if session is joinable (within 10 minutes before or 1.5 hours after start time)
+const isSessionJoinable = (sessionDate: string, timeSlot: string): boolean => {
+  try {
+    const now = new Date();
+    const sessionDateTime = new Date(`${sessionDate} ${timeSlot}`);
+    const diffInMinutes = (sessionDateTime.getTime() - now.getTime()) / (1000 * 60);
+    
+    // Show button if session is within 10 minutes before start OR within 1.5 hours (90 minutes) after start
+    return (diffInMinutes >= -90 && diffInMinutes <= 10);
+  } catch (error) {
+    console.error('Error parsing session date:', error);
+    return false;
+  }
 };
 
 const CounsellorSessions = () => {
@@ -197,7 +278,6 @@ const CounsellorSessions = () => {
     const closeSidebar = () => setSidebarOpen(false);
 
     const [searchTerm, setSearchTerm] = useState("");
-    const [sortBy, setSortBy] = useState("Newest");
     const [filterBy, setFilterBy] = useState("All");
     const [visibleCount, setVisibleCount] = useState(6);
     const [isLoading, setIsLoading] = useState(false);
@@ -308,22 +388,18 @@ const CounsellorSessions = () => {
       fetchSessions();
     }, [counselorId, navigate]);
 
-    const filteredSessions = [...sessions]
-        .filter((s) => {
-            const matchesSearch = 
-                s.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                s.date.includes(searchTerm) ||
-                s.timeSlot.includes(searchTerm);
-            
-            const matchesFilter = filterBy === "All" || s.status === filterBy.toLowerCase();
-            
-            return matchesSearch && matchesFilter;
-        })
-        .sort((a, b) =>
-            sortBy === "Oldest"
-                ? new Date(a.date).getTime() - new Date(b.date).getTime()
-                : new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
+    const filteredSessions = sortSessionsByProximity(
+      [...sessions].filter((s) => {
+        const matchesSearch = 
+            s.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            s.date.includes(searchTerm) ||
+            s.timeSlot.includes(searchTerm);
+        
+        const matchesFilter = filterBy === "All" || s.status === filterBy.toLowerCase();
+        
+        return matchesSearch && matchesFilter;
+      })
+    );
 
     const visibleSessions = filteredSessions.slice(0, visibleCount);
 
@@ -505,18 +581,6 @@ const CounsellorSessions = () => {
                                     </select>
                                     <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                                 </div>
-                                
-                                <div className="relative flex-1 lg:flex-initial lg:min-w-[130px]">
-                                    <select
-                                        value={sortBy}
-                                        onChange={(e) => setSortBy(e.target.value)}
-                                        className="appearance-none w-full pl-4 pr-10 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 hover:bg-white focus:bg-white focus:border-slate-500 focus:border-opacity-50 focus:ring-2 focus:ring-slate-500 focus:ring-opacity-20 transition-all duration-200 outline-none cursor-pointer shadow-sm font-medium"
-                                    >
-                                        <option value="Newest">Newest First</option>
-                                        <option value="Oldest">Oldest First</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -561,12 +625,21 @@ const CounsellorSessions = () => {
                             )}
 
                             {!error && visibleSessions.length > 0 && (
-                                visibleSessions.map((session) => (
+                                visibleSessions.map((session, index) => {
+                                  const daysFromToday = getDaysFromToday(session.date);
+                                  const dateLabel = getDateLabel(daysFromToday);
+                                  const showDateLabel = dateLabel !== null && 
+                                    (index === 0 || getDateLabel(getDaysFromToday(visibleSessions[index - 1]?.date || '')) !== dateLabel);
+                                  
+                                  return (
                                     <SessionCard 
                                         key={session.id} 
-                                        session={session} 
+                                        session={session}
+                                        showDateLabel={showDateLabel}
+                                        dateLabel={dateLabel || undefined}
                                     />
-                                ))
+                                  );
+                                })
                             )}
 
                             {/* Loading More State */}
