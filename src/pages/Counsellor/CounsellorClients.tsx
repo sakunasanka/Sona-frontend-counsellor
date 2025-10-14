@@ -206,7 +206,7 @@ const CounsellorClients: React.FC = () => {
   }, []);
   
   const handleViewClientDetails = (clientId: number) => {
-    navigate(`/counsellor-clients/${clientId}`);
+    navigate(`/clients/${clientId}`);
   };
 
   // State for clients data and loading

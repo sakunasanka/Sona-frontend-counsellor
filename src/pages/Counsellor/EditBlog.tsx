@@ -188,7 +188,7 @@ const EditBlog: React.FC = () => {
 			};
 			const resp = await updatePost(blogId, payload);
 			if (resp && resp.success) {
-				navigate('/counsellor-blogs', { state: { message: 'Post updated and sent for review.' } });
+				navigate('/blogs', { state: { message: 'Post updated and sent for review.' } });
 			} else {
 				setError('Failed to update post');
 			}
@@ -200,7 +200,7 @@ const EditBlog: React.FC = () => {
 		}
 	};
 
-	const goBack = () => navigate('/counsellor-blogs');
+	const goBack = () => navigate('/blogs');
 	const toggleSidebar = () => setSidebarOpen(s => !s);
 
 	const suggestedTags = ['growth','mindset','wellbeing','happiness','mindfulness','therapy','healing','motivation','anxiety','depression'];
@@ -220,7 +220,7 @@ const EditBlog: React.FC = () => {
 						<div className="text-red-500 mb-2">⚠️</div>
 						<h2 className="text-lg font-semibold mb-2">Unable to load post</h2>
 						<p className="text-gray-600 mb-4">{error}</p>
-						<button onClick={() => navigate('/counsellor-blogs')} className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primaryLight transition-colors">
+						<button onClick={() => navigate('/blogs')} className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primaryLight transition-colors">
 							Back to Blogs
 						</button>
 					</div>

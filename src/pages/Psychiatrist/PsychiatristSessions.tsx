@@ -348,7 +348,7 @@ const CounsellorSessions = () => {
                         <div className="mb-6 lg:mb-8 flex items-center justify-between">
                             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Session History</h1>
                             <button
-                                onClick={() => navigate('/counsellor-calendar')}
+                                onClick={() => navigate('/calendar')}
                                 className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-secondaryDarker text-white rounded-xl hover:bg-secondaryDusk transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
                             >
                                 <Calendar className="w-4 h-4" />

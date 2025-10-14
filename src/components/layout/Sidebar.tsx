@@ -23,13 +23,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   const navigate = useNavigate();
   
   const menuItems = [
-    { icon: Home, label: 'Home', href: '/counsellor-dashboard', id: 'home' },
-    { icon: Calendar, label: 'Sessions', href: '/counsellor-sessions', id: 'sessions' },
-    { icon: Users, label: 'Clients', href: '/counsellor-clients', id: 'clients' },
-    { icon: DollarSign, label: 'Earnings', href: '/counsellor/earnings', id: 'earnings' },
-    // { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks', id: 'feedbacks' },
-    { icon: MessageCircle, label: 'Chats', href: '/counsellor/chats', id: 'chats' },
-    { icon: FileText, label: 'Blogs', href: '/counsellor-blogs', id: 'blogs' },
+    { icon: Home, label: 'Home', href: '/dashboard', id: 'home' },
+    { icon: Calendar, label: 'Sessions', href: '/sessions', id: 'sessions' },
+    { icon: Users, label: 'Clients', href: '/clients', id: 'clients' },
+    { icon: DollarSign, label: 'Earnings', href: '/earnings', id: 'earnings' },
+    // { icon: ThumbsUp, label: 'Feedbacks', href: '/feedbacks', id: 'feedbacks' },
+    { icon: MessageCircle, label: 'Chats', href: '/chats', id: 'chats' },
+    { icon: FileText, label: 'Blogs', href: '/blogs', id: 'blogs' },
   ];
 
   const handleItemClick = (item: any) => {
