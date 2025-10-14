@@ -4,6 +4,7 @@ import { FlashMessage } from '../../components/ui';
 import { useParams } from 'react-router-dom';
 import { getClientDetails, createClientNote, deleteClientNote, updateClientNote, addClientConcern, removeClientConcern, getClientMoodAnalysis, getClientPHQ9Analysis, getSessions, type ClientDetails as APIClientDetails, type MoodAnalysisResponse, type PHQ9AnalysisResponse, getClientEarnings } from '../../api/counsellorAPI';
 import { MoodChart, PHQ9Chart } from '../../components/charts';
+import { makeRequest } from '../../api/apiBase';
 import { 
   Calendar, 
   Clock, 
@@ -241,6 +242,26 @@ const ClientDetails: React.FC = () => {
     message: '',
     isVisible: false
   });
+
+  // Helper function to join a session
+  const joinSession = async (sessionId: string) => {
+    try {
+      const response = await makeRequest<{success: boolean; data: {link: string}}>(`/sessions/${sessionId}/link`, 'GET');
+      if (response.success && response.data?.link) {
+        window.open(response.data.link, '_blank');
+      } else {
+        console.error('Failed to get session link');
+        showFlashMessage('error', 'Failed to get session link. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Error joining session:', error);
+      if (error.status === 404) {
+        showFlashMessage('error', 'Session not found. It may have been cancelled or rescheduled.');
+      } else {
+        showFlashMessage('error', 'Failed to join session. Please try again.');
+      }
+    }
+  };
 
   const handleSort = (field: 'date' | 'status' | 'duration' | 'fee') => {
     if (sortField === field) {
@@ -2107,7 +2128,7 @@ const ClientDetails: React.FC = () => {
                       {isSessionJoinable(session.date) && session.status === 'upcoming' && (
                         <button 
                           className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center gap-2 transition-colors"
-                          onClick={() => console.log('Join session:', session.id)}
+                          onClick={() => joinSession(session.id.toString())}
                           aria-label="Join session now"
                         >
                           <Video className="h-3.5 w-3.5" />

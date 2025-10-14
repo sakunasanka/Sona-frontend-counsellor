@@ -3,7 +3,8 @@ import { NavBar, Sidebar } from "../../components/layout";
 import { Search, Calendar, Clock, User, Eye, ChevronDown, CheckCircle2, MapPin, X, AlertCircle, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui";
-import { apiClient } from "../../api/apiBase";
+import { FlashMessage } from "../../components/ui";
+import { apiClient, makeRequest } from "../../api/apiBase";
 
 interface User {
   id: number;
@@ -40,10 +41,29 @@ interface SessionCardProps {
   session: Session;
   showDateLabel?: boolean;
   dateLabel?: string;
+  onShowFlashMessage?: (type: 'success' | 'error' | 'warning' | 'info', message: string) => void;
 }
 
-const SessionCard: React.FC<SessionCardProps> = ({ session, showDateLabel = false, dateLabel }) => {
+const SessionCard: React.FC<SessionCardProps> = ({ session, showDateLabel = false, dateLabel, onShowFlashMessage }) => {
   const navigate = useNavigate();
+  
+  const joinSession = async (sessionId: number) => {
+    try {
+      const response = await makeRequest<{success: boolean; data: {link: string}}>(`/sessions/${sessionId}/link`, 'GET');
+      if (response.success && response.data?.link) {
+        window.open(response.data.link, '_blank');
+      } else {
+        onShowFlashMessage?.('error', 'Session link not found. The session may not be available.');
+      }
+    } catch (error: any) {
+      console.error('Error joining session:', error);
+      if (error.status === 404) {
+        onShowFlashMessage?.('error', 'Session not found. Please check if the session exists.');
+      } else {
+        onShowFlashMessage?.('error', 'Failed to join session. Please try again.');
+      }
+    }
+  };
   
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -188,7 +208,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, showDateLabel = fals
           <div className="flex gap-2">
             {isSessionJoinable(session.date, session.timeSlot) && session.status === 'scheduled' && (
               <button 
-                onClick={() => console.log('Join session:', session.id)}
+                onClick={() => joinSession(session.id)}
                 className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 px-4 py-2 font-medium transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5 rounded-xl cursor-pointer"
               >
                 <Video className="w-4 h-4" />
@@ -285,6 +305,16 @@ const CounsellorSessions = () => {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [counselorId, setCounselorId] = useState<number | null>(null);
+
+    const [flashMessage, setFlashMessage] = useState<{
+        type: 'success' | 'error' | 'warning' | 'info';
+        message: string;
+        isVisible: boolean;
+    }>({
+        type: 'info',
+        message: '',
+        isVisible: false
+    });
 
     const loaderRef = useRef(null);
   
@@ -451,6 +481,19 @@ const CounsellorSessions = () => {
 
     const handleSignIn = () => {
       navigate('/signin');
+    };
+
+    // Flash message helpers
+    const showFlashMessage = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
+        setFlashMessage({
+            type,
+            message,
+            isVisible: true
+        });
+    };
+
+    const hideFlashMessage = () => {
+        setFlashMessage(prev => ({ ...prev, isVisible: false }));
     };
 
     return (
@@ -637,6 +680,7 @@ const CounsellorSessions = () => {
                                         session={session}
                                         showDateLabel={showDateLabel}
                                         dateLabel={dateLabel || undefined}
+                                        onShowFlashMessage={showFlashMessage}
                                     />
                                   );
                                 })
@@ -663,6 +707,14 @@ const CounsellorSessions = () => {
                     </div>
                 </div>
             </div>
+            
+            {/* Flash Message */}
+            <FlashMessage
+                type={flashMessage.type}
+                message={flashMessage.message}
+                isVisible={flashMessage.isVisible}
+                onClose={hideFlashMessage}
+            />
         </div>
     );
 };
