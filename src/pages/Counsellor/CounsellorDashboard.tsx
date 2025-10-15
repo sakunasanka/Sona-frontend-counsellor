@@ -223,7 +223,7 @@ const CounsellorDashboard = () => {
       title: "Schedule Session",
       description: "Set your availability and manage appointments",
       icon: Calendar,
-      action: () => navigate("/counsellor-calendar"),
+      action: () => navigate("/calendar"),
       color: "bg-blue-100",
       textcolor: "text-blue-600"
     },
@@ -231,7 +231,7 @@ const CounsellorDashboard = () => {
       title: "View Clients",
       description: "Manage your client relationships",
       icon: Users,
-      action: () => navigate("/counsellor-clients"),
+      action: () => navigate("/clients"),
       color: "bg-green-100",
       textcolor: "text-green-600"
     },
@@ -247,7 +247,7 @@ const CounsellorDashboard = () => {
       title: "View Earnings",
       description: "Track your income and payments",
       icon: HandCoins,
-      action: () => navigate("/counsellor-earnings"),
+      action: () => navigate("/earnings"),
       color: "bg-yellow-100",
       textcolor: "text-yellow-600"
     }
@@ -321,7 +321,7 @@ const CounsellorDashboard = () => {
                     <p className="text-gray-600">Here's what's happening with your practice today.</p>
                   </div>
                   <button
-                    onClick={() => navigate("/counsellor-calendar")}
+                    onClick={() => navigate("/calendar")}
                     className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-2 transition-colors"
                   >
                     View Calendar
@@ -405,7 +405,7 @@ const CounsellorDashboard = () => {
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg lg:text-xl font-semibold text-gray-900">Recent Sessions</h2>
                     <button 
-                      onClick={() => navigate("/counsellor-sessions")}
+                      onClick={() => navigate("/sessions")}
                       className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-2 transition-colors"
                     >
                       View All
@@ -440,11 +440,11 @@ const CounsellorDashboard = () => {
                               ? 'bg-green-100 text-green-700'
                               : session.status === 'cancelled'
                               ? 'bg-red-100 text-red-700'
-                              : session.status === 'no-show'
-                              ? 'bg-yellow-100 text-yellow-700'
+                              : session.status === 'ongoing'
+                              ? 'bg-purple-100 text-purple-700'
                               : 'bg-gray-100 text-gray-700'
                           }`}>
-                            {session.status === 'no-show' ? 'No Show' : session.status.charAt(0).toUpperCase() + session.status.slice(1)}
+                            {session.status.charAt(0).toUpperCase() + session.status.slice(1)}
                           </span>
                         </div>
                       ))

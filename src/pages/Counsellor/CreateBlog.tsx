@@ -186,11 +186,11 @@ const BlogCreator: React.FC = () => {
       
       if (response && response.success) {
         // Successfully created the post, navigate back to blogs
-        console.log('Navigating to /counsellor-blogs');
+        console.log('Navigating to /blogs');
         
         // Use a small delay to ensure the navigation happens
         setTimeout(() => {
-          navigate('/counsellor-blogs', { 
+          navigate('/blogs', { 
             state: { message: 'Blog post created successfully!' }
           });
         }, 100);
@@ -207,7 +207,7 @@ const BlogCreator: React.FC = () => {
         // Try navigating anyway since the post might have been created
         console.log('Post creation failed in response parsing, but might be created. Navigating...');
         setTimeout(() => {
-          navigate('/counsellor-blogs', { 
+          navigate('/blogs', { 
             state: { message: 'Blog post may have been created. Please check your posts.' }
           });
         }, 100);
@@ -220,7 +220,7 @@ const BlogCreator: React.FC = () => {
   };
 
   const handleGoBack = () => {
-    navigate('/counsellor-blogs');
+    navigate('/blogs');
   };
 
   const toggleSidebar = (): void => {

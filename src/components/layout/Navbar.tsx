@@ -42,7 +42,7 @@ const initialNotifications = [
 
 const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
   const navigate = useNavigate();
-  const handleProfile = () => navigate("/counsellor-profile");
+  const handleProfile = () => navigate("/profile");
   const { profile } = useProfile();
   
   const [notifications, setNotifications] = useState(initialNotifications);

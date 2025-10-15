@@ -11,7 +11,8 @@ import {
   CheckCircle,
   XCircle,
   User,
-  Settings
+  Settings,
+  Video
 } from 'lucide-react';
 import { 
   getMonthlyAvailability, 
@@ -22,6 +23,7 @@ import {
   type Session,
   type AvailabilityRequest
 } from '../../api/calendarAPI';
+import { makeRequest } from '../../api/apiBase';
 import SessionFeeManager from './components/SessionFeeManager';
 
 const CounsellorCalendar: React.FC = () => {
@@ -78,6 +80,41 @@ const CounsellorCalendar: React.FC = () => {
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
+  };
+
+  // Helper function to check if a session is joinable
+  const isSessionJoinable = (sessionDate: string, timeSlot: string): boolean => {
+    try {
+      const now = new Date();
+      const sessionDateTime = new Date(`${sessionDate} ${timeSlot}`);
+      const diffInMinutes = (sessionDateTime.getTime() - now.getTime()) / (1000 * 60);
+      
+      // Show button if session is within 10 minutes before start OR within 1.5 hours (90 minutes) after start
+      return (diffInMinutes >= -90 && diffInMinutes <= 10);
+    } catch (error) {
+      console.error('Error parsing session date:', error);
+      return false;
+    }
+  };
+
+  // Helper function to join a session
+  const joinSession = async (sessionId: string) => {
+    try {
+      const response = await makeRequest<{success: boolean; data: {sessionLink: string}}>(`/sessions/${sessionId}/link`, 'GET');
+      if (response.success && response.data?.sessionLink) {
+        window.open(response.data.sessionLink, '_blank');
+      } else {
+        console.error('Failed to get session link');
+        showFlashMessage('error', 'Failed to get session link. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Error joining session:', error);
+      if (error.status === 404) {
+        showFlashMessage('error', 'Session not found. It may have been cancelled or rescheduled.');
+      } else {
+        showFlashMessage('error', 'Failed to join session. Please try again.');
+      }
+    }
   };
 
   // Get today's sessions
@@ -280,7 +317,14 @@ const CounsellorCalendar: React.FC = () => {
 
       // Validate range
       const [startH] = selectedTimeRange.start.split(':').map(Number);
-      const [endH] = selectedTimeRange.end.split(':').map(Number);
+      let endH: number;
+      
+      if (selectedTimeRange.end === '23:59') {
+        endH = 24; // Treat 23:59 as 24:00 for calculation purposes
+      } else {
+        [endH] = selectedTimeRange.end.split(':').map(Number);
+      }
+      
       if (Number.isNaN(startH) || Number.isNaN(endH) || endH <= startH) {
         showFlashMessage('warning', 'Please select a valid time range (end must be greater than start).');
         setLoading(false);
@@ -313,11 +357,19 @@ const CounsellorCalendar: React.FC = () => {
       // Build 1-hour slot ranges: each hour gets its own slot
       // Example: 9-10 (1 hour) = only 9:00-10:00
       // Example: 9-11 (2 hours) = 9:00-10:00 and 10:00-11:00
+      // Special case: 23:00-23:59 = 23:00-23:59
       const slotRanges: Array<{ start: string; end: string }> = [];
-      for (let h = startH; h < endH; h++) {
-        const s = `${String(h).padStart(2, '0')}:00`;
-        const e = `${String(h + 1).padStart(2, '0')}:00`;
-        slotRanges.push({ start: s, end: e });
+      
+      if (selectedTimeRange.end === '23:59' && startH === 23) {
+        // Special case: 23:00 to 23:59
+        slotRanges.push({ start: '23:00', end: '23:59' });
+      } else {
+        // Normal case: create hourly slots
+        for (let h = startH; h < endH; h++) {
+          const s = `${String(h).padStart(2, '0')}:00`;
+          const e = `${String(h + 1).padStart(2, '0')}:00`;
+          slotRanges.push({ start: s, end: e });
+        }
       }
       
       console.log(`Generated ${slotRanges.length} slot range(s):`, slotRanges);
@@ -643,8 +695,7 @@ const CounsellorCalendar: React.FC = () => {
                               </div>
                               <span className={`px-2 py-1 text-xs rounded-full ${
                                 session.status === 'scheduled' ? 'bg-green-100 text-green-700' :
-                                session.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                session.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                session.status === 'ongoing' ? 'bg-green-100 text-green-700' :
                                 session.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                                 session.status === 'completed' ? 'bg-blue-100 text-blue-700' :
                                 'bg-gray-100 text-gray-700'
@@ -659,6 +710,15 @@ const CounsellorCalendar: React.FC = () => {
                             <div className="text-xs text-gray-500 mt-1">
                               {session.duration} minutes
                             </div>
+                            {isSessionJoinable(session.date, session.time) && session.status === 'scheduled' && (
+                              <button
+                                onClick={() => joinSession(session.id)}
+                                className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+                              >
+                                <Video className="w-4 h-4" />
+                                Join Now
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -775,7 +835,7 @@ const CounsellorCalendar: React.FC = () => {
                                 disabled={isDisabled}
                                 style={isDisabled ? { color: '#9CA3AF' } : {}}
                               >
-                                {`${i.toString().padStart(2, '0')}:00`} {isDisabled ? '(Past)' : ''}
+                                {`${i.toString().padStart(2, '0')}:00`} {isDisabled ? '' : ''}
                               </option>
                             );
                           })}
@@ -786,11 +846,29 @@ const CounsellorCalendar: React.FC = () => {
                           onChange={(e) => setSelectedTimeRange(prev => ({ ...prev, end: e.target.value }))}
                           className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
                         >
-                          {Array.from({ length: 25 }, (_, i) => (
-                            <option key={i} value={`${i.toString().padStart(2, '0')}:00`}>
-                              {`${i.toString().padStart(2, '0')}:00`}
-                            </option>
-                          ))}
+                          {Array.from({ length: 24 }, (_, i) => {
+                            const hour = i + 1; // Start from 1:00
+                            const timeValue = hour === 24 ? '23:59' : `${hour.toString().padStart(2, '0')}:00`;
+                            const displayText = hour === 24 ? '23:59' : `${hour.toString().padStart(2, '0')}:00`;
+                            
+                            // Check if this end time is valid for the selected start time
+                            const [startH] = selectedTimeRange.start.split(':').map(Number);
+                            const isValidEndTime = hour > startH;
+                            
+                            return (
+                              <option 
+                                key={i} 
+                                value={timeValue}
+                                disabled={!isValidEndTime}
+                                style={{ 
+                                  opacity: isValidEndTime ? 1 : 0.4,
+                                  color: isValidEndTime ? 'inherit' : '#9CA3AF'
+                                }}
+                              >
+                                {displayText} {!isValidEndTime ? '' : ''}
+                              </option>
+                            );
+                          })}
                         </select>
                       </div>
                       {(() => {
@@ -815,8 +893,11 @@ const CounsellorCalendar: React.FC = () => {
                       })()}
                       {(() => {
                         const [startH] = selectedTimeRange.start.split(':').map(Number);
-                        const [endH] = selectedTimeRange.end.split(':').map(Number);
-                        if (endH <= startH) {
+                        const endTime = selectedTimeRange.end;
+                        const [endH] = endTime.split(':').map(Number);
+                        const actualEndH = endTime === '23:59' ? 24 : endH;
+                        
+                        if (actualEndH <= startH) {
                           return <div className="text-xs text-red-600 mt-1">End time must be greater than start time</div>;
                         }
                         return null;
@@ -834,8 +915,10 @@ const CounsellorCalendar: React.FC = () => {
                         
                         // Check if time range is valid
                         const [startH] = selectedTimeRange.start.split(':').map(Number);
-                        const [endH] = selectedTimeRange.end.split(':').map(Number);
-                        const isValidRange = endH > startH;
+                        const endTime = selectedTimeRange.end;
+                        const [endH] = endTime.split(':').map(Number);
+                        const actualEndH = endTime === '23:59' ? 24 : endH;
+                        const isValidRange = actualEndH > startH;
                         
                         const isDisabled = loading || isPastDate || !isValidRange;
                         

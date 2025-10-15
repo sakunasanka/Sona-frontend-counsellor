@@ -577,7 +577,7 @@ const PatientDetails: React.FC = () => {
                     <h3 className="text-lg font-semibold">All Sessions</h3>
                     <button
                         className="px-4 py-2 bg-secondaryDarker hover:bg-secondaryDusk text-white rounded-md text-sm font-medium flex items-center"
-                        onClick={() => window.location.href = '/counsellor-calendar'}
+                        onClick={() => window.location.href = '/calendar'}
                     >
                         <Calendar className="w-4 h-4 mr-2" />
                         View Calendar

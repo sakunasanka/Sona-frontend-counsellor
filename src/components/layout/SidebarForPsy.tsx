@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Home, Camera, Users, Pen, DollarSign, MessageCircle, Contact, HelpingHand, LogOut } from 'lucide-react';
+import { ArrowLeft, Home, Camera, Users, Pen, DollarSign, MessageCircle, Contact, HelpingHand, LogOut, FileText } from 'lucide-react';
 import { Button } from '../ui';
 
 interface SidebarProps {
@@ -23,12 +23,13 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
 }) => {
   const navigate = useNavigate();
   const menuItems = [
-    { icon: Home, label: 'Home', href: '/psychiatrist-dashboard', id: 'home' },
-    { icon: Camera, label: 'Sessions', href: '/psychiatrist-sessions', id: 'sessions' },
-    { icon: Users, label: 'Patients', href: '/psychiatrist-patients', id: 'patients' },
-    { icon: Pen, label: 'Prescriptions', href: '/psychiatrist/create-prescription', id: 'prescriptions' },
-    { icon: DollarSign, label: 'Earnings', href: '#', id: 'earnings' },
-    { icon: MessageCircle, label: 'Chats', href: '/psychiatrist-chats', id: 'chats' },
+    { icon: Home, label: 'Home', href: '/dashboard', id: 'home' },
+    { icon: Camera, label: 'Sessions', href: '/sessions', id: 'sessions' },
+    { icon: Users, label: 'Clients', href: '/clients', id: 'patients' },
+    { icon: Pen, label: 'Prescriptions', href: '/create-prescription', id: 'prescriptions' },
+    { icon: DollarSign, label: 'Earnings', href: '/earnings', id: 'earnings' },
+    { icon: MessageCircle, label: 'Chats', href: '/chats', id: 'chats' },
+    { icon: FileText, label: 'Blogs', href: '/blogs', id: 'blogs' },
     { icon: Contact, label: 'Contact Counsellors', href: '#', id: 'contact' },
     { icon: HelpingHand, label: 'Get Help', href: '#', id: 'help' },
   ];

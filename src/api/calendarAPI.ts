@@ -1,4 +1,4 @@
-import { apiClient, ApiResponse } from './apiBase';
+import { apiClient, ApiResponse, makeRequest } from './apiBase';
 
 // Types for calendar data
 export interface TimeSlot {
@@ -19,7 +19,7 @@ export interface Session {
   date: string; // YYYY-MM-DD
   time: string; // HH:mm
   duration: number;
-  status: 'scheduled' | 'confirmed' | 'pending' | 'completed' | 'cancelled';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'ongoing';
 }
 
 // Backend session shape returned by /sessions/counselor/:id
@@ -73,7 +73,6 @@ export interface MonthlyAvailabilityResponse {
 /**
  * Get counselor's time slots for a specific date
  */
-import { makeRequest } from './apiBase';
 
 export const getMonthlyAvailability = async (counselorId: number, year: number, month: number): Promise<MonthlyAvailabilityResponse> => {
   try {
