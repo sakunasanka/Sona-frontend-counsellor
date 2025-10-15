@@ -49,9 +49,9 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, showDateLabel = fals
   
   const joinSession = async (sessionId: number) => {
     try {
-      const response = await makeRequest<{success: boolean; data: {link: string}}>(`/sessions/${sessionId}/link`, 'GET');
-      if (response.success && response.data?.link) {
-        window.open(response.data.link, '_blank');
+      const response = await makeRequest<{success: boolean; data: {sessionLink: string}}>(`/sessions/${sessionId}/link`, 'GET');
+      if (response.success && response.data?.sessionLink) {
+        window.open(response.data.sessionLink, '_blank');
       } else {
         onShowFlashMessage?.('error', 'Session link not found. The session may not be available.');
       }
