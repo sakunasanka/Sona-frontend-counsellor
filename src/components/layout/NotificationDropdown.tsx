@@ -303,13 +303,13 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                                 <Check size={14} className="text-blue-600" />
                               </button>
                             )}
-                            <button
+                            {/* <button
                               onClick={(e) => handleDelete(e, notification.id)}
                               className="p-1 hover:bg-red-100 rounded-full transition-colors"
                               title="Delete"
                             >
                               <Trash2 size={14} className="text-red-600" />
-                            </button>
+                            </button> */}
                           </div>
                         </div>
                       </div>
@@ -338,13 +338,13 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               <CheckCheck size={16} />
               Mark all read
             </button>
-            <button
+            {/* <button
               onClick={onClearAll}
               className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700 transition-colors"
             >
               <Trash2 size={16} />
               Clear all
-            </button>
+            </button> */}
           </div>
         )}
       </div>
