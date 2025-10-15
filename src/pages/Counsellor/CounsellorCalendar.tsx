@@ -695,8 +695,7 @@ const CounsellorCalendar: React.FC = () => {
                               </div>
                               <span className={`px-2 py-1 text-xs rounded-full ${
                                 session.status === 'scheduled' ? 'bg-green-100 text-green-700' :
-                                session.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                session.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                session.status === 'ongoing' ? 'bg-green-100 text-green-700' :
                                 session.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                                 session.status === 'completed' ? 'bg-blue-100 text-blue-700' :
                                 'bg-gray-100 text-gray-700'

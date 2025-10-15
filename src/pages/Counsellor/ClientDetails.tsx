@@ -42,7 +42,7 @@ interface Session {
   id: number;
   date: string;
   dateObject?: Date;  // For date/time picker
-  status: 'completed' | 'upcoming' | 'cancelled';
+  status: 'completed' | 'upcoming' | 'cancelled' | 'ongoing';
   duration: number; // in minutes
   concerns: string[];
   notes?: string;
@@ -228,7 +228,7 @@ const ClientDetails: React.FC = () => {
   const [moodSubTab, setMoodSubTab] = useState<'phq9' | 'mood'>('phq9');
   
   // Session filtering and sorting state
-  const [sessionFilter, setSessionFilter] = useState<'all' | 'completed' | 'upcoming' | 'cancelled'>('all');
+  const [sessionFilter, setSessionFilter] = useState<'all' | 'completed' | 'upcoming' | 'cancelled' | 'ongoing'>('all');
   const [sortField, setSortField] = useState<'date' | 'status' | 'duration' | 'fee' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   
@@ -567,8 +567,9 @@ const ClientDetails: React.FC = () => {
               hour12: true
             }),
             status: session.status === 'scheduled' ? 'upcoming' : 
-                    session.status === 'no-show' ? 'cancelled' : 
-                    session.status as 'completed' | 'cancelled',
+                    session.status === 'cancelled' ? 'cancelled' : 
+                    session.status === 'ongoing' ? 'ongoing' : 
+                    session.status as 'completed' | 'cancelled' | 'ongoing',
             duration: session.duration,
             concerns: [], // Sessions API doesn't include concerns, using empty array
             notes: session.notes || '',
@@ -593,8 +594,9 @@ const ClientDetails: React.FC = () => {
               hour12: true
             }),
             status: session.status === 'scheduled' ? 'upcoming' : 
-                    session.status === 'no_show' ? 'cancelled' : 
-                    session.status as 'completed' | 'cancelled',
+                    session.status === 'cancelled' ? 'cancelled' : 
+                    session.status === 'ongoing' ? 'ongoing' : 
+                    session.status as 'completed' | 'cancelled' | 'ongoing',
             duration: session.duration,
             concerns: session.concerns,
             notes: session.notes || '',
@@ -2030,11 +2032,12 @@ const ClientDetails: React.FC = () => {
           <div className="sm:w-48">
             <select
               value={sessionFilter}
-              onChange={(e) => setSessionFilter(e.target.value as 'all' | 'completed' | 'upcoming' | 'cancelled')}
+              onChange={(e) => setSessionFilter(e.target.value as 'all' | 'completed' | 'upcoming' | 'cancelled' | 'ongoing')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-sm"
             >
               <option value="all">All Sessions</option>
               <option value="upcoming">Upcoming</option>
+              <option value="ongoing">Ongoing</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
@@ -2107,11 +2110,13 @@ const ClientDetails: React.FC = () => {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                       ${session.status === 'completed' ? 'bg-green-100 text-green-800' : 
                         session.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
+                        session.status === 'ongoing' ? 'bg-purple-100 text-purple-800' :
                         'bg-red-100 text-red-800'}`}
                     >
                       <span className={`w-1.5 h-1.5 mr-1.5 rounded-full
                         ${session.status === 'completed' ? 'bg-green-600' : 
                           session.status === 'upcoming' ? 'bg-blue-600' :
+                          session.status === 'ongoing' ? 'bg-purple-600' :
                           'bg-red-600'}`}
                       ></span>
                       {session.status.charAt(0).toUpperCase() + session.status.slice(1)}
@@ -2125,7 +2130,7 @@ const ClientDetails: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
-                      {isSessionJoinable(session.date) && session.status === 'upcoming' && (
+                      {isSessionJoinable(session.date) && (session.status === 'upcoming' || session.status === 'ongoing') && (
                         <button 
                           className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center gap-2 transition-colors"
                           onClick={() => joinSession(session.id.toString())}
