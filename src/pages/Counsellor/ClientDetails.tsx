@@ -22,7 +22,7 @@ import {
   Brain,
   TrendingUp,
   ArrowUpDown,
-  Video
+  Video,
   Upload,
   FileImage,
   Pill,
