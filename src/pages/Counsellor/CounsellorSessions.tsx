@@ -21,7 +21,7 @@ interface Session {
   duration: number;
   price: number;
   notes: string | null;
-  status: 'scheduled' | 'completed' | 'cancelled' | 'no-show';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'ongoing' | 'no-show';
   createdAt: string;
   updatedAt: string;
   user: User;
@@ -75,6 +75,8 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, showDateLabel = fals
         return 'bg-yellow-50 text-yellow-700 border-yellow-200';
       case 'scheduled':
         return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'ongoing':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
@@ -619,6 +621,7 @@ const CounsellorSessions = () => {
                                     >
                                         <option value="All">All Status</option>
                                         <option value="scheduled">Scheduled</option>
+                                        <option value="ongoing">Ongoing</option>
                                         <option value="completed">Completed</option>
                                         <option value="cancelled">Cancelled</option>
                                     </select>

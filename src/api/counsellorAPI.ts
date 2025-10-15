@@ -29,7 +29,7 @@ export interface Session {
   duration: number;
   price: number;
   notes: string | null;
-  status: 'scheduled' | 'completed' | 'cancelled' | 'no-show';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'ongoing';
   createdAt: string;
   updatedAt: string;
   user: User;
@@ -155,7 +155,7 @@ export interface ClientSession {
   date: string;
   duration: number;
   type: string;
-  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'ongoing';
   concerns: string[];
   notes: string;
   rating?: number;

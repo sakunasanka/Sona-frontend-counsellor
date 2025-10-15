@@ -440,11 +440,11 @@ const CounsellorDashboard = () => {
                               ? 'bg-green-100 text-green-700'
                               : session.status === 'cancelled'
                               ? 'bg-red-100 text-red-700'
-                              : session.status === 'no-show'
-                              ? 'bg-yellow-100 text-yellow-700'
+                              : session.status === 'ongoing'
+                              ? 'bg-purple-100 text-purple-700'
                               : 'bg-gray-100 text-gray-700'
                           }`}>
-                            {session.status === 'no-show' ? 'No Show' : session.status.charAt(0).toUpperCase() + session.status.slice(1)}
+                            {session.status.charAt(0).toUpperCase() + session.status.slice(1)}
                           </span>
                         </div>
                       ))
