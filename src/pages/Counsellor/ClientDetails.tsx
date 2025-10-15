@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { getClientDetails, createClientNote, deleteClientNote, updateClientNote, addClientConcern, removeClientConcern, getClientMoodAnalysis, getClientPHQ9Analysis, getSessions, type ClientDetails as APIClientDetails, type MoodAnalysisResponse, type PHQ9AnalysisResponse, getClientEarnings } from '../../api/counsellorAPI';
 import { MoodChart, PHQ9Chart } from '../../components/charts';
 import { makeRequest } from '../../api/apiBase';
+import { uploadPrescription } from '../../utils/cloudinaryUpload';
 import { 
   Calendar, 
   Clock, 
@@ -247,6 +248,7 @@ const ClientDetails: React.FC = () => {
 
   // Prescription state (will be initialized after mock data)
   const [uploadingPrescription, setUploadingPrescription] = useState(false);
+  const [selectedPrescriptionFile, setSelectedPrescriptionFile] = useState<File | null>(null);
   const [prescriptionDescription, setPrescriptionDescription] = useState('');
   const [dragActive, setDragActive] = useState(false);
   
@@ -260,6 +262,9 @@ const ClientDetails: React.FC = () => {
     message: '',
     isVisible: false
   });
+
+  // User type state - determine if user is psychiatrist or counsellor
+  const [userType, setUserType] = useState<string>('');
 
   // Helper function to join a session
   const joinSession = async (sessionId: string) => {
@@ -363,32 +368,8 @@ const ClientDetails: React.FC = () => {
     }
   ]);
 
-  // Mock prescription data - this would be fetched from API in real implementation
-  const mockPrescriptions: Prescription[] = [
-    {
-      id: 1,
-      fileName: "anxiety_medication_prescription.pdf",
-      fileType: 'pdf',
-      fileUrl: "https://example.com/prescriptions/anxiety_medication.pdf",
-      fileSize: 156000, // bytes
-      uploadedAt: "June 28, 2025",
-      uploadedBy: "Dr. Nilukshi Karunaratne",
-      description: "Sertraline 50mg for anxiety management - 30 day supply"
-    },
-    {
-      id: 2,
-      fileName: "therapy_recommendations.jpg",
-      fileType: 'image',
-      fileUrl: "https://example.com/prescriptions/therapy_recommendations.jpg",
-      fileSize: 234000, // bytes
-      uploadedAt: "June 15, 2025",
-      uploadedBy: "Dr. Nilukshi Karunaratne",
-      description: "Cognitive behavioral therapy exercises and home practice guidelines"
-    }
-  ];
-
-  // Initialize prescriptions with mock data
-  const [prescriptions, setPrescriptions] = useState<Prescription[]>(mockPrescriptions);
+  // Initialize prescriptions state - will be fetched from API
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
 
   // Define client types that can accommodate both anonymous and identified clients
   interface BaseClient {
@@ -706,7 +687,11 @@ const ClientDetails: React.FC = () => {
   // Fetch client details on component mount
   useEffect(() => {
     fetchClientDetails();
-  }, [clientId]);
+    // Fetch prescriptions for psychiatrists
+    if (userType === 'psychiatrist') {
+      fetchPrescriptions();
+    }
+  }, [clientId, userType]);
 
   // Load data based on selected mood sub-tab
   useEffect(() => {
@@ -717,7 +702,49 @@ const ClientDetails: React.FC = () => {
         fetchMoodAnalysis();
       }
     }
-  }, [activeTab, clientId, moodSubTab, showAllTime, selectedMonth, selectedYear]);
+    
+    // Fetch prescriptions when prescriptions tab is activated and user is psychiatrist
+    if (activeTab === 'prescriptions' && clientId && userType === 'psychiatrist') {
+      fetchPrescriptions();
+    }
+  }, [activeTab, clientId, moodSubTab, showAllTime, selectedMonth, selectedYear, userType]);
+
+  // Initialize user type from JWT token
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      try {
+        // Decode the JWT token to get user type
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const payload = JSON.parse(jsonPayload);
+        console.log('JWT payload:', payload);
+        
+        // Check for userType or role in the payload
+        const detectedUserType = payload.userType || payload.role || 'counsellor';
+        console.log('Detected user type from JWT:', detectedUserType);
+        setUserType(detectedUserType.toLowerCase()); // Normalize to lowercase
+      } catch (error) {
+        console.error('Error decoding JWT token:', error);
+        setUserType('counsellor'); // Default fallback
+      }
+    } else {
+      console.log('No auth token found, defaulting to counsellor');
+      setUserType('counsellor'); // Default if no token
+    }
+  }, []);
+
+  // Redirect from prescriptions tab if user is not a psychiatrist
+  useEffect(() => {
+    if (userType && userType !== 'psychiatrist' && activeTab === 'prescriptions') {
+      setActiveTab('overview');
+      showFlashMessage('warning', 'Prescriptions are only available for psychiatrists.');
+    }
+  }, [userType, activeTab]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -1682,52 +1709,131 @@ const ClientDetails: React.FC = () => {
     }
   };
   
+  // Fetch prescriptions from API
+  const fetchPrescriptions = async () => {
+    if (!clientId) return;
+
+    try {
+      console.log('Fetching prescriptions for client:', clientId);
+      
+      const response = await makeRequest<{
+        success: boolean;
+        message: string;
+        data: {
+          prescriptions: Array<{
+            id: number;
+            psychiatristId: number;
+            clientId: number;
+            description: string;
+            prescription: string;
+            createdAt: string;
+            updatedAt: string;
+            client: {
+              id: number;
+              name: string;
+              email: string;
+            };
+          }>;
+          count: number;
+        };
+      }>(`/psychiatrists/prescriptions/${clientId}`, 'GET');
+
+      console.log('Prescriptions API response:', response);
+
+      if (response && response.data && response.data.prescriptions) {
+        // Transform API data to component format
+        const transformedPrescriptions: Prescription[] = response.data.prescriptions.map(apiPrescription => {
+          // Extract file information from URL
+          const url = apiPrescription.prescription;
+          const urlParts = url.split('/');
+          const fileName = urlParts[urlParts.length - 1] || 'prescription';
+          
+          // Determine file type from URL
+          const fileType: 'pdf' | 'image' = url.toLowerCase().includes('.pdf') ? 'pdf' : 'image';
+          
+          return {
+            id: apiPrescription.id,
+            fileName: fileName.includes('.') ? fileName : `${fileName}.${fileType === 'pdf' ? 'pdf' : 'png'}`,
+            fileType,
+            fileUrl: apiPrescription.prescription,
+            fileSize: 0, // API doesn't provide file size, we'll use 0 or could make a HEAD request
+            uploadedAt: new Date(apiPrescription.createdAt).toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric'
+            }),
+            uploadedBy: "Dr. Psychiatrist", // Could be enhanced with actual psychiatrist name from API
+            description: apiPrescription.description || undefined
+          };
+        });
+
+        setPrescriptions(transformedPrescriptions);
+        console.log('Transformed prescriptions:', transformedPrescriptions);
+      } else {
+        console.log('No prescriptions found for client');
+        setPrescriptions([]);
+      }
+    } catch (error) {
+      console.error('Error fetching prescriptions:', error);
+      // Don't show error message to user as this might be normal (no prescriptions)
+      setPrescriptions([]);
+    }
+  };
+
   // Prescription handlers
-  const handleFileUpload = async (files: FileList | null) => {
+  const handleFileSelect = (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    
+
     const file = files[0];
-    
+
     // Validate file type
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
       showFlashMessage('error', 'Only PDF and image files (JPEG, PNG, GIF) are allowed.');
       return;
     }
-    
+
     // Validate file size (10MB limit)
     const maxSize = 10 * 1024 * 1024; // 10MB in bytes
     if (file.size > maxSize) {
       showFlashMessage('error', 'File size must be less than 10MB.');
       return;
     }
-    
+
+    // Store the selected file
+    setSelectedPrescriptionFile(file);
+  };
+
+  const handlePrescriptionSubmit = async () => {
+    if (!selectedPrescriptionFile) return;
+
     setUploadingPrescription(true);
-    
+
     try {
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Create new prescription entry
-      const newPrescription: Prescription = {
-        id: prescriptions.length + 1,
-        fileName: file.name,
-        fileType: file.type.includes('pdf') ? 'pdf' : 'image',
-        fileUrl: URL.createObjectURL(file), // In real app, this would be the server URL
-        fileSize: file.size,
-        uploadedAt: new Date().toLocaleDateString('en-US', { 
-          month: 'long', 
-          day: 'numeric', 
-          year: 'numeric' 
-        }),
-        uploadedBy: "Dr. Nilukshi Karunaratne", // This would come from auth context
-        description: prescriptionDescription.trim() || undefined
+      // Upload file to Cloudinary
+      const cloudinaryUrl = await uploadPrescription(selectedPrescriptionFile);
+      console.log('File uploaded to Cloudinary:', cloudinaryUrl);
+
+      // Make API call to save prescription
+      const prescriptionPayload = {
+        clientId: parseInt(clientId!),
+        description: prescriptionDescription.trim() || undefined,
+        prescription: cloudinaryUrl
       };
+
+      console.log('Uploading prescription with payload:', prescriptionPayload);
+
+      const response = await makeRequest('/psychiatrists/prescription', 'POST', prescriptionPayload);
+
+      console.log('Prescription upload API response:', response);
+
+      // Refresh prescriptions list from API after successful upload
+      await fetchPrescriptions();
       
-      setPrescriptions([newPrescription, ...prescriptions]);
+      // Clear form
+      setSelectedPrescriptionFile(null);
       setPrescriptionDescription('');
       showFlashMessage('success', 'Prescription uploaded successfully!');
-      
     } catch (error) {
       console.error('Error uploading prescription:', error);
       showFlashMessage('error', 'Failed to upload prescription. Please try again.');
@@ -1736,9 +1842,21 @@ const ClientDetails: React.FC = () => {
     }
   };
   
-  const handleDeletePrescription = (prescriptionId: number) => {
-    setPrescriptions(prescriptions.filter(p => p.id !== prescriptionId));
-    showFlashMessage('success', 'Prescription deleted successfully.');
+  const handleDeletePrescription = async (prescriptionId: number) => {
+    try {
+      console.log('Deleting prescription with ID:', prescriptionId);
+      
+      // Make API call to delete prescription
+      await makeRequest(`/psychiatrists/prescription/${prescriptionId}`, 'DELETE');
+      
+      // Refresh prescriptions list after successful deletion
+      await fetchPrescriptions();
+      
+      showFlashMessage('success', 'Prescription deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting prescription:', error);
+      showFlashMessage('error', 'Failed to delete prescription. Please try again.');
+    }
   };
   
   const handleViewPrescription = (prescription: Prescription) => {
@@ -1767,7 +1885,7 @@ const ClientDetails: React.FC = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragActive(false);
-    handleFileUpload(e.dataTransfer.files);
+    handleFileSelect(e.dataTransfer.files);
   };
   
   const renderPrescriptionsTab = () => {
@@ -1794,9 +1912,11 @@ const ClientDetails: React.FC = () => {
             {/* Drag and Drop Area */}
             <div
               className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                dragActive 
-                  ? 'border-purple-400 bg-purple-50' 
-                  : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50'
+                selectedPrescriptionFile
+                  ? 'border-green-400 bg-green-50'
+                  : dragActive 
+                    ? 'border-purple-400 bg-purple-50' 
+                    : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50'
               }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -1805,26 +1925,49 @@ const ClientDetails: React.FC = () => {
               <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png,.gif"
-                onChange={(e) => handleFileUpload(e.target.files)}
+                onChange={(e) => handleFileSelect(e.target.files)}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                disabled={uploadingPrescription}
+                disabled={uploadingPrescription || !!selectedPrescriptionFile}
               />
               
               <div className="space-y-3">
                 <div className="flex justify-center">
-                  <div className="bg-purple-100 p-3 rounded-full">
-                    <Upload className="w-8 h-8 text-purple-600" />
+                  <div className={`p-3 rounded-full ${
+                    selectedPrescriptionFile ? 'bg-green-100' : 'bg-purple-100'
+                  }`}>
+                    <Upload className={`w-8 h-8 ${
+                      selectedPrescriptionFile ? 'text-green-600' : 'text-purple-600'
+                    }`} />
                   </div>
                 </div>
                 
                 <div>
                   <h4 className="text-lg font-medium text-gray-900 mb-1">
-                    {uploadingPrescription ? 'Uploading...' : 'Drop files here or click to browse'}
+                    {selectedPrescriptionFile 
+                      ? `Selected: ${selectedPrescriptionFile.name}`
+                      : uploadingPrescription 
+                        ? 'Uploading...' 
+                        : 'Drop files here or click to browse'
+                    }
                   </h4>
                   <p className="text-sm text-gray-500">
-                    Support for PDF, JPEG, PNG, GIF files up to 10MB
+                    {selectedPrescriptionFile 
+                      ? `${formatFileSize(selectedPrescriptionFile.size)} • ${selectedPrescriptionFile.type.includes('pdf') ? 'PDF Document' : 'Image'}`
+                      : 'Support for PDF, JPEG, PNG, GIF files up to 10MB'
+                    }
                   </p>
                 </div>
+                
+                {selectedPrescriptionFile && !uploadingPrescription && (
+                  <div className="flex justify-center space-x-2">
+                    <button
+                      onClick={() => setSelectedPrescriptionFile(null)}
+                      className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
                 
                 {uploadingPrescription && (
                   <div className="flex justify-center">
@@ -1847,6 +1990,31 @@ const ClientDetails: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
                 disabled={uploadingPrescription}
               />
+            </div>
+
+            {/* Submit Button */}
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={handlePrescriptionSubmit}
+                disabled={!selectedPrescriptionFile || uploadingPrescription}
+                className={`px-6 py-2 rounded-lg text-sm font-medium flex items-center transition-all ${
+                  !selectedPrescriptionFile || uploadingPrescription
+                    ? 'bg-gray-300 cursor-not-allowed text-gray-500'
+                    : 'bg-purple-600 hover:bg-purple-700 text-white'
+                }`}
+              >
+                {uploadingPrescription ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Prescription
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -3166,12 +3334,15 @@ const ClientDetails: React.FC = () => {
                 >
                   Mood Analysis
                 </button>
-                <button 
-                  className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'prescriptions' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
-                  onClick={() => setActiveTab('prescriptions')}
-                >
-                  Prescriptions
-                </button>
+                {/* Only show Prescriptions tab for psychiatrists */}
+                {userType === 'psychiatrist' && (
+                  <button 
+                    className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'prescriptions' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => setActiveTab('prescriptions')}
+                  >
+                    Prescriptions
+                  </button>
+                )}
                 {/* <button 
                   className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'details' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
                   onClick={() => setActiveTab('details')}
@@ -3189,7 +3360,7 @@ const ClientDetails: React.FC = () => {
             {activeTab === 'notes' && renderNotesTab()}
             {activeTab === 'sessions' && renderSessionsTab()}
             {activeTab === 'mood' && renderMoodTab()}
-            {activeTab === 'prescriptions' && renderPrescriptionsTab()}
+            {activeTab === 'prescriptions' && userType === 'psychiatrist' && renderPrescriptionsTab()}
             {/* {activeTab === 'details' && renderDetailsTab()} */}
           </div>
 
