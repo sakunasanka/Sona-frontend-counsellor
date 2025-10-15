@@ -99,9 +99,9 @@ const CounsellorCalendar: React.FC = () => {
   // Helper function to join a session
   const joinSession = async (sessionId: string) => {
     try {
-      const response = await makeRequest<{success: boolean; data: {link: string}}>(`/sessions/${sessionId}/link`, 'GET');
-      if (response.success && response.data?.link) {
-        window.open(response.data.link, '_blank');
+      const response = await makeRequest<{success: boolean; data: {sessionLink: string}}>(`/sessions/${sessionId}/link`, 'GET');
+      if (response.success && response.data?.sessionLink) {
+        window.open(response.data.sessionLink, '_blank');
       } else {
         console.error('Failed to get session link');
         showFlashMessage('error', 'Failed to get session link. Please try again.');
