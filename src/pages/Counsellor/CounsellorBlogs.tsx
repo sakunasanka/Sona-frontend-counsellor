@@ -432,7 +432,7 @@ const CounsellorBlogs: React.FC = () => {
         sessionStorage.setItem(`edit_post_${blogId}`, JSON.stringify(post));
       } catch {}
     }
-    navigate(`/counsellor/edit-blog/${blogId}`, { state: { post } });
+    navigate(`/edit-blog/${blogId}`, { state: { post } });
   };
 
   const handleDelete = (blogId: string) => {
@@ -478,7 +478,7 @@ const CounsellorBlogs: React.FC = () => {
   };
 
   const handleCreateNewBlog = () => {
-    navigate('/counsellor/create-blog');
+    navigate('/create-blog');
   };
 
   const toggleSidebar = (): void => {
