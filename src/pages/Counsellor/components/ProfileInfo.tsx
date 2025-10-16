@@ -42,15 +42,11 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({
             </>
           ) : (
             <>
-              <div className="mb-3">
-                <input
-                  key="firstName"
-                  type="text"
-                  value={editForm.firstName || ''}
-                  onChange={(e) => onInputChange('firstName', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary"
-                  placeholder="Full Name (Dr. will be added automatically)"
-                />
+              {/* Name is not editable - display only */}
+              <div className="flex items-center gap-4 mb-3">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  Dr. {profile.firstName}
+                </h1>
               </div>
               <textarea
                 key="bio"
