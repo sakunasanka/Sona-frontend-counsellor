@@ -128,10 +128,6 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
           <button onClick={onMenuClick} className="p-1 hover:bg-gray-100 rounded-md transition-colors lg:hidden">
             <Menu size={24} className="text-gray-700" />
           </button>
-          
-          {/* <div className="flex items-center">
-            <img src="/assets/images/Sona-logo.png" alt="SONA" className="w-20" />
-          </div> */}
         </div>
 
         <div className="flex items-center space-x-3 relative">

@@ -27,7 +27,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     { icon: Calendar, label: 'Sessions', href: '/sessions', id: 'sessions' },
     { icon: Users, label: 'Clients', href: '/clients', id: 'clients' },
     { icon: DollarSign, label: 'Earnings', href: '/earnings', id: 'earnings' },
-    // { icon: ThumbsUp, label: 'Feedbacks', href: '/feedbacks', id: 'feedbacks' },
     { icon: MessageCircle, label: 'Chats', href: '/chats', id: 'chats' },
     { icon: FileText, label: 'Blogs', href: '/blogs', id: 'blogs' },
   ];
@@ -75,28 +74,39 @@ const Sidebar: React.FC<SidebarProps> = ({
         ${isOpen || isMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         
-        <div className="items-center justify-center max-w-xl mx-4 p-4 border-b lg:border-none mt-5">
-            <img src="/assets/images/Sona-logo-light.png" alt="SONA" className='w-32' />
+        {/* Logo Section - Left aligned for web, with back arrow for mobile */}
+        <div className="py-6 px-4">
+          {/* Desktop: Left-aligned logo with margin to align with menu icons */}
+          <div className="hidden lg:flex items-center">
+            <img src="/assets/images/Sona-logo-light.png" alt="SONA" className={`${isMinimized ? 'w-8' : 'w-32'} transition-all duration-300 ${isMinimized ? '' : 'ml-4'}`} />
           </div>
-        {/* Sidebar Header - Only show on mobile when not minimized */}
-        {!isMinimized && (
-          <div className="flex items-center p-4 border-b lg:hidden">
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-            >
-              <ArrowLeft size={20} className="text-gray-600" />
-            </button>
-            <img
-              src="/assets/images/Sona-logo.png"
-              alt="Sona Logo"
-              className="h-8 w-auto ml-3"
-            />
-          </div>
-        )}
+          
+          {/* Mobile: Back arrow + logo on same level when not minimized */}
+          {!isMinimized && (
+            <div className="flex items-center lg:hidden">
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-slate-700 rounded-md transition-colors mr-3"
+              >
+                <ArrowLeft size={20} className="text-slate-300" />
+              </button>
+              <img src="/assets/images/Sona-logo-light.png" alt="SONA" className="w-32" />
+            </div>
+          )}
+          
+          {/* Mobile minimized: Just logo centered */}
+          {isMinimized && (
+            <div className="flex items-center justify-center lg:hidden">
+              <img src="/assets/images/Sona-logo-light.png" alt="SONA" className="w-8" />
+            </div>
+          )}
+        </div>
+
+        {/* Subtle Divider */}
+        <div className="mx-4 border-t border-slate-600"></div>
 
         {/* Menu Items */}
-        <nav className={`py-6 ${isMinimized ? 'px-2' : 'px-4'} flex-1 flex flex-col transition-all duration-500 ease-in-out`}>
+        <nav className={`py-4 ${isMinimized ? 'px-2' : 'px-4'} flex-1 flex flex-col transition-all duration-500 ease-in-out`}>
           <ul className="space-y-2">
             {menuItems.map((item, index) => {
               const IconComponent = item.icon;
@@ -141,12 +151,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           
           <div className="flex-1"></div>
           
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-6 pt-4 border-t border-slate-600">
             <Button
               variant="logout"
               isMinimized={isMinimized}
               title={isMinimized ? 'Log out' : undefined}
-              icon={<LogOut size={20} className="text-gray-600 group-hover:text-red-600 transition-colors duration-200" />}
+              icon={<LogOut size={20} className="text-white group-hover:text-red-600 transition-colors duration-200" />}
               onClick={() => {
                 console.log('Logout clicked');
                 localStorage.removeItem('auth_token');
