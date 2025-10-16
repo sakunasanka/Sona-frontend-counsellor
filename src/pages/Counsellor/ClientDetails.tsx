@@ -448,7 +448,11 @@ const ClientDetails: React.FC = () => {
       anonymous: apiClient.is_anonymous,
       student: true, // Assuming all clients are students based on student_id field
       institution: apiClient.institution || 'University',
-      joinDate: apiClient.join_date ? new Date(apiClient.join_date).toLocaleDateString() : 'Unknown',
+      joinDate: apiClient.join_date ? new Date(apiClient.join_date).toLocaleDateString('en-GB', { 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric' 
+      }) : 'Unknown',
       profileImage: apiClient.avatar || 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png',
     };
 
@@ -1741,7 +1745,7 @@ const ClientDetails: React.FC = () => {
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <button 
             className="flex flex-col items-center justify-center bg-indigo-50 hover:bg-indigo-100 p-4 rounded-lg transition-colors"
             onClick={() => window.location.href = `/counsellor/chats?clientId=${clientId}`}
@@ -1778,13 +1782,6 @@ const ClientDetails: React.FC = () => {
           >
             <FileDown className="w-6 h-6 text-blue-500 mb-2" />
             <span className="text-sm text-gray-800">Generate Report</span>
-          </button>
-          <button 
-            className="flex flex-col items-center justify-center bg-amber-50 hover:bg-amber-100 p-4 rounded-lg transition-colors"
-            onClick={() => setActiveTab('details')}
-          >
-            <FileSymlink className="w-6 h-6 text-amber-500 mb-2" />
-            <span className="text-sm text-gray-800">Resources</span>
           </button>
         </div>
       </div>
