@@ -997,6 +997,26 @@ export const updateCounsellorProfile = async (profileData: Partial<CounsellorPro
       throw new Error('Authentication token not found');
     }
 
+    // Decode JWT token to check user type
+    const decodeToken = (token: string) => {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch {
+        return null;
+      }
+    };
+
+    const payload = decodeToken(token);
+    const userType = payload?.userType || payload?.role || payload?.type;
+
+    // Determine the correct endpoint based on user type
+    const endpoint = userType === 'Psychiatrist' ? '/psychiatrists/profile' : '/counselors/profile';
+
     // Flatten socialLinks from nested object to top-level fields
     const flattenedData: any = { ...profileData };
     if (profileData.socialLinks) {
@@ -1006,9 +1026,14 @@ export const updateCounsellorProfile = async (profileData: Partial<CounsellorPro
       delete flattenedData.socialLinks;
     }
 
+    // Handle name fields: only include lastName if it has a value
+    if (flattenedData.lastName === '' || flattenedData.lastName === null || flattenedData.lastName === undefined) {
+      delete flattenedData.lastName;
+    }
+
     console.log('Updating profile with flattened data:', flattenedData);
 
-    const response: ApiResponse<any> = await apiClient.put('/counselors/profile', flattenedData, token, true);
+    const response: ApiResponse<any> = await apiClient.put(endpoint, flattenedData, token, true);
     console.log('Update profile response:', response);
 
     if (response.success && response.data) {
