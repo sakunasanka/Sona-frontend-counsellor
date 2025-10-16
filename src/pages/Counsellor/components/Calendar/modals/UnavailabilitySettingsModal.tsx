@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Settings, AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { X, AlertTriangle, Plus, Trash2 } from 'lucide-react';
 
 export interface UnavailabilityRule {
   id: string;

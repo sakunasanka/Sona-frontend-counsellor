@@ -12,8 +12,6 @@ interface CalendarGridProps {
   onNavigateMonth: (direction: 'prev' | 'next') => void;
   onToday: () => void;
   onDateClick: (date: Date) => void;
-  onUnavailableSlotClick: (date: Date, e: React.MouseEvent) => void;
-  onSessionAction: (sessionId: string, action: 'accept' | 'reject') => void;
   getStatusColor: (status: string) => string;
 }
 
@@ -25,8 +23,6 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   onNavigateMonth,
   onToday,
   onDateClick,
-  onUnavailableSlotClick,
-  onSessionAction,
   getStatusColor
 }) => {
   return (
@@ -50,8 +46,6 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
               key={index}
               day={day}
               onDateClick={onDateClick}
-              onUnavailableSlotClick={onUnavailableSlotClick}
-              onSessionAction={onSessionAction}
               getStatusColor={getStatusColor}
             />
           ))}

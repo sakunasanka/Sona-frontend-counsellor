@@ -16,7 +16,6 @@ import {
   PenLine, 
   X,
   UserCheck,
-  FileSymlink,
   Flag,
   FileDown,
   CalendarDays,

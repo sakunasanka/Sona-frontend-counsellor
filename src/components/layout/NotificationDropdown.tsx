@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Check, CheckCheck, Trash2, Bell, Info, CheckCircle, AlertTriangle, AlertCircle, MessageSquare } from 'lucide-react';
+import { X, Check, CheckCheck, Bell, Info, CheckCircle, AlertTriangle, AlertCircle, MessageSquare } from 'lucide-react';
 import { Notification, NotificationType } from '../../api/notificationAPI';
 import { useNavigate } from 'react-router-dom';
 
@@ -63,8 +63,6 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   unreadCount,
   onMarkAsRead,
   onMarkAllAsRead,
-  onDeleteNotification,
-  onClearAll,
   isOpen,
   onClose,
 }) => {
@@ -154,16 +152,6 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       await onMarkAsRead(notificationId);
     } catch (error) {
       console.error('Error marking notification as read:', error);
-    }
-  };
-
-  // Handle delete
-  const handleDelete = async (e: React.MouseEvent, notificationId: number) => {
-    e.stopPropagation();
-    try {
-      await onDeleteNotification(notificationId);
-    } catch (error) {
-      console.error('Error deleting notification:', error);
     }
   };
 

@@ -7,7 +7,6 @@ import {
   Pill,
   Download,
   Eye,
-  Trash2,
   FileText
 } from 'lucide-react';
 
@@ -173,24 +172,6 @@ const PrescriptionManager: React.FC<PrescriptionManagerProps> = ({
       onShowFlashMessage('error', 'Failed to upload prescription. Please try again.');
     } finally {
       setUploadingPrescription(false);
-    }
-  };
-
-  // Handle prescription deletion
-  const handleDeletePrescription = async (prescriptionId: number) => {
-    try {
-      console.log('Deleting prescription with ID:', prescriptionId);
-      
-      // Make API call to delete prescription
-      await makeRequest(`/psychiatrists/prescription/${prescriptionId}`, 'DELETE');
-      
-      // Refresh prescriptions list after successful deletion
-      await fetchPrescriptions();
-      
-      onShowFlashMessage('success', 'Prescription deleted successfully.');
-    } catch (error) {
-      console.error('Error deleting prescription:', error);
-      onShowFlashMessage('error', 'Failed to delete prescription. Please try again.');
     }
   };
 

@@ -8,13 +8,10 @@ import {
   FileText,
   BarChart3,
   MessageSquare,
-  CheckCircle,
   Star,
-  ArrowRight,
   Phone,
   Mail,
-  MapPin,
-  ChevronDown
+  MapPin
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -284,7 +281,7 @@ function Home() {
                 }
               }}
             >
-              <source src="/assets/videos/healthcare-background-2.mp4" type="video/mp4" />
+              <source src="/assets/videos/healthcare-background.mp4" type="video/mp4" />
               {/* Fallback for browsers that don't support video */}
               <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white"></div>
             </video>

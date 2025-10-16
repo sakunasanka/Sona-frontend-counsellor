@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CalendarX, Calendar } from 'lucide-react';
+import { X, CalendarX } from 'lucide-react';
 import { UnavailableDate } from '../types';
 
 interface UnavailableDayDetailsModalProps {
