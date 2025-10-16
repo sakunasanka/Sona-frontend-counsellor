@@ -199,7 +199,7 @@ const ClientTable: React.FC<ClientTableProps> = ({ clients, onViewDetails }) => 
                   <div className="flex items-center justify-center gap-2">
                     <Button
                       variant="calendar"
-                      onClick={() => navigate(`/counsellor/chats?clientId=${client.id}`)}
+                      onClick={() => navigate(`/chats?clientId=${client.id}`)}
                       icon={<MessageCircle className="w-4 h-4" />}
                       className="px-3 py-2 text-sm flex-1 min-w-0"
                     >

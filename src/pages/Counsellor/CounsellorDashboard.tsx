@@ -239,7 +239,7 @@ const CounsellorDashboard = () => {
       title: "Write Blog",
       description: "Share insights with the community",
       icon: PlusCircle,
-      action: () => navigate("/counsellor/create-blog"),
+      action: () => navigate("/create-blog"),
       color: "bg-purple-100",
       textcolor: "text-purple-600"
     },
