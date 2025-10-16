@@ -8,7 +8,7 @@ export interface CloudinaryResponse {
   bytes: number;
 }
 
-export type ImageType = 'profile' | 'cover' | 'blog';
+export type ImageType = 'profile' | 'cover' | 'blog' | 'prescription';
 
 export const uploadToCloudinary = async (file: File, imageType: ImageType = 'profile'): Promise<string> => {
   try {
@@ -17,15 +17,28 @@ export const uploadToCloudinary = async (file: File, imageType: ImageType = 'pro
       throw new Error('No file selected');
     }
 
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      throw new Error('Please select an image file');
+    // Check file type based on image type
+    let isValidType = false;
+    if (imageType === 'prescription') {
+      // Allow both images and PDFs for prescriptions
+      isValidType = file.type.startsWith('image/') || file.type === 'application/pdf';
+    } else {
+      // Only images for other types
+      isValidType = file.type.startsWith('image/');
     }
 
-    // Check file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (!isValidType) {
+      const errorMsg = imageType === 'prescription' 
+        ? 'Please select an image file or PDF document'
+        : 'Please select an image file';
+      throw new Error(errorMsg);
+    }
+
+    // Check file size (max 10MB for prescriptions, 5MB for others)
+    const maxSize = imageType === 'prescription' ? 10 * 1024 * 1024 : 5 * 1024 * 1024; // 10MB or 5MB
     if (file.size > maxSize) {
-      throw new Error('Image size should be less than 5MB');
+      const sizeMsg = imageType === 'prescription' ? '10MB' : '5MB';
+      throw new Error(`File size should be less than ${sizeMsg}`);
     }
 
     // Get Cloudinary credentials from environment
@@ -61,6 +74,8 @@ const uploadUnsigned = async (file: File, cloudName: string, imageType: ImageTyp
     uploadPreset = 'cover_pic';
   } else if (imageType === 'blog') {
     uploadPreset = 'blog_posts';
+  } else if (imageType === 'prescription') {
+    uploadPreset = 'prescriptions';
   }
   
   formData.append('upload_preset', uploadPreset);
@@ -124,4 +139,8 @@ export const uploadCoverImage = async (file: File): Promise<string> => {
 
 export const uploadBlogImage = async (file: File): Promise<string> => {
   return uploadToCloudinary(file, 'blog');
+};
+
+export const uploadPrescription = async (file: File): Promise<string> => {
+  return uploadToCloudinary(file, 'prescription');
 };
