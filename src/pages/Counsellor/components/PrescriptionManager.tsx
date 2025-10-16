@@ -381,87 +381,96 @@ const PrescriptionManager: React.FC<PrescriptionManagerProps> = ({
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {prescriptions.map((prescription) => (
                 <div
                   key={prescription.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow group"
+                  className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-sm hover:shadow-lg border border-gray-100 hover:border-purple-200 transition-all duration-300 overflow-hidden group"
                 >
-                  {/* File Icon and Type */}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center">
-                      <div className={`p-2 rounded-lg ${
-                        prescription.fileType === 'pdf' 
-                          ? 'bg-red-100' 
-                          : 'bg-blue-100'
+                  {/* Header with File Type Badge */}
+                  <div className="relative p-4 pb-2">
+                    <div className="flex items-center justify-between">
+                      <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
+                        prescription.fileType === 'pdf'
+                          ? 'bg-red-100 text-red-700 border border-red-200'
+                          : 'bg-blue-100 text-blue-700 border border-blue-200'
                       }`}>
                         {prescription.fileType === 'pdf' ? (
-                          <FileText className={`w-6 h-6 ${
-                            prescription.fileType === 'pdf' 
-                              ? 'text-red-600' 
-                              : 'text-blue-600'
-                          }`} />
+                          <FileText className="w-3 h-3 mr-1.5" />
                         ) : (
-                          <FileImage className="w-6 h-6 text-blue-600" />
+                          <FileImage className="w-3 h-3 mr-1.5" />
                         )}
-                      </div>
-                      <div className="ml-3">
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                          prescription.fileType === 'pdf'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {prescription.fileType.toUpperCase()}
-                        </span>
+                        {prescription.fileType.toUpperCase()}
                       </div>
                     </div>
-                    
-                    <button
-                      onClick={() => handleDeletePrescription(prescription.id)}
-                      className="opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-all"
-                      title="Delete prescription"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
                   </div>
 
-                  {/* File Details */}
-                  <div className="space-y-2">
-                    <h5 className="font-medium text-gray-900 text-sm truncate" title={prescription.fileName}>
-                      {prescription.fileName}
+                  {/* Content */}
+                  <div className="px-4 pb-4">
+                    {/* File Icon */}
+                    <div className="flex justify-center mb-3">
+                      <div className={`p-3 rounded-xl ${
+                        prescription.fileType === 'pdf' 
+                          ? 'bg-red-50 border border-red-100' 
+                          : 'bg-blue-50 border border-blue-100'
+                      }`}>
+                        {prescription.fileType === 'pdf' ? (
+                          <FileText className={`w-8 h-8 ${
+                            prescription.fileType === 'pdf' 
+                              ? 'text-red-500' 
+                              : 'text-blue-500'
+                          }`} />
+                        ) : (
+                          <FileImage className="w-8 h-8 text-blue-500" />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* File Name */}
+                    <h5 className="font-semibold text-gray-900 text-sm text-center mb-2 leading-tight" title={prescription.fileName}>
+                      {prescription.fileName.length > 20 
+                        ? `${prescription.fileName.substring(0, 20)}...` 
+                        : prescription.fileName
+                      }
                     </h5>
                     
+                    {/* Description */}
                     {prescription.description && (
-                      <p className="text-xs text-gray-600 break-words overflow-hidden" style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical' as any
-                      }}>
-                        {prescription.description}
+                      <p className="text-xs text-gray-600 text-center mb-3 leading-relaxed line-clamp-2">
+                        {prescription.description.length > 60 
+                          ? `${prescription.description.substring(0, 60)}...` 
+                          : prescription.description
+                        }
                       </p>
                     )}
                     
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>{prescription.uploadedAt}</span>
+                    {/* Upload Date */}
+                    <div className="text-center mb-4">
+                      <span className="inline-flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {prescription.uploadedAt}
+                      </span>
                     </div>
-                  </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex space-x-2 mt-4">
-                    <button
-                      onClick={() => handleViewPrescription(prescription)}
-                      className="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-600 py-2 px-3 rounded-md text-xs font-medium transition-colors flex items-center justify-center"
-                    >
-                      <Eye className="w-3 h-3 mr-1" />
-                      View
-                    </button>
-                    <button
-                      onClick={() => handleViewPrescription(prescription)}
-                      className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 py-2 px-3 rounded-md text-xs font-medium transition-colors flex items-center justify-center"
-                    >
-                      <Download className="w-3 h-3 mr-1" />
-                      Download
-                    </button>
+                    {/* Action Buttons */}
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleViewPrescription(prescription)}
+                        className="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-700 py-2.5 px-3 rounded-xl text-xs font-medium transition-all duration-200 flex items-center justify-center hover:shadow-sm border border-purple-100 hover:border-purple-200"
+                      >
+                        <Eye className="w-3 h-3 mr-1.5" />
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleViewPrescription(prescription)}
+                        className="flex-1 bg-green-50 hover:bg-green-100 text-green-700 py-2.5 px-3 rounded-xl text-xs font-medium transition-all duration-200 flex items-center justify-center hover:shadow-sm border border-green-100 hover:border-green-200"
+                      >
+                        <Download className="w-3 h-3 mr-1.5" />
+                        Download
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
