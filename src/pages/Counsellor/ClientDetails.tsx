@@ -1748,7 +1748,7 @@ const ClientDetails: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <button 
             className="flex flex-col items-center justify-center bg-indigo-50 hover:bg-indigo-100 p-4 rounded-lg transition-colors"
-            onClick={() => window.location.href = `/counsellor/chats?clientId=${clientId}`}
+            onClick={() => window.location.href = `/chats?clientId=${clientId}`}
           >
             <MessageCircle className="w-6 h-6 text-indigo-500 mb-2" />
             <span className="text-sm text-gray-800">Message</span>
@@ -1774,7 +1774,7 @@ const ClientDetails: React.FC = () => {
             onClick={() => setActiveTab('sessions')}
           >
             <Calendar className="w-6 h-6 text-green-500 mb-2" />
-            <span className="text-sm text-gray-800">Schedule</span>
+            <span className="text-sm text-gray-800">View Sessions</span>
           </button>
           <button 
             className="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 p-4 rounded-lg transition-colors"

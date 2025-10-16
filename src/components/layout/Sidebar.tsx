@@ -53,6 +53,22 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
+  const handleLogoClick = () => {
+    // Navigate to dashboard
+    if (isMinimized && onExpandBeforeNavigation) {
+      // Trigger expansion animation before navigation
+      onExpandBeforeNavigation('/dashboard');
+    } else {
+      // Direct navigation if not minimized
+      window.location.href = '/dashboard';
+    }
+    
+    // Close sidebar on mobile
+    if (window.innerWidth < 1024) {
+      onClose();
+    }
+  };
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -78,7 +94,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className="py-6 px-4">
           {/* Desktop: Left-aligned logo with margin to align with menu icons */}
           <div className="hidden lg:flex items-center">
-            <img src="/assets/images/Sona-logo-light.png" alt="SONA" className={`${isMinimized ? 'w-8' : 'w-32'} transition-all duration-300 ${isMinimized ? '' : 'ml-4'}`} />
+            <img 
+              src="/assets/images/Sona-logo-light.png" 
+              alt="SONA" 
+              className={`${isMinimized ? 'w-8' : 'w-32'} transition-all duration-300 ${isMinimized ? '' : 'ml-4'} cursor-pointer hover:opacity-80`}
+              onClick={handleLogoClick}
+            />
           </div>
           
           {/* Mobile: Back arrow + logo on same level when not minimized */}
@@ -90,14 +111,24 @@ const Sidebar: React.FC<SidebarProps> = ({
               >
                 <ArrowLeft size={20} className="text-slate-300" />
               </button>
-              <img src="/assets/images/Sona-logo-light.png" alt="SONA" className="w-32" />
+              <img 
+                src="/assets/images/Sona-logo-light.png" 
+                alt="SONA" 
+                className="w-32 cursor-pointer hover:opacity-80"
+                onClick={handleLogoClick}
+              />
             </div>
           )}
           
           {/* Mobile minimized: Just logo centered */}
           {isMinimized && (
             <div className="flex items-center justify-center lg:hidden">
-              <img src="/assets/images/Sona-logo-light.png" alt="SONA" className="w-8" />
+              <img 
+                src="/assets/images/Sona-logo-light.png" 
+                alt="SONA" 
+                className="w-8 cursor-pointer hover:opacity-80"
+                onClick={handleLogoClick}
+              />
             </div>
           )}
         </div>

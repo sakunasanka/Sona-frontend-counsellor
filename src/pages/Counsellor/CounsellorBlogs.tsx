@@ -841,7 +841,7 @@ const CounsellorBlogs: React.FC = () => {
                 {(!searchQuery && !(activeFilter === 'my-posts' && statusFilter !== 'all')) && (
                   <button 
                     onClick={handleCreateNewBlog}
-                    className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 mx-auto"
+                    className="bg-slateButton-100 hover:bg-slateButton-200 text-white px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 mx-auto"
                   >
                     <PenTool className="w-5 h-5" />
                     Write your first post
