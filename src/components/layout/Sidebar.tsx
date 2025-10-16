@@ -95,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           {/* Desktop: Left-aligned logo with margin to align with menu icons */}
           <div className="hidden lg:flex items-center">
             <img 
-              src="/assets/images/Sona-logo-light.png" 
+              src={isMinimized ? "/assets/images/Sona-flat.png" : "/assets/images/Sona-logo-light.png"}
               alt="SONA" 
               className={`${isMinimized ? 'w-8' : 'w-32'} transition-all duration-300 ${isMinimized ? '' : 'ml-4'} cursor-pointer hover:opacity-80`}
               onClick={handleLogoClick}
@@ -124,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           {isMinimized && (
             <div className="flex items-center justify-center lg:hidden">
               <img 
-                src="/assets/images/Sona-logo-light.png" 
+                src="/assets/images/Sona-flat.png"
                 alt="SONA" 
                 className="w-8 cursor-pointer hover:opacity-80"
                 onClick={handleLogoClick}
