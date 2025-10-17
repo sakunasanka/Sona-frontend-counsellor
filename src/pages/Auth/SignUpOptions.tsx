@@ -180,7 +180,7 @@ function SignUpOptions() {
             <Button 
               variant="border" 
               onClick={() => navigate('/signin-options')}
-              className="px-8 py-3 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300"
+              className="px-8 py-3 border-gray-300 text-gray-700 hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all duration-300"
             >
               Sign In Instead
             </Button>

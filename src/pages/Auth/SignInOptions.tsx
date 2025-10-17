@@ -79,7 +79,7 @@ function SignInOptions() {
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-3">I'm seeking support</h3>
                     <p className="text-gray-600 leading-relaxed mb-6">
-                      Access our mobile app to connect with mental health professionals, track your wellness, and get the support you need.
+                      Access our mobile app to connect with professionals, track your wellness, and get the support you need.
                     </p>
                   </div>
                   <div className="flex items-center justify-center gap-2 text-blue-600 font-medium">
