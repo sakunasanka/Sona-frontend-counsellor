@@ -11,7 +11,7 @@ import {
   WifiOff
 } from 'lucide-react';
 import { NavBar, Sidebar } from "../../components/layout";
-import { getCouncilorChatRooms, sendMessageToChatRoom } from '../../api/counsellorAPI';
+import { getCouncilorChatRooms, sendMessageToChatRoom, getChatRoomMessages, markChatRoomAsRead } from '../../api/counsellorAPI';
 import { useWebSocketChat } from '../../hooks/useWebSocketChat';
 import type { ChatMessage as WSChatMessage } from '../../api/chatWebSocket';
 
@@ -210,8 +210,9 @@ const ChatArea: React.FC<{
   isMobile?: boolean,
   isSending?: boolean,
   isWsConnected?: boolean,
-  typingUsers?: Record<string, string>
-}> = ({ selectedChat, messages, onSendMessage, onBack, isMobile, isSending = false, isWsConnected = false, typingUsers = {} }) => {
+  typingUsers?: Record<string, string>,
+  isLoadingMessages?: boolean
+}> = ({ selectedChat, messages, onSendMessage, onBack, isMobile, isSending = false, isWsConnected = false, typingUsers = {}, isLoadingMessages = false }) => {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -293,9 +294,26 @@ const ChatArea: React.FC<{
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col">
         <div className="flex-1"></div>
         <div>
-          {messages.map((message) => (
-            <MessageBubble key={message.id} message={message} />
-          ))}
+          {isLoadingMessages ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="flex items-center space-x-2 text-gray-500">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <span>Loading messages...</span>
+              </div>
+            </div>
+          ) : messages.length > 0 ? (
+            messages.map((message) => (
+              <MessageBubble key={message.id} message={message} />
+            ))
+          ) : (
+            <div className="flex justify-center items-center py-8">
+              <div className="text-gray-500 text-center">
+                <MessageCircle size={48} className="mx-auto mb-2 opacity-50" />
+                <p>No messages yet</p>
+                <p className="text-sm">Start a conversation!</p>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -493,7 +511,12 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
     try {
       const response = await getCouncilorChatRooms();
       console.log('Chat rooms fetched:', response);
-      setChatRooms(response);
+      setChatRooms(
+        response.map((room) => ({
+          ...room,
+          unread_count: Number(room.unread_count) || 0,
+        }))
+      );
       
       // Transform ChatRoom[] to Chat[] format
       const transformedChats: Chat[] = response.map((room) => ({
@@ -503,7 +526,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
         time: formatTime(room.last_message_time),
         avatar: room.clientAvatar || 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png',
         isOnline: false, // You can add online status from your API if available
-        unreadCount: room.unread_count || 0
+        unreadCount: Number(room.unread_count) || 0
       }));
       
       setChats(transformedChats);
@@ -550,6 +573,88 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+
+  // Fetch messages for a specific chat room
+  const fetchChatMessages = useCallback(async (chatId: number) => {
+    if (!token) {
+      console.error('No auth token available');
+      return;
+    }
+
+    setIsLoadingMessages(true);
+    console.log('🔄 Fetching messages for chat:', chatId);
+
+    try {
+      const result = await getChatRoomMessages(
+        String(chatId),
+        1, // page
+        50, // limit
+        token
+      );
+
+      console.log('📋 getChatRoomMessages result:', result);
+
+      if (result.success && result.messages) {
+        console.log('✅ Messages fetched successfully:', {
+          count: result.messages.length,
+          chatId,
+          messages: result.messages
+        });
+
+        // Transform ChatMessage[] to Message[] format
+        const transformedMessages: Message[] = result.messages.map((msg) => ({
+          id: String(msg.id),
+          text: msg.message,
+          sender: String(msg.senderId) === counsellorId ? 'me' : 'other',
+          time: new Date(msg.createdAt).toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+          status: 'delivered',
+          senderId: String(msg.senderId),
+          senderName: msg.senderName,
+          senderAvatar: msg.senderAvatar,
+          senderType: msg.senderType,
+        }));
+
+        setMessages(transformedMessages);
+        console.log('📱 Transformed messages:', transformedMessages);
+
+        // Mark chat as read if there are messages
+        if (result.messages.length > 0) {
+          const lastMessage = result.messages[result.messages.length - 1];
+          const lastMessageId = String(lastMessage.id);
+
+          console.log('📖 Marking chat as read up to message:', lastMessageId);
+
+          try {
+            const markReadResult = await markChatRoomAsRead(
+              String(chatId),
+              lastMessageId,
+              token
+            );
+
+            if (markReadResult.success) {
+              console.log('✅ Chat marked as read successfully');
+            } else {
+              console.warn('⚠️ Failed to mark chat as read:', markReadResult.error);
+            }
+          } catch (markReadError) {
+            console.error('❌ Error marking chat as read:', markReadError);
+          }
+        }
+      } else {
+        console.warn('⚠️ Failed to fetch messages:', result.error);
+        setMessages([]); // Clear messages if fetch fails
+      }
+    } catch (error) {
+      console.error('❌ Error fetching messages:', error);
+      setMessages([]); // Clear messages on error
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  }, [token, counsellorId]);
 
   // Function to get the last message for a chat
   const getLastMessage = (chatId: number): string => {
@@ -568,6 +673,9 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
 
   const handleChatSelect = (chat: Chat) => {
     setSelectedChat(chat);
+    
+    // Fetch messages for the selected chat
+    fetchChatMessages(chat.id);
     
     // Clear unread count when chat is opened
     if (chat.unreadCount > 0) {
@@ -690,6 +798,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
                 isSending={isSendingMessage}
                 isWsConnected={isWsConnected}
                 typingUsers={typingUsers}
+                isLoadingMessages={isLoadingMessages}
               />
             </div>
 
@@ -714,6 +823,7 @@ const CounsellorChat: React.FC<CounsellorChatProps> = () => {
                   isSending={isSendingMessage}
                   isWsConnected={isWsConnected}
                   typingUsers={typingUsers}
+                  isLoadingMessages={isLoadingMessages}
                 />
               )}
             </div>
