@@ -41,11 +41,11 @@
 }
 
 .video-loop-transition {
-  animation: videoLoopMask 2s ease-in-out;
+  animation: videoLoopMask 1.5s ease-in-out;
   background: linear-gradient(135deg, 
-    rgba(37, 99, 235, 0.15) 0%, 
-    rgba(147, 197, 253, 0.1) 50%, 
-    rgba(255, 255, 255, 0.05) 100%);
+    rgba(0, 0, 0, 0.1) 0%, 
+    rgba(0, 0, 0, 0.05) 50%, 
+    rgba(255, 255, 255, 0.02) 100%);
 }
 
 /* Smooth video element transitions */

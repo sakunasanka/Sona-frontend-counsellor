@@ -24,6 +24,7 @@ function Home() {
   const navigate = useNavigate();
   const [showAuthFocus, setShowAuthFocus] = useState(false);
   const [isVideoTransitioning, setIsVideoTransitioning] = useState(false);
+  const [isScrolledPastVideo, setIsScrolledPastVideo] = useState(false);
 
   // Scroll to top on component mount (page load/reload)
   useEffect(() => {
@@ -40,6 +41,11 @@ function Home() {
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      
+      // Check if user has scrolled past the video section (hero section)
+      // The hero section is min-h-screen, so we check if scrolled past viewport height
+      const heroSectionHeight = window.innerHeight;
+      setIsScrolledPastVideo(currentScrollY > heroSectionHeight * 0.8); // 80% of hero section
       
       // If user is scrolling down and zoom is active, reset it
       if (currentScrollY > lastScrollY && showAuthFocus) {
@@ -87,13 +93,15 @@ function Home() {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 z-50 transition-all duration-300">
+      <nav className={`fixed top-0 left-0 right-0 backdrop-blur-sm shadow-sm z-50 transition-all duration-700 ease-in-out ${
+        isScrolledPastVideo ? 'bg-dark-500' : 'bg-dark-500/10'
+      }`}>
         <div className="w-full px-4 sm:px-6 md:px-8 lg:pl-16 lg:pr-6">
           <div className="flex items-center h-14 sm:h-16">
             {/* Logo - Left Corner aligned with content below */}
             <div className="flex items-center flex-shrink-0">
               <img 
-                src="/assets/images/Sona-logo.png" 
+                src="/assets/images/Sona-logo-light.png" 
                 alt="Sona Logo" 
                 className="h-6 sm:h-8 w-auto transition-transform duration-300 hover:scale-105"
               />
@@ -104,33 +112,21 @@ function Home() {
             
             {/* Navigation Links and Button - Desktop */}
             <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-pink-500 transition-all duration-300 font-medium relative group text-sm xl:text-base">
+              <a href="#features" className="text-white hover:text-buttonBlue-800 transition-all duration-300 font-medium relative group text-sm xl:text-base">
                 Features
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-buttonBlue-800 transition-all duration-300 group-hover:w-full"></span>
               </a>
-              <a href="#about" className="text-gray-600 hover:text-pink-500 transition-all duration-300 font-medium relative group text-sm xl:text-base">
+              <a href="#about" className="text-white hover:text-buttonBlue-800 transition-all duration-300 font-medium relative group text-sm xl:text-base">
                 About
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-buttonBlue-800 transition-all duration-300 group-hover:w-full"></span>
               </a>
-              <a href="#contact" className="text-gray-600 hover:text-pink-500 transition-all duration-300 font-medium relative group text-sm xl:text-base">
+              <a href="#contact" className="text-white hover:text-buttonBlue-800 transition-all duration-300 font-medium relative group text-sm xl:text-base">
                 Contact
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-buttonBlue-800 transition-all duration-300 group-hover:w-full"></span>
               </a>
-              <Button 
-                variant="special" 
+              <Button
                 onClick={handleSignIn}
-                className="px-4 xl:px-6 py-2 text-sm font-medium transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                Get Started
-              </Button>
-            </div>
-
-            {/* Mobile Get Started Button */}
-            <div className="lg:hidden">
-              <Button 
-                variant="special" 
-                onClick={handleSignIn}
-                className="px-4 py-2 text-sm font-medium transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="px-4 xl:px-6 py-2 text-sm bg-white text-dark-500 font-medium transform hover:bg-gray-100 hover:text-gray-900 transition-all duration-300 shadow-lg"
               >
                 Get Started
               </Button>
@@ -197,7 +193,7 @@ function Home() {
             ></div>
             
             {/* White tint overlay for better text readability */}
-            <div className="absolute inset-0 bg-secondary/90"></div>
+            <div className="absolute inset-0 bg-dark-500/70"></div>
             
             {/* Gradient overlay for better text readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/40"></div>
@@ -247,10 +243,9 @@ function Home() {
                   
                   {/* Sign In and Sign Up Buttons - Same Line */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                    <Button 
-                      variant="special"
+                    <Button
                       onClick={handleSignIn}
-                      className="w-full sm:w-auto px-8 py-3 h-12 text-base font-medium transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl flex-shrink-0 rounded-lg"
+                      className="w-full sm:w-auto px-8 py-3 h-12 text-base bg-white text-dark-500 font-medium transform hover:bg-dark-500 hover:text-white transition-all duration-300 shadow-lg hover:shadow-xl flex-shrink-0 rounded-lg"
                     >
                       Sign In
                     </Button>
@@ -285,9 +280,8 @@ function Home() {
                   
                   <div className="flex flex-col space-y-6">
                     <Button 
-                      variant="special"
                       onClick={handleSignIn}
-                      className="w-full px-6 py-3 h-12 text-base font-medium shadow-lg transition-all duration-300 rounded-lg"
+                      className="w-full px-6 py-3 h-12 text-base bg-white text-dark-500 font-medium hover:bg-gray-800 hover:text-white shadow-lg transition-all duration-300 rounded-lg"
                     >
                       Sign In
                     </Button>
