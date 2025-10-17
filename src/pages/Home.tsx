@@ -16,13 +16,10 @@ import {
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Container from '../components/ui/Container';
-import Dropdown from '../components/ui/Dropdown';
 
 function Home() {
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState('');
   const [showAuthFocus, setShowAuthFocus] = useState(false);
-  const [isDropdownInteracted, setIsDropdownInteracted] = useState(false);
   const [isVideoTransitioning, setIsVideoTransitioning] = useState(false);
 
   // Scroll to top on component mount (page load/reload)
@@ -58,127 +55,43 @@ function Home() {
 
   const handleGetStarted = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // If role is selected, navigate based on role
-    if (selectedRole) {
-      if (selectedRole === 'general') {
-        navigate('/generalusersignin');
-      } else {
-        // For counsellor or psychiatrist, redirect to sign up page with role state
-        navigate('/signup', { state: { selectedRole } });
-      }
-      return;
-    }
-    
-    // Add zoom and pulse effect if no role selected (with delay for navbar too)
-    if (!selectedRole) {
-      // Wait for scroll animation to complete before showing zoom effect
+    // Show focus effect on auth section
+    setTimeout(() => {
+      setShowAuthFocus(true);
+      // Auto-hide after 8 seconds
       setTimeout(() => {
-        setShowAuthFocus(true);
-        setIsDropdownInteracted(false);
-        // Auto-hide after 10 seconds if no interaction
-        setTimeout(() => {
-          if (!isDropdownInteracted) {
-            setShowAuthFocus(false);
-          }
-        }, 10000);
-      }, 800); // Wait 800ms for smooth scroll to complete
-    }
+        setShowAuthFocus(false);
+      }, 8000);
+    }, 800);
   };
 
   const handleGetStartedWithDelay = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // If role is selected, navigate based on role
-    if (selectedRole) {
-      if (selectedRole === 'general') {
-        navigate('/generalusersignin');
-      } else {
-        // For counsellor or psychiatrist, redirect to sign up page with role state
-        navigate('/signup', { state: { selectedRole } });
-      }
-      return;
-    }
-    
-    // Add zoom and pulse effect if no role selected (delayed for CTA section)
-    if (!selectedRole) {
-      // Wait for scroll animation to complete before showing zoom effect
+    // Show focus effect on auth section
+    setTimeout(() => {
+      setShowAuthFocus(true);
+      // Auto-hide after 8 seconds
       setTimeout(() => {
-        setShowAuthFocus(true);
-        setIsDropdownInteracted(false);
-        // Auto-hide after 10 seconds if no interaction
-        setTimeout(() => {
-          if (!isDropdownInteracted) {
-            setShowAuthFocus(false);
-          }
-        }, 10000);
-      }, 800); // Wait 800ms for smooth scroll to complete
-    }
+        setShowAuthFocus(false);
+      }, 8000);
+    }, 800);
   };
 
   const handleSignIn = () => {
-    if (!selectedRole) {
-      setShowAuthFocus(true);
-      setIsDropdownInteracted(false);
-      // Auto-hide after 10 seconds if no interaction
-      setTimeout(() => {
-        if (!isDropdownInteracted) {
-          setShowAuthFocus(false);
-        }
-      }, 10000);
-      return;
-    }
-    
-    // Hide focus effect when user has selected a role
+    // Hide focus effect when user clicks sign in
     setShowAuthFocus(false);
-    
-    if (selectedRole === 'general') {
-      navigate('/generalusersignin');
-    } else {
-      // Pass the selected role to sign-in page for counsellor or psychiatrist
-      navigate('/signin', { state: { selectedRole } });
-    }
+    // Navigate to sign in selection page
+    navigate('/signin-options');
   };
 
   const handleSignUp = () => {
-    if (!selectedRole) {
-      setShowAuthFocus(true);
-      setIsDropdownInteracted(false);
-      // Auto-hide after 10 seconds if no interaction
-      setTimeout(() => {
-        if (!isDropdownInteracted) {
-          setShowAuthFocus(false);
-        }
-      }, 10000);
-      return;
-    }
-    
-    // Hide focus effect when user has selected a role
+    // Hide focus effect when user clicks sign up
     setShowAuthFocus(false);
-    
-    if (selectedRole === 'general') {
-      navigate('/generalusersignin');
-    } else {
-      // Pass the selected role to sign-up page for counsellor or psychiatrist
-      navigate('/signup', { state: { selectedRole } });
-    }
+    // Navigate to sign up page 
+    navigate('/signup');
   };
 
-  const handleRoleSelect = (role: string) => {
-    setSelectedRole(role);
-    // Hide focus effect when user selects a role
-    setShowAuthFocus(false);
-    setIsDropdownInteracted(true);
-  };
 
-  const handleDropdownInteraction = () => {
-    setIsDropdownInteracted(true);
-    setShowAuthFocus(false);
-  };
-
-  const roleOptions = [
-    { label: 'General User', value: 'general' },
-    { label: 'Counsellor', value: 'counsellor' },
-    { label: 'Psychiatrist', value: 'psychiatrist' }
-  ];
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -334,53 +247,37 @@ function Home() {
                 <div className={`hidden lg:block space-y-6 max-w-3xl transition-all duration-500 transform-gpu ${
                   showAuthFocus ? 'scale-110 translate-x-4 lg:translate-x-8' : 'scale-100 translate-x-0'
                 }`} style={{ transformOrigin: 'left center' }}>
-                  {/* Role Selection and Sign In - Same Line for larger screens */}
+                  {/* Welcome message */}
+                  <div className={`text-white/90 text-lg font-medium transition-all duration-300 ${
+                    showAuthFocus ? 'animate-pulse text-white font-semibold' : ''
+                  }`}>
+                    Join our mental health community
+                  </div>
+                  
+                  {/* Sign In and Sign Up Buttons - Same Line */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                    <div className="w-full sm:flex-1 sm:min-w-0 sm:max-w-xs">
-                      <div className="w-full">
-                        <div className="relative">
-                          <div 
-                            onMouseEnter={handleDropdownInteraction}
-                            onFocus={handleDropdownInteraction}
-                          >
-                            <Dropdown
-                              options={roleOptions}
-                              selected={selectedRole}
-                              placeholder="Choose who you are"
-                              onSelect={handleRoleSelect}
-                              className={`!mb-0 !p-0 transition-all duration-300 ${
-                                showAuthFocus && !isDropdownInteracted
-                                  ? '[&>div>button>span]:animate-pulse [&>div>button>span]:text-gray-600 [&>div>button>span]:font-semibold [&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-gray-300 [&>div>button]:!h-12 [&>div>button]:!text-base [&>div>button]:!font-medium' 
-                                  : '[&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-gray-300 [&>div>button]:!h-12 [&>div>button]:!text-base [&>div>button]:!font-medium'
-                              }`}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                     <Button 
                       variant="special"
                       onClick={handleSignIn}
-                      className="w-full sm:w-auto px-8 py-3 h-12 text-base font-medium transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl flex-shrink-0"
+                      className="w-full sm:w-auto px-8 py-3 h-12 text-base font-medium transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl flex-shrink-0 rounded-lg"
                     >
                       Sign In
                     </Button>
-                  </div>
-
-                  {/* Not a member section */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
-                    <span className={`text-white/90 text-base transition-all duration-300 flex-shrink-0 ${
-                      showAuthFocus && !isDropdownInteracted ? 'animate-pulse font-semibold' : ''
-                    }`}>
-                      Not a member?
-                    </span>
-                    <Button 
-                      variant="border"
-                      onClick={handleSignUp}
-                      className="w-full sm:w-auto px-8 py-3 h-12 text-base font-medium border border-white/40 text-white hover:bg-white hover:text-gray-900 transition-all duration-300 flex-shrink-0"
-                    >
-                      Join with us!
-                    </Button>
+                    
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                      <span className={`text-white/80 text-base transition-all duration-300 flex-shrink-0 ${
+                        showAuthFocus ? 'animate-pulse font-semibold text-white' : ''
+                      }`}>
+                        New here?
+                      </span>
+                      <Button 
+                        variant="border"
+                        onClick={handleSignUp}
+                        className="w-full sm:w-auto px-8 py-3 h-12 text-base font-medium border border-white/40 text-white hover:bg-white hover:text-gray-900 transition-all duration-300 flex-shrink-0 rounded-lg"
+                      >
+                        Join with us!
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -388,49 +285,33 @@ function Home() {
               {/* Mobile Auth Controls - Show only on mobile and tablet */}
               <div className="lg:hidden flex justify-center mt-8">
                 <div className="w-full max-w-sm space-y-6">
-                  <div className={`relative ${
-                    showAuthFocus && !isDropdownInteracted 
-                      ? 'animate-bounce-gentle before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-r before:from-primary/30 before:via-secondary/30 before:to-primary/30 before:blur-lg before:animate-pulse before:-z-10' 
-                      : ''
+                  {/* Welcome message for mobile */}
+                  <div className={`text-white/90 text-lg font-medium text-center transition-all duration-300 ${
+                    showAuthFocus ? 'animate-pulse text-white font-semibold' : ''
                   }`}>
-                    <div 
-                      onMouseEnter={handleDropdownInteraction}
-                      onFocus={handleDropdownInteraction}
-                      onTouchStart={handleDropdownInteraction}
-                    >
-                      <Dropdown
-                        options={roleOptions}
-                        selected={selectedRole}
-                        placeholder="Choose who you are"
-                        onSelect={handleRoleSelect}
-                        className={`w-full transition-all duration-300 [&>div]:!w-full [&>div]:!relative [&>div>ul]:!absolute [&>div>ul]:!left-0 [&>div>ul]:!right-0 [&>div>ul]:!w-full [&>div>ul]:!mt-1 [&>div>ul]:!z-50 ${
-                          showAuthFocus && !isDropdownInteracted
-                            ? '[&>div>button>span]:animate-pulse [&>div>button>span]:text-gray-600 [&>div>button>span]:font-semibold [&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-2 [&>div>button]:!border-primary/60 [&>div>button]:!h-12 [&>div>button]:!text-base [&>div>button]:!font-medium [&>div>button]:!shadow-lg [&>div>button]:shadow-primary/25' 
-                            : '[&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-gray-300 [&>div>button]:!h-12 [&>div>button]:!text-base [&>div>button]:!font-medium'
-                        }`}
-                      />
-                    </div>
+                    Join our community
                   </div>
+                  
                   <div className="flex flex-col space-y-6">
                     <Button 
                       variant="special"
                       onClick={handleSignIn}
-                      className="w-full px-6 py-3 h-12 text-base font-medium shadow-lg transition-all duration-300"
+                      className="w-full px-6 py-3 h-12 text-base font-medium shadow-lg transition-all duration-300 rounded-lg"
                     >
                       Sign In
                     </Button>
                     
                     {/* Not a member section for mobile */}
                     <div className="flex flex-col space-y-4">
-                      <span className={`text-white/90 text-base transition-all duration-300 text-center ${
-                        showAuthFocus && !isDropdownInteracted ? 'animate-pulse font-semibold' : ''
+                      <span className={`text-white/80 text-base transition-all duration-300 text-center ${
+                        showAuthFocus ? 'animate-pulse font-semibold text-white' : ''
                       }`}>
-                        Not a member?
+                        New here?
                       </span>
                       <Button 
                         variant="border"
                         onClick={handleSignUp}
-                        className="w-full px-6 py-3 h-12 text-base font-medium border border-white/40 text-white hover:bg-white hover:text-gray-900 transition-all duration-300"
+                        className="w-full px-6 py-3 h-12 text-base font-medium border border-white/40 text-white hover:bg-white hover:text-gray-900 transition-all duration-300 rounded-lg"
                       >
                         Join with us!
                       </Button>

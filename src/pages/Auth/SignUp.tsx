@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -193,11 +193,21 @@ const SignUp = () => {
         <Card className="p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <img 
-              src="/assets/images/Sona-logo.png" 
-              alt="Sona Logo" 
-              className="h-10 w-auto mx-auto mb-6"
-            />
+            <div className="flex items-center justify-between mb-6">
+              <button
+                onClick={() => navigate('/signup')}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-sm font-medium">Back</span>
+              </button>
+              <img 
+                src="/assets/images/Sona-logo.png" 
+                alt="Sona Logo" 
+                className="h-10 w-auto"
+              />
+              <div className="w-16"></div> {/* Spacer for centering */}
+            </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Join the Professional Community</h1>
             <p className="text-gray-600">Create your professional account and start making a difference</p>
           </div>
