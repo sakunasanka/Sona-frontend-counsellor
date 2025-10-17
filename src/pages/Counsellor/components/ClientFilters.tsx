@@ -1,5 +1,5 @@
 import React from 'react';
-import { Filter, ChevronDown } from 'lucide-react';
+import { Filter } from 'lucide-react';
 
 export type FilterType = 'all' | 'active' | 'new' | 'inactive';
 export type AnonymousFilterType = 'all' | 'anonymous' | 'identified';
@@ -10,30 +10,18 @@ interface ClientFiltersProps {
   activeFilter: FilterType;
   anonymousFilter: AnonymousFilterType;
   studentFilter: StudentFilterType;
-  filterOpen: boolean;
   
   // Handlers
   onActiveFilterChange: (filter: FilterType) => void;
-  onAnonymousFilterChange: (filter: AnonymousFilterType) => void;
-  onStudentFilterChange: (filter: StudentFilterType) => void;
-  onFilterToggle: () => void;
   onMobileFilterToggle: () => void;
-  
-  // Ref for click outside
-  filterDropdownRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const ClientFilters: React.FC<ClientFiltersProps> = ({
   activeFilter,
   anonymousFilter,
   studentFilter,
-  filterOpen,
   onActiveFilterChange,
-  onAnonymousFilterChange,
-  onStudentFilterChange,
-  onFilterToggle,
   onMobileFilterToggle,
-  filterDropdownRef,
 }) => {
   return (
     <>

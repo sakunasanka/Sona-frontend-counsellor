@@ -133,14 +133,6 @@ const CounsellorClients: React.FC = () => {
     }, 350); // Slightly longer than animation duration
   };
   
-  const handleDesktopFilterToggle = () => {
-    if (filterOpen) {
-      closeFilterDrawer();
-    } else {
-      openFilterDrawer();
-    }
-  };
-
   const handleMobileFilterToggle = () => {
     if (filterOpen) {
       closeFilterDrawer();
@@ -314,13 +306,8 @@ const CounsellorClients: React.FC = () => {
               activeFilter={activeFilter}
               anonymousFilter={anonymousFilter}
               studentFilter={studentFilter}
-              filterOpen={filterOpen}
               onActiveFilterChange={setActiveFilter}
-              onAnonymousFilterChange={setAnonymousFilter}
-              onStudentFilterChange={setStudentFilter}
-              onFilterToggle={handleDesktopFilterToggle}
               onMobileFilterToggle={handleMobileFilterToggle}
-              filterDropdownRef={filterDropdownRef}
             />
             
             {/* Expanded filter options */}

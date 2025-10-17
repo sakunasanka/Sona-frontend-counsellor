@@ -77,25 +77,74 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
         ${isOpen || isMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         
-        <div className="items-center justify-center max-w-xl mx-4 p-4 border-b lg:border-none mt-5">
-            <img src="/assets/images/Sona-logo-light.png" alt="SONA" className='w-32' />
-          </div>
-        {/* Sidebar Header - Only show on mobile when not minimized */}
-        {!isMinimized && (
-          <div className="flex items-center p-4 border-b lg:hidden">
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-            >
-              <ArrowLeft size={20} className="text-gray-600" />
-            </button>
-            <img
-              src="/assets/images/Sona-logo.png"
-              alt="Sona Logo"
-              className="h-8 w-auto ml-3"
+        {/* Logo Section */}
+        <div className="py-6 px-4">
+          {/* Desktop: Logo */}
+          <div className="hidden lg:flex items-center">
+            <img 
+              src={isMinimized ? "/assets/images/Sona-flat.png" : "/assets/images/Sona-logo-light.png"}
+              alt="SONA" 
+              className={`${isMinimized ? 'w-8' : 'w-32'} transition-all duration-300 ${isMinimized ? '' : 'ml-4'} cursor-pointer hover:opacity-80`}
+              onClick={() => {
+                if (isMinimized && onExpandBeforeNavigation) {
+                  onExpandBeforeNavigation('/dashboard');
+                } else {
+                  navigate('/dashboard');
+                }
+                if (window.innerWidth < 1024) {
+                  onClose();
+                }
+              }}
             />
           </div>
-        )}
+          
+          {/* Mobile: Back arrow + logo on same level when not minimized */}
+          {!isMinimized && (
+            <div className="flex items-center lg:hidden">
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-slate-700 rounded-md transition-colors mr-3"
+              >
+                <ArrowLeft size={20} className="text-slate-300" />
+              </button>
+              <img 
+                src="/assets/images/Sona-logo-light.png" 
+                alt="SONA" 
+                className="w-32 cursor-pointer hover:opacity-80"
+                onClick={() => {
+                  navigate('/dashboard');
+                  if (window.innerWidth < 1024) {
+                    onClose();
+                  }
+                }}
+              />
+            </div>
+          )}
+          
+          {/* Mobile minimized: Just logo centered */}
+          {isMinimized && (
+            <div className="flex items-center justify-center lg:hidden">
+              <img 
+                src="/assets/images/Sona-flat.png"
+                alt="SONA" 
+                className="w-8 cursor-pointer hover:opacity-80"
+                onClick={() => {
+                  if (onExpandBeforeNavigation) {
+                    onExpandBeforeNavigation('/dashboard');
+                  } else {
+                    navigate('/dashboard');
+                  }
+                  if (window.innerWidth < 1024) {
+                    onClose();
+                  }
+                }}
+              />
+            </div>
+          )}
+        </div>
+        
+        {/* Subtle Divider */}
+        <div className="mx-4 border-t border-slate-600"></div>
 
         {/* Menu Items */}
         <nav className={`py-6 ${isMinimized ? 'px-2' : 'px-4'} flex-1 flex flex-col transition-all duration-500 ease-in-out`}>

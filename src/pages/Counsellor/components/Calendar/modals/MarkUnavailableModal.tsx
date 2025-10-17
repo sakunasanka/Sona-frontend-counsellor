@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
-import { Session, UnavailableDate } from '../types';
 
 interface MarkUnavailableModalProps {
   unavailabilityType: string;
   onUnavailabilityTypeChange: (type: string) => void;
   onClose: () => void;
-  sessions?: Session[];
-  unavailableDates?: UnavailableDate[];
 }
 
 const MarkUnavailableModal: React.FC<MarkUnavailableModalProps> = ({
   unavailabilityType,
   onUnavailabilityTypeChange,
-  onClose,
-  sessions = [],
-  unavailableDates = []
+  onClose
 }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [startTime, setStartTime] = useState('');

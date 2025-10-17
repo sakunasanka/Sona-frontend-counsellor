@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Calendar, Clock, CheckCircle, XCircle, History, CalendarX } from 'lucide-react';
+import { X, Calendar, Clock, CheckCircle, XCircle, History } from 'lucide-react';
 import { TimeSlot, Session } from '../types';
 
 interface TimeSlotsModalProps {
@@ -274,7 +274,7 @@ const TimeSlotsModal: React.FC<TimeSlotsModalProps> = ({
           <h5 className="font-medium text-gray-900 mb-4 border-t pt-4">Time Slots</h5>
           
           <div className="space-y-4">
-            {timeSlots.map((slot, index) => {
+            {timeSlots.map((slot) => {
               const isSlotUnavailable = isTimeSlotUnavailable(selectedDate, slot.time);
               const sessionForSlot = getSessionForTimeSlot(slot.time);
               const isPastTime = isBeforeCurrentTime(slot.time);
