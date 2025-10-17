@@ -200,6 +200,41 @@ export interface PerformanceMetrics {
   responseTimeHours: number; // for progress bar calculation
 }
 
+// chat room type
+export interface ChatMessage {
+  id?: string;
+  roomId: string;
+  senderId: string;
+  message: string;
+  messageType: string;
+  createdAt: string;
+  senderName: string;
+  senderAvatar: string;
+  senderType: string;
+}
+
+export interface SendMessageResponse {
+  success: boolean;
+  message: ChatMessage;
+  data: {
+    message: ChatMessage;
+  }
+}
+
+export interface ChatRoom {
+  id: number;
+  name: string | null;
+  type: string;
+  counselorId: number;
+  clientId: number;
+  createdAt: string;
+  last_message: string;
+  last_message_time: string;
+  unread_count: string;
+  clientName: string;
+  clientAvatar: string;
+}
+
 // API Functions
 
 /**
@@ -1591,6 +1626,176 @@ export const getClientEarnings = async (clientId: number): Promise<{ totalEarnin
   } catch (error) {
     console.error('Get client earnings error:', error);
     throw error;
+  }
+};
+
+//to get councilors chat rooms
+export const getCouncilorChatRooms = async (): Promise<ChatRoom[]> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: { rooms: ChatRoom[] } }> = await apiClient.get(
+      '/chat/rooms', 
+      undefined, 
+      token, 
+      true
+    );
+    
+    if (response.success && response.data && response.data.data) {
+      console.log('Get chat rooms response data:', response.data.data.rooms);
+      return response.data.data.rooms;
+    }
+    
+    throw new Error('Failed to fetch chat rooms');
+  }catch (error) {
+    console.error('Get chat rooms error:', error);
+    throw error;
+  }
+}
+
+//send a mesasage to chat room
+export const sendMessageToChatRoom = async (
+  roomId: string, 
+  message: string,
+  userId: number,
+  messageType: string,
+  token: string
+): Promise<{ success: boolean; error?: string; messageData?: ChatMessage }> => {
+    try {
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      const response: ApiResponse<{
+        message: string, data: { message: ChatMessage, success: string }
+      }> = await apiClient.post(
+        `/chat/messages`, 
+        { 
+          roomId, 
+          message, 
+          userId,
+          messageType
+         }, 
+        token, 
+        true
+      );
+
+      if (response.success && response.data) {
+        console.log('Send message response data:', response.data);
+        return { success: true, messageData: response.data.data.message };
+      }
+      return { success: false, error: response.data?.message || 'Failed to send message' };
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+// Fetch messages for a specific chat room
+export const getChatRoomMessages = async (
+  chatId: string,
+  page: number = 1,
+  limit: number = 50,
+  token?: string
+): Promise<{ success: boolean; messages: ChatMessage[]; error?: string }> => {
+  try {
+    const authToken = token || localStorage.getItem('auth_token');
+    if (!authToken) {
+      throw new Error('Authentication token not found');
+    }
+
+    console.log('📱 Fetching chat messages:', { chatId, page, limit, token: !!authToken });
+
+    const response: ApiResponse<{
+      data: { message?: ChatMessage[] };
+      message?: string;
+    }> = await apiClient.get(
+      `/chat/rooms/${chatId}/messages`,
+      { page, limit },
+      authToken,
+      true
+    );
+
+    console.log('🔍 Full API response:', response);
+
+    // This logic correctly accesses response.data.data.message
+    if (response.success && response.data?.data?.message) {
+      const messages = response.data.data.message;
+
+      console.log('✅ Chat messages found:', {
+        count: messages.length,
+        messages: messages
+      });
+      
+      return {
+        success: true,
+        messages: messages
+      };
+    }
+
+    return {
+      success: false,
+      messages: [],
+      error: response.data?.message || 'Failed to fetch messages'
+    };
+  } catch (error) {
+    console.error('❌ Error fetching chat messages:', error);
+    return {
+      success: false,
+      messages: [],
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+};
+
+// Mark chat room messages as read up to a specific message ID
+export const markChatRoomAsRead = async (
+  chatRoomId: string,
+  lastMessageId: string,
+  token?: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const authToken = token || localStorage.getItem('auth_token');
+    if (!authToken) {
+      throw new Error('Authentication token not found');
+    }
+
+    console.log('📖 Marking chat room as read:', { 
+      chatRoomId, 
+      lastMessageId, 
+      token: !!authToken 
+    });
+
+    const response: ApiResponse<{
+      message?: string;
+      success?: boolean;
+    }> = await apiClient.patch(
+      `/chat/rooms/${chatRoomId}/mark-read`,
+      { "messageId" : lastMessageId },
+      authToken,
+      true
+    );
+
+    console.log('📖 Mark as read response:', response);
+
+    if (response.success) {
+      console.log('✅ Chat room marked as read successfully');
+      return { success: true };
+    }
+
+    return {
+      success: false,
+      error: response.data?.message || 'Failed to mark chat as read'
+    };
+  } catch (error) {
+    console.error('❌ Error marking chat as read:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
   }
 };
 
