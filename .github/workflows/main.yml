@@ -21,6 +21,11 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
+
+      - name: Build Project
+        run: npm run build
+        # --- FIX 1: MOVED ENV BLOCK HERE ---
+        # The variables must be available to the build command.
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
           VITE_WS_URLL: ${{ secrets.VITE_WS_URLL }}
@@ -29,12 +34,18 @@ jobs:
           VITE_CLOUDINARY_API_SECRET: ${{ secrets.VITE_CLOUDINARY_API_SECRET }}
           CLOUDINARY_URL: ${{ secrets.CLOUDINARY_URL }}
 
-      - name: Build Project
-        run: npm run build
-
-      # Optional: This step now lists the correct 'dist' folder
       - name: List Build Output
         run: ls -l dist
+
+      # --- FIX 2: ADD THIS NEW STEP ---
+      - name: Clean Remote Directory
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: rm -rf /var/www/sona.org.lk/councilor_html/*
+          # This command deletes everything inside the folder before you copy new files.
 
       - name: Deploy to Server
         uses: appleboy/scp-action@master
@@ -42,9 +53,5 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          
-          # --- FIX 1: Point to the 'dist' folder ---
           source: "dist/*" 
-          
-          # --- FIX 2: Use 'target' instead of 'remote_path' ---
           target: "/var/www/sona.org.lk/councilor_html"
