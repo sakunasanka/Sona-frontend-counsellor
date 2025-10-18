@@ -132,14 +132,12 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         await onMarkAsRead(notification.id);
       }
 
-      // Navigate to related URL if exists
-      if (notification.relatedURL) {
+      // Navigate to related URL only if it exists and is not null/empty
+      if (notification.relatedURL && notification.relatedURL.trim() !== '') {
         navigate(notification.relatedURL);
         onClose();
-      } else {
-        // Show notification details in modal
-        setSelectedNotification(notification);
       }
+      // If relatedURL is null or empty, don't navigate or show modal - just mark as read
     } catch (error) {
       console.error('Error handling notification click:', error);
     }
