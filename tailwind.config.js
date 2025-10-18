@@ -11,8 +11,12 @@ export default {
         primaryLight: "rgba(100, 116, 139, 0.9)", /* slate-500 with opacity */
         secondary: 'rgba(174, 175, 247, 0.6)',
         secondaryDark: 'rgba(174, 175, 247, 0.8)',
-        secondaryDarker: 'rgba(125, 126, 202, 0.95)',
-        secondaryDusk: 'rgba(78, 78, 125, 0.95)',
+        secondaryDarker: 'rgba(123, 125, 188, 0.95)',
+        secondaryDusk: 'rgba(87, 87, 137, 0.95)',
+        dark: {
+          500: '#262629ff',
+          100: '#bcbcc7ff',
+        },
         gray: {
           400: "#9CA3AF", 
         },

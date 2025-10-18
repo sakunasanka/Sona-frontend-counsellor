@@ -48,7 +48,7 @@ const SignIn = () => {
       await signinCounselor({ email, password });
       // Redirect based on user type
       if (userType === 'counsellor') {
-        navigate('/counsellor-dashboard');
+        navigate('/dashboard');
       } else {
         navigate('/psychiatrist/dashboard');
       }

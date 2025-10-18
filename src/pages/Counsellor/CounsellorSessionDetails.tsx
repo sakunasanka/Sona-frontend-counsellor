@@ -71,7 +71,7 @@ const CounsellorSessionDetails: React.FC = () => {
         mood: 'concerned',
         notes: "Emergency session due to panic attack. Client was stabilized and provided with immediate coping techniques. Discussed breathing exercises and grounding methods. Client showed improvement by end of session. Scheduled follow-up for tomorrow.",
         followUpRequired: true,
-        profileImage: "/assets/images/patient-photo.png",
+        profileImage: "https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png",
         institution: "University of Colombo",
         concerns: ["Anxiety", "Panic Attacks", "Academic Stress"],
         previousSessions: 5,
@@ -270,7 +270,7 @@ const CounsellorSessionDetails: React.FC = () => {
                                         )}
                                     </div>
                                     <button 
-                                        onClick={() => navigate('/counsellor-feedbacks')}
+                                        onClick={() => navigate('/feedbacks')}
                                         className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md w-full sm:w-auto"
                                     >
                                         <Star className="w-4 h-4" />

@@ -3,38 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Eye, 
-  Save, 
   Send, 
   Image, 
   Bold, 
   Italic, 
-  Underline, 
-  List, 
-  ListOrdered, 
+  Type,
   Quote, 
   Link, 
-  Type,
-  Hash,
-  Tag,
-  Calendar,
-  Clock,
+  List,
   X,
-  Plus,
-  FileText,
-  Sparkles
+  Plus
 } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
+import FlashMessage from '../../components/ui/FlashMessage';
+import { createPost, CreatePostData } from '../../api/counsellorAPI';
 
 interface BlogFormData {
-  title: string;
-  excerpt: string;
   content: string;
-  category: string;
   tags: string[];
   image: string;
-  publishDate: string;
-  publishTime: string;
-  isScheduled: boolean;
+  isAnonymous: boolean;
 }
 
 const BlogCreator: React.FC = () => {
@@ -42,34 +30,20 @@ const BlogCreator: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [activeView, setActiveView] = useState<'write' | 'preview'>('write');
   const [newTag, setNewTag] = useState('');
-  const [showImageUpload, setShowImageUpload] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
   const [formData, setFormData] = useState<BlogFormData>({
-    title: '',
-    excerpt: '',
     content: '',
-    category: '',
     tags: [],
     image: '',
-    publishDate: '',
-    publishTime: '',
-    isScheduled: false
+    isAnonymous: false
   });
 
-  const categories = [
-    'Personal Growth',
-    'Mental Health',
-    'Mindfulness',
-    'Relationships',
-    'Stress Management',
-    'Self-Care',
-    'Life Coaching',
-    'Wellness',
-    'Therapy Insights',
-    'Success Stories'
-  ];
+
 
   const suggestedTags = [
     'growth', 'mindset', 'wellbeing', 'happiness', 'mindfulness', 
@@ -110,14 +84,34 @@ const BlogCreator: React.FC = () => {
     }
   };
 
-  const handleImageUpload = () => {
-    if (imageUrl.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        image: imageUrl.trim()
-      }));
-      setImageUrl('');
-      setShowImageUpload(false);
+  const handleFileImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Import Cloudinary upload function
+    const { uploadBlogImage, validateImageFile } = await import('../../utils/cloudinaryUpload');
+    
+    // Validate file
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      setUploadError(validation.error || 'Invalid file');
+      return;
+    }
+
+    setUploading(true);
+    setUploadError(null);
+    
+    try {
+      // Upload to Cloudinary
+      const imageUrl = await uploadBlogImage(file);
+      
+      // Update form with Cloudinary URL
+      setFormData(prev => ({ ...prev, image: imageUrl }));
+    } catch (error) {
+      console.error('Blog image upload failed:', error);
+      setUploadError(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -167,23 +161,66 @@ const BlogCreator: React.FC = () => {
     }, 0);
   };
 
-  const handleSaveDraft = () => {
-    console.log('Saving draft:', formData);
-    // Add save draft logic here
-  };
+  const handlePublish = async () => {
+    if (!formData.content.trim()) {
+      setPublishError('Content is required');
+      return;
+    }
 
-  const handlePublish = () => {
-    console.log('Publishing blog:', formData);
-    // Add publish logic here
-  };
+    try {
+      setIsPublishing(true);
+      setPublishError(null);
 
-  const handleSchedule = () => {
-    console.log('Scheduling blog:', formData);
-    // Add schedule logic here
+      // Prepare the post data according to the backend API structure
+      const postData: CreatePostData = {
+        content: formData.content.trim(),
+        hashtags: formData.tags,
+        backgroundColor: '#FFFFFF', // Default background color
+        image: formData.image || undefined,
+        isAnonymous: formData.isAnonymous
+      };
+
+      const response = await createPost(postData);
+      
+      console.log('Create post response:', response);
+      
+      if (response && response.success) {
+        // Successfully created the post, navigate back to blogs
+        console.log('Navigating to /blogs');
+        
+        // Use a small delay to ensure the navigation happens
+        setTimeout(() => {
+          navigate('/blogs', { 
+            state: { message: 'Blog post created successfully!' }
+          });
+        }, 100);
+      } else {
+        console.error('Failed to create post:', response);
+        setPublishError('Failed to create post. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error creating post:', error);
+      
+      // Check if it's a network error but the post might have been created
+      // Since you mentioned the post is created in DB but navigation fails
+      if (error instanceof Error && error.message.includes('Failed to create post')) {
+        // Try navigating anyway since the post might have been created
+        console.log('Post creation failed in response parsing, but might be created. Navigating...');
+        setTimeout(() => {
+          navigate('/blogs', { 
+            state: { message: 'Blog post may have been created. Please check your posts.' }
+          });
+        }, 100);
+      } else {
+        setPublishError('An error occurred while creating the post. Please try again.');
+      }
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   const handleGoBack = () => {
-    navigate('/counsellor-blogs');
+    navigate('/blogs');
   };
 
   const toggleSidebar = (): void => {
@@ -199,32 +236,20 @@ const BlogCreator: React.FC = () => {
       {/* Preview Header */}
       <div className="p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Calendar className="w-4 h-4 text-gray-400" />
           <span className="text-gray-500 text-sm">Today • Just now</span>
         </div>
         
-        {formData.category && (
+        {formData.tags.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-medium">
-              {formData.category}
-            </span>
             {formData.tags.map((tag) => (
-              <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+              <span key={tag} className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-medium">
                 #{tag}
               </span>
             ))}
           </div>
         )}
 
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">
-          {formData.title || 'Your Blog Title'}
-        </h1>
-
-        {formData.excerpt && (
-          <p className="text-gray-600 mb-4 text-base leading-relaxed">
-            {formData.excerpt}
-          </p>
-        )}
+        {/* Title removed - content speaks for itself */}
       </div>
 
       {formData.image && (
@@ -232,7 +257,7 @@ const BlogCreator: React.FC = () => {
           <div className="relative h-64 lg:h-80 rounded-xl overflow-hidden">
             <img 
               src={formData.image} 
-              alt={formData.title}
+              alt="Blog post image"
               className="w-full h-full object-cover"
             />
           </div>
@@ -314,39 +339,27 @@ const BlogCreator: React.FC = () => {
                 <div className="flex-1 flex flex-col lg:flex-row">
                   {/* Main Editor */}
                   <div className="flex-1 px-4 lg:px-6 py-6 space-y-6">
-                    {/* Title Input */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Blog Title
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.title}
-                        onChange={(e) => handleInputChange('title', e.target.value)}
-                        placeholder="Enter your blog title..."
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors text-lg font-medium"
-                      />
-                    </div>
-
-                    {/* Excerpt Input */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Excerpt
-                      </label>
-                      <textarea
-                        value={formData.excerpt}
-                        onChange={(e) => handleInputChange('excerpt', e.target.value)}
-                        placeholder="Write a brief description of your blog..."
-                        rows={3}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none"
-                      />
-                    </div>
+                    {/* Title input removed - content-focused approach */}
 
                     {/* Featured Image */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Featured Image
+                        Featured Image (Optional)
                       </label>
+                      
+                      {/* Upload Error */}
+                      {uploadError && (
+                        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="text-red-600 text-sm">{uploadError}</p>
+                          <button
+                            onClick={() => setUploadError(null)}
+                            className="text-red-400 hover:text-red-600 text-xs ml-2"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                      
                       {formData.image ? (
                         <div className="relative">
                           <img 
@@ -357,45 +370,38 @@ const BlogCreator: React.FC = () => {
                           <button
                             onClick={() => setFormData(prev => ({ ...prev, image: '' }))}
                             className="absolute top-2 right-2 bg-white hover:bg-gray-100 p-2 rounded-full shadow-md transition-colors"
+                            disabled={uploading}
                           >
                             <X className="w-4 h-4 text-gray-600" />
                           </button>
                         </div>
                       ) : (
                         <div>
-                          {showImageUpload ? (
-                            <div className="border-2 border-dashed border-gray-300 rounded-xl p-4">
-                              <div className="flex gap-2">
-                                <input
-                                  type="url"
-                                  value={imageUrl}
-                                  onChange={(e) => setImageUrl(e.target.value)}
-                                  placeholder="Enter image URL..."
-                                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                                />
-                                <button
-                                  onClick={handleImageUpload}
-                                  className="bg-primary hover:bg-primaryLight text-white px-4 py-2 rounded-lg transition-colors"
-                                >
-                                  Add
-                                </button>
-                                <button
-                                  onClick={() => setShowImageUpload(false)}
-                                  className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg transition-colors"
-                                >
-                                  Cancel
-                                </button>
+                          <label 
+                            htmlFor="blog-image-upload"
+                            className={`w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-gray-400 transition-colors cursor-pointer block ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {uploading ? (
+                              <div className="flex flex-col items-center">
+                                <div className="w-8 h-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mb-2" />
+                                <p className="text-gray-600">Uploading image...</p>
                               </div>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => setShowImageUpload(true)}
-                              className="w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-gray-400 transition-colors"
-                            >
-                              <Image className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                              <p className="text-gray-600">Click to add a featured image</p>
-                            </button>
-                          )}
+                            ) : (
+                              <>
+                                <Image className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                <p className="text-gray-600 font-medium">Upload an image file</p>
+                                <p className="text-gray-500 text-sm mt-1">Drag & drop or click to browse</p>
+                              </>
+                            )}
+                          </label>
+                          <input
+                            type="file"
+                            id="blog-image-upload"
+                            accept="image/*"
+                            onChange={handleFileImageUpload}
+                            className="hidden"
+                            disabled={uploading}
+                          />
                         </div>
                       )}
                     </div>
@@ -460,7 +466,7 @@ const BlogCreator: React.FC = () => {
                         onChange={(e) => handleInputChange('content', e.target.value)}
                         placeholder="Start writing your blog content..."
                         rows={12}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none font-mono text-sm"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none"
                       />
                       <p className="text-xs text-gray-500 mt-2">
                         Tip: Use **bold**, *italic*, ## headings, {'>'} quotes, and - lists for formatting
@@ -470,27 +476,10 @@ const BlogCreator: React.FC = () => {
 
                   {/* Sidebar Panel */}
                   <div className="w-full lg:w-80 bg-gray-50 p-4 lg:p-6 space-y-6 border-t lg:border-t-0 lg:border-l border-gray-200">
-                    {/* Category Selection */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Category
-                      </label>
-                      <select
-                        value={formData.category}
-                        onChange={(e) => handleInputChange('category', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                      >
-                        <option value="">Select a category</option>
-                        {categories.map(category => (
-                          <option key={category} value={category}>{category}</option>
-                        ))}
-                      </select>
-                    </div>
-
                     {/* Tags */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tags
+                        Tags (Optional)
                       </label>
                       
                       {/* Current Tags */}
@@ -548,81 +537,50 @@ const BlogCreator: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Publishing Options */}
+                    {/* Anonymous Posting Option */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
-                        Publishing Options
-                      </label>
-                      
-                      <div className="space-y-3">
-                        <label className="flex items-center gap-3">
-                          <input
-                            type="radio"
-                            name="publishOption"
-                            checked={!formData.isScheduled}
-                            onChange={() => handleInputChange('isScheduled', false)}
-                            className="text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">Publish immediately</span>
-                        </label>
-                        
-                        <label className="flex items-center gap-3">
-                          <input
-                            type="radio"
-                            name="publishOption"
-                            checked={formData.isScheduled}
-                            onChange={() => handleInputChange('isScheduled', true)}
-                            className="text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">Schedule for later</span>
-                        </label>
-                      </div>
-                      
-                      {formData.isScheduled && (
-                        <div className="mt-3 space-y-2">
-                          <input
-                            type="date"
-                            value={formData.publishDate}
-                            onChange={(e) => handleInputChange('publishDate', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                          />
-                          <input
-                            type="time"
-                            value={formData.publishTime}
-                            onChange={(e) => handleInputChange('publishTime', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                          />
+                      <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={formData.isAnonymous}
+                          onChange={(e) => handleInputChange('isAnonymous', e.target.checked)}
+                          className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
+                        />
+                        <div>
+                          <div className="text-sm font-medium text-gray-700">Post Anonymously</div>
+                          <div className="text-xs text-gray-500">Your name won't be shown to readers</div>
                         </div>
-                      )}
+                      </label>
                     </div>
 
                     {/* Publish Button */}
-                    <div className="space-y-2">
-                      {formData.isScheduled ? (
-                        <button
-                          onClick={handleSchedule}
-                          className="w-full bg-primary hover:bg-primaryLight text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-                        >
-                          <Calendar className="w-4 h-4" />
-                          Schedule Blog
-                        </button>
-                      ) : (
-                        <button
-                          onClick={handlePublish}
-                          className="w-full bg-primary hover:bg-primaryLight text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-                        >
-                          <Send className="w-4 h-4" />
-                          Publish Now
-                        </button>
+                    <div className="pt-4">
+                      {publishError && (
+                        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="text-red-600 text-sm">{publishError}</p>
+                        </div>
                       )}
                       
                       <button
-                        onClick={handleSaveDraft}
-                        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                        onClick={handlePublish}
+                        className="w-full bg-primary hover:bg-primaryLight disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                        disabled={!formData.content.trim() || isPublishing}
                       >
-                        <FileText className="w-4 h-4" />
-                        Save as Draft
+                        {isPublishing ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            Publishing...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4" />
+                            Publish Blog
+                          </>
+                        )}
                       </button>
+                      <p className="text-xs text-gray-500 mt-2 text-center">
+                        {isPublishing ? 'Creating your post...' : 'Title and content are required to publish'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -648,6 +606,14 @@ const BlogCreator: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Flash Messages */}
+      <FlashMessage
+        type="error"
+        message={publishError || ''}
+        isVisible={!!publishError}
+        onClose={() => setPublishError(null)}
+      />
     </div>
   );
 };

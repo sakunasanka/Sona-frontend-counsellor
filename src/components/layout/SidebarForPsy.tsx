@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Home, Camera, Users, Pen, DollarSign, MessageCircle, Contact, HelpingHand, LogOut } from 'lucide-react';
+import { ArrowLeft, Home, Camera, Users, Pen, DollarSign, MessageCircle, Contact, HelpingHand, LogOut, FileText } from 'lucide-react';
+import { Button } from '../ui';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -22,12 +23,13 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
 }) => {
   const navigate = useNavigate();
   const menuItems = [
-    { icon: Home, label: 'Home', href: '/psychiatrist-dashboard', id: 'home' },
-    { icon: Camera, label: 'Sessions', href: '/psychiatrist-sessions', id: 'sessions' },
-    { icon: Users, label: 'Patients', href: '/psychiatrist-patients', id: 'patients' },
-    { icon: Pen, label: 'Prescriptions', href: '/psychiatrist/create-prescription', id: 'prescriptions' },
-    { icon: DollarSign, label: 'Earnings', href: '#', id: 'earnings' },
-    { icon: MessageCircle, label: 'Chats', href: '/psychiatrist-chats', id: 'chats' },
+    { icon: Home, label: 'Home', href: '/dashboard', id: 'home' },
+    { icon: Camera, label: 'Sessions', href: '/sessions', id: 'sessions' },
+    { icon: Users, label: 'Clients', href: '/clients', id: 'patients' },
+    { icon: Pen, label: 'Prescriptions', href: '/create-prescription', id: 'prescriptions' },
+    { icon: DollarSign, label: 'Earnings', href: '/earnings', id: 'earnings' },
+    { icon: MessageCircle, label: 'Chats', href: '/chats', id: 'chats' },
+    { icon: FileText, label: 'Blogs', href: '/blogs', id: 'blogs' },
     { icon: Contact, label: 'Contact Counsellors', href: '#', id: 'contact' },
     { icon: HelpingHand, label: 'Get Help', href: '#', id: 'help' },
   ];
@@ -36,14 +38,14 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
     if (item.id === 'chats' && onChatClick) {
       onChatClick();
     } else {
-      // Handle other navigation with expansion animation if minimized
+      // Handle other navigation
       if (item.href !== '#') {
         if (isMinimized && onExpandBeforeNavigation) {
           // Trigger expansion animation before navigation
           onExpandBeforeNavigation(item.href);
         } else {
-          // Direct navigation if not minimized
-          window.location.href = item.href;
+          // Use React Router navigation instead of window.location
+          navigate(item.href);
         }
       }
     }
@@ -66,31 +68,83 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
 
       {/* Sidebar */}
       <div className={`
-        h-full bg-secondary flex flex-col transition-all duration-500 ease-in-out
+        h-full bg-slate-800 flex flex-col transition-all duration-500 ease-in-out
         fixed top-0 left-0 z-50 lg:relative lg:z-auto
         ${isMinimized 
           ? 'w-16 lg:w-16' 
-          : 'w-80 lg:w-80'
+          : 'w-72 lg:w-72'
         }
         ${isOpen || isMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         
-        {/* Sidebar Header - Only show on mobile when not minimized */}
-        {!isMinimized && (
-          <div className="flex items-center p-4 border-b lg:hidden">
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-            >
-              <ArrowLeft size={20} className="text-gray-600" />
-            </button>
-            <img
-              src="/assets/images/Sona-logo.png"
-              alt="Sona Logo"
-              className="h-8 w-auto ml-3"
+        {/* Logo Section */}
+        <div className="py-6 px-4">
+          {/* Desktop: Logo */}
+          <div className="hidden lg:flex items-center">
+            <img 
+              src={isMinimized ? "/assets/images/Sona-flat.png" : "/assets/images/Sona-logo-light.png"}
+              alt="SONA" 
+              className={`${isMinimized ? 'w-8' : 'w-32'} transition-all duration-300 ${isMinimized ? '' : 'ml-4'} cursor-pointer hover:opacity-80`}
+              onClick={() => {
+                if (isMinimized && onExpandBeforeNavigation) {
+                  onExpandBeforeNavigation('/dashboard');
+                } else {
+                  navigate('/dashboard');
+                }
+                if (window.innerWidth < 1024) {
+                  onClose();
+                }
+              }}
             />
           </div>
-        )}
+          
+          {/* Mobile: Back arrow + logo on same level when not minimized */}
+          {!isMinimized && (
+            <div className="flex items-center lg:hidden">
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-slate-700 rounded-md transition-colors mr-3"
+              >
+                <ArrowLeft size={20} className="text-slate-300" />
+              </button>
+              <img 
+                src="/assets/images/Sona-logo-light.png" 
+                alt="SONA" 
+                className="w-32 cursor-pointer hover:opacity-80"
+                onClick={() => {
+                  navigate('/dashboard');
+                  if (window.innerWidth < 1024) {
+                    onClose();
+                  }
+                }}
+              />
+            </div>
+          )}
+          
+          {/* Mobile minimized: Just logo centered */}
+          {isMinimized && (
+            <div className="flex items-center justify-center lg:hidden">
+              <img 
+                src="/assets/images/Sona-flat.png"
+                alt="SONA" 
+                className="w-8 cursor-pointer hover:opacity-80"
+                onClick={() => {
+                  if (onExpandBeforeNavigation) {
+                    onExpandBeforeNavigation('/dashboard');
+                  } else {
+                    navigate('/dashboard');
+                  }
+                  if (window.innerWidth < 1024) {
+                    onClose();
+                  }
+                }}
+              />
+            </div>
+          )}
+        </div>
+        
+        {/* Subtle Divider */}
+        <div className="mx-4 border-t border-slate-600"></div>
 
         {/* Menu Items */}
         <nav className={`py-6 ${isMinimized ? 'px-2' : 'px-4'} flex-1 flex flex-col transition-all duration-500 ease-in-out`}>
@@ -104,9 +158,9 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
                   <button
                     onClick={() => handleItemClick(item)}
                     className={`
-                      flex items-center text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300 ease-in-out group w-full
+                      flex items-center text-slate-100 hover:bg-gray-50 rounded-lg text-l mt-0 transition-all duration-300 ease-in-out group w-full
                       ${isMinimized 
-                        ? 'px-3 py-3 justify-center' 
+                        ? 'px-3 py-3 justify-center hover:bg-gray-50 ' 
                         : 'px-4 py-3 space-x-4'
                       }
                       ${isActive ? 'bg-white shadow-sm' : ''}
@@ -116,7 +170,7 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
                     <IconComponent 
                       size={20} 
                       className={`
-                        text-gray-600 group-hover:text-gray-800 transition-colors duration-200
+                        text-slate-100 group-hover:text-gray-400 transition-colors duration-200
                         ${isActive ? 'text-gray-800' : ''}
                       `} 
                     />
@@ -135,29 +189,21 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
               );
             })}
           </ul>
-
+          
           <div className="flex-1"></div>
-
+          
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <button
-              className={`
-                flex items-center text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all duration-300 ease-in-out group w-full
-                ${isMinimized 
-                  ? 'px-3 py-3 justify-center' 
-                  : 'px-4 py-3 space-x-4'
-                }
-              `}
+            <Button
+              variant="logout"
+              isMinimized={isMinimized}
               title={isMinimized ? 'Log out' : undefined}
+              icon={<LogOut size={20} className="text-gray-600 group-hover:text-red-600 transition-colors duration-200" />}
               onClick={() => {
                 console.log('Logout clicked');
                 navigate('/signin');
                 onClose();
               }}
             >
-              <LogOut 
-                size={20} 
-                className="text-gray-600 group-hover:text-red-600 transition-colors duration-200" 
-              />
               <span className={`
                 font-medium transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap
                 ${isMinimized 
@@ -167,7 +213,7 @@ const SidebarForPsy: React.FC<SidebarProps> = ({
               `}>
                 Log out
               </span>
-            </button>
+            </Button>
           </div>
         </nav>
       </div>
