@@ -1,8 +1,7 @@
 // import { VITE_WS_URL, PORT } from 'dotenv';
 
 // Use environment variables from import.meta.env (Vite)
-const VITE_WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost';
-const PORT = import.meta.env.VITE_WS_PORT || '5001';
+const VITE_WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:5001';
 import { io, Socket } from 'socket.io-client';
 
 interface ChatMessage {
@@ -44,21 +43,17 @@ class ChatWebSocketService {
         this.socket.disconnect();
       }
 
-      const socketUrl = VITE_WS_URL
-      const port = PORT ? PORT : '5001'
-
       console.log('Connecting to Socket.IO server...');
       
-      // For Expo Go development, use your local IP
       console.log('🔗 Connecting to Socket.IO server:', {
-        url: socketUrl,
+        url: VITE_WS_URL,
         chatId,
         userId,
         hasToken: !!token,
-        platform: 'react-native'
+        platform: 'react-web'
       });
 
-      this.socket = io(`${socketUrl}:${port}`, {
+      this.socket = io(VITE_WS_URL, {
         auth: {
           token: token  
         },
