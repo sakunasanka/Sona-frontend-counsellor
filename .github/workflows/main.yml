@@ -25,9 +25,9 @@ jobs:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
           VITE_WS_URLL: ${{ secrets.VITE_WS_URLL }}
           VITE_CLOUDINARY_CLOUD_NAME: ${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}
-          VITE_CLOUDINARY_API_KEY: ${{ secrects.VITE_CLOUDINARY_API_KEY }}
-          VITE_CLOUDINARY_API_SECRET: ${{ secrects.VITE_CLOUDINARY_API_SECRET }}
-          CLOUDINARY_URL: ${{ secrects.CLOUDINARY_URL }}
+          VITE_CLOUDINARY_API_KEY: ${{ secrets.VITE_CLOUDINARY_API_KEY }}
+          VITE_CLOUDINARY_API_SECRET: ${{ secrets.VITE_CLOUDINARY_API_SECRET }}
+          CLOUDINARY_URL: ${{ secrets.CLOUDINARY_URL }}
 
       - name: Build Project
         run: npm run build
