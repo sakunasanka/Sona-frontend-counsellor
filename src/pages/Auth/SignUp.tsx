@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -193,11 +193,21 @@ const SignUp = () => {
         <Card className="p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <img 
-              src="/assets/images/Sona-logo.png" 
-              alt="Sona Logo" 
-              className="h-10 w-auto mx-auto mb-6"
-            />
+            <div className="flex items-center justify-between mb-6">
+              <button
+                onClick={() => navigate('/signup')}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-sm font-medium">Back</span>
+              </button>
+              <img 
+                src="/assets/images/Sona-logo.png" 
+                alt="Sona Logo" 
+                className="h-10 w-auto"
+              />
+              <div className="w-16"></div> {/* Spacer for centering */}
+            </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Join the Professional Community</h1>
             <p className="text-gray-600">Create your professional account and start making a difference</p>
           </div>
@@ -206,7 +216,7 @@ const SignUp = () => {
           <div className="flex items-center justify-center mb-8">
             <div className="relative bg-gray-100 rounded-full p-1 w-full max-w-sm">
               <div
-                className={`absolute top-1 left-1 h-10 bg-pink-500 rounded-full transition-all duration-300 ease-in-out ${
+                className={`absolute top-1 left-1 h-10 bg-slate-500 rounded-full transition-all duration-300 ease-in-out ${
                   userType === 'psychiatrist' ? 'w-1/2 transform translate-x-[calc(100%-0.5rem)]' : 'w-1/2'
                 }`}
               />
@@ -472,7 +482,7 @@ const SignUp = () => {
                 onChange={handleChange}
                 rows={4}
                   className="w-full px-3 py-2 border border-gray-400 rounded-3xl shadow-sm bg-white text-gray-700
-                    hover:border-pink-500 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20
+                    hover:border-slate-500 focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20
                     focus:outline-none transition-all duration-150 ease-in-out
                     placeholder:text-gray-400 placeholder:font-normal"
                   placeholder="Tell us about your experience and approach..."
@@ -488,11 +498,11 @@ const SignUp = () => {
                   onChange={handleFileChange}
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                   className="w-full px-3 py-2 border border-gray-400 rounded-3xl shadow-sm bg-white text-gray-700
-                    hover:border-pink-500 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20
+                    hover:border-slate-500 focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20
                     focus:outline-none transition-all duration-150 ease-in-out
                     file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
-                    file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700
-                    hover:file:bg-pink-100"
+                    file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700
+                    hover:file:bg-slate-100"
                 />
               {errors.documents && (
                   <p className="text-red-600 text-sm mt-2 flex items-center">
@@ -542,7 +552,7 @@ const SignUp = () => {
             Already have an account?{' '}
             <button
               onClick={() => navigate('/signin')}
-                className="text-pink-500 font-medium hover:text-pink-600 hover:underline"
+                className="text-slate-500 font-medium hover:text-slate-600 hover:underline"
             >
                 Sign in here
             </button>

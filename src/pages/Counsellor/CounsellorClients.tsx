@@ -133,14 +133,6 @@ const CounsellorClients: React.FC = () => {
     }, 350); // Slightly longer than animation duration
   };
   
-  const handleDesktopFilterToggle = () => {
-    if (filterOpen) {
-      closeFilterDrawer();
-    } else {
-      openFilterDrawer();
-    }
-  };
-
   const handleMobileFilterToggle = () => {
     if (filterOpen) {
       closeFilterDrawer();
@@ -225,7 +217,12 @@ const CounsellorClients: React.FC = () => {
       email: 'N/A', // API doesn't provide email
       phone: 'N/A', // API doesn't provide phone
       sessionCount: apiClient.total_sessions,
-      lastSession: apiClient.last_session ? new Date(apiClient.last_session + (apiClient.last_session.includes('T') ? '' : 'T00:00:00')).toLocaleDateString('en-US', { timeZone: 'Asia/Colombo' }) : 'No sessions',
+      lastSession: apiClient.last_session ? new Date(apiClient.last_session + (apiClient.last_session.includes('T') ? '' : 'T00:00:00')).toLocaleDateString('en-GB', { 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric',
+        timeZone: 'Asia/Colombo' 
+      }) : 'No sessions',
       nextSession: apiClient.next_appointment ? new Date(apiClient.next_appointment + (apiClient.next_appointment.includes('T') ? '' : 'T00:00:00')).toLocaleDateString('en-US', { timeZone: 'Asia/Colombo' }) : undefined,
       concerns: apiClient.concerns || [], // Get concerns from API response
       status: apiClient.status,
@@ -309,13 +306,8 @@ const CounsellorClients: React.FC = () => {
               activeFilter={activeFilter}
               anonymousFilter={anonymousFilter}
               studentFilter={studentFilter}
-              filterOpen={filterOpen}
               onActiveFilterChange={setActiveFilter}
-              onAnonymousFilterChange={setAnonymousFilter}
-              onStudentFilterChange={setStudentFilter}
-              onFilterToggle={handleDesktopFilterToggle}
               onMobileFilterToggle={handleMobileFilterToggle}
-              filterDropdownRef={filterDropdownRef}
             />
             
             {/* Expanded filter options */}

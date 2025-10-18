@@ -5,21 +5,17 @@ import { useParams } from 'react-router-dom';
 import { getClientDetails, createClientNote, deleteClientNote, updateClientNote, addClientConcern, removeClientConcern, getClientMoodAnalysis, getClientPHQ9Analysis, getSessions, type ClientDetails as APIClientDetails, type MoodAnalysisResponse, type PHQ9AnalysisResponse, getClientEarnings } from '../../api/counsellorAPI';
 import { MoodChart, PHQ9Chart } from '../../components/charts';
 import { makeRequest } from '../../api/apiBase';
+import { PrescriptionManager } from './components';
 import { 
   Calendar, 
   Clock, 
   MessageCircle, 
-  Phone, 
-  User, 
   FileText, 
   BarChart2, 
   Shield, 
   PenLine, 
   X,
-  Mail,
-  MapPin,
   UserCheck,
-  FileSymlink,
   Flag,
   FileDown,
   CalendarDays,
@@ -184,7 +180,7 @@ const ClientDetails: React.FC = () => {
   const recentNotesRef = React.useRef<HTMLDivElement>(null);
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'sessions' | 'details' | 'mood'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'sessions' | 'details' | 'mood' | 'prescriptions'>('overview');
   const [newNote, setNewNote] = useState('');
   const [isPrivateNote, setIsPrivateNote] = useState(false);
   
@@ -231,7 +227,7 @@ const ClientDetails: React.FC = () => {
   const [sessionFilter, setSessionFilter] = useState<'all' | 'completed' | 'upcoming' | 'cancelled' | 'ongoing'>('all');
   const [sortField, setSortField] = useState<'date' | 'status' | 'duration' | 'fee' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  
+
   // Flash message state
   const [flashMessage, setFlashMessage] = useState<{
     type: 'success' | 'error' | 'warning' | 'info';
@@ -242,6 +238,9 @@ const ClientDetails: React.FC = () => {
     message: '',
     isVisible: false
   });
+
+  // User type state - determine if user is psychiatrist or counsellor
+  const [userType, setUserType] = useState<string>('');
 
   // Helper function to join a session
   const joinSession = async (sessionId: string) => {
@@ -448,7 +447,11 @@ const ClientDetails: React.FC = () => {
       anonymous: apiClient.is_anonymous,
       student: true, // Assuming all clients are students based on student_id field
       institution: apiClient.institution || 'University',
-      joinDate: apiClient.join_date ? new Date(apiClient.join_date).toLocaleDateString() : 'Unknown',
+      joinDate: apiClient.join_date ? new Date(apiClient.join_date).toLocaleDateString('en-GB', { 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric' 
+      }) : 'Unknown',
       profileImage: apiClient.avatar || 'https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png',
     };
 
@@ -661,7 +664,7 @@ const ClientDetails: React.FC = () => {
   // Fetch client details on component mount
   useEffect(() => {
     fetchClientDetails();
-  }, [clientId]);
+  }, [clientId, userType]);
 
   // Load data based on selected mood sub-tab
   useEffect(() => {
@@ -672,7 +675,44 @@ const ClientDetails: React.FC = () => {
         fetchMoodAnalysis();
       }
     }
-  }, [activeTab, clientId, moodSubTab, showAllTime, selectedMonth, selectedYear]);
+  }, [activeTab, clientId, moodSubTab, showAllTime, selectedMonth, selectedYear, userType]);
+
+  // Initialize user type from JWT token
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      try {
+        // Decode the JWT token to get user type
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const payload = JSON.parse(jsonPayload);
+        console.log('JWT payload:', payload);
+        
+        // Check for userType or role in the payload
+        const detectedUserType = payload.userType || payload.role || 'counsellor';
+        console.log('Detected user type from JWT:', detectedUserType);
+        setUserType(detectedUserType.toLowerCase()); // Normalize to lowercase
+      } catch (error) {
+        console.error('Error decoding JWT token:', error);
+        setUserType('counsellor'); // Default fallback
+      }
+    } else {
+      console.log('No auth token found, defaulting to counsellor');
+      setUserType('counsellor'); // Default if no token
+    }
+  }, []);
+
+  // Redirect from prescriptions tab if user is not a psychiatrist
+  useEffect(() => {
+    if (userType && userType !== 'psychiatrist' && activeTab === 'prescriptions') {
+      setActiveTab('overview');
+      showFlashMessage('warning', 'Prescriptions are only available for psychiatrists.');
+    }
+  }, [userType, activeTab]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -1704,10 +1744,10 @@ const ClientDetails: React.FC = () => {
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <button 
             className="flex flex-col items-center justify-center bg-indigo-50 hover:bg-indigo-100 p-4 rounded-lg transition-colors"
-            onClick={() => window.location.href = `/counsellor/chats?clientId=${clientId}`}
+            onClick={() => window.location.href = `/chats?clientId=${clientId}`}
           >
             <MessageCircle className="w-6 h-6 text-indigo-500 mb-2" />
             <span className="text-sm text-gray-800">Message</span>
@@ -1733,7 +1773,7 @@ const ClientDetails: React.FC = () => {
             onClick={() => setActiveTab('sessions')}
           >
             <Calendar className="w-6 h-6 text-green-500 mb-2" />
-            <span className="text-sm text-gray-800">Schedule</span>
+            <span className="text-sm text-gray-800">View Sessions</span>
           </button>
           <button 
             className="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 p-4 rounded-lg transition-colors"
@@ -1741,13 +1781,6 @@ const ClientDetails: React.FC = () => {
           >
             <FileDown className="w-6 h-6 text-blue-500 mb-2" />
             <span className="text-sm text-gray-800">Generate Report</span>
-          </button>
-          <button 
-            className="flex flex-col items-center justify-center bg-amber-50 hover:bg-amber-100 p-4 rounded-lg transition-colors"
-            onClick={() => setActiveTab('details')}
-          >
-            <FileSymlink className="w-6 h-6 text-amber-500 mb-2" />
-            <span className="text-sm text-gray-800">Resources</span>
           </button>
         </div>
       </div>
@@ -2820,6 +2853,15 @@ const ClientDetails: React.FC = () => {
                 >
                   Mood Analysis
                 </button>
+                {/* Only show Prescriptions tab for psychiatrists */}
+                {userType === 'psychiatrist' && (
+                  <button 
+                    className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'prescriptions' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => setActiveTab('prescriptions')}
+                  >
+                    Prescriptions
+                  </button>
+                )}
                 {/* <button 
                   className={`pb-2 text-sm font-medium -mb-px ${activeTab === 'details' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
                   onClick={() => setActiveTab('details')}
@@ -2837,6 +2879,12 @@ const ClientDetails: React.FC = () => {
             {activeTab === 'notes' && renderNotesTab()}
             {activeTab === 'sessions' && renderSessionsTab()}
             {activeTab === 'mood' && renderMoodTab()}
+            {activeTab === 'prescriptions' && userType === 'psychiatrist' && (
+              <PrescriptionManager
+                clientId={clientId}
+                onShowFlashMessage={showFlashMessage}
+              />
+            )}
             {/* {activeTab === 'details' && renderDetailsTab()} */}
           </div>
 

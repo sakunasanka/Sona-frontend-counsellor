@@ -13,6 +13,10 @@ export default {
         secondaryDark: 'rgba(174, 175, 247, 0.8)',
         secondaryDarker: 'rgba(123, 125, 188, 0.95)',
         secondaryDusk: 'rgba(87, 87, 137, 0.95)',
+        dark: {
+          500: '#262629ff',
+          100: '#bcbcc7ff',
+        },
         gray: {
           400: "#9CA3AF", 
         },

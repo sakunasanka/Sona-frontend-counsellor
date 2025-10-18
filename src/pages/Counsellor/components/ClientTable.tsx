@@ -62,12 +62,35 @@ const ClientTable: React.FC<ClientTableProps> = ({ clients, onViewDetails }) => 
         bValue = b.sessionCount;
         break;
       case 'lastSession':
-        // Parse date string and convert to timestamp in Asia/Colombo timezone
+        // Parse date string format like "16 Oct 2025" and convert to timestamp
         const parseDateForSorting = (dateStr: string) => {
           if (dateStr === 'No sessions') return new Date('1970-01-01').getTime();
-          // Create date object and ensure it's treated as Asia/Colombo time
-          const date = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'));
-          return date.getTime();
+          
+          // Handle format like "16 Oct 2025"
+          try {
+            // Split the date string
+            const parts = dateStr.trim().split(' ');
+            if (parts.length === 3) {
+              const [day, month, year] = parts;
+              // Create a date string in ISO format
+              const monthMap: { [key: string]: string } = {
+                'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+                'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+                'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+              };
+              const monthNum = monthMap[month];
+              if (monthNum) {
+                const isoDate = `${year}-${monthNum}-${day.padStart(2, '0')}`;
+                return new Date(isoDate).getTime();
+              }
+            }
+            
+            // Fallback: try to parse as-is
+            return new Date(dateStr).getTime();
+          } catch (error) {
+            console.warn('Failed to parse date:', dateStr);
+            return new Date('1970-01-01').getTime();
+          }
         };
         aValue = parseDateForSorting(a.lastSession);
         bValue = parseDateForSorting(b.lastSession);
@@ -130,7 +153,11 @@ const ClientTable: React.FC<ClientTableProps> = ({ clients, onViewDetails }) => 
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginatedClients.map((client) => (
-              <tr key={client.id} className="hover:bg-gray-50 transition-colors">
+              <tr 
+                key={client.id} 
+                className="hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={() => onViewDetails(client.id)}
+              >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ${client.anonymous ? 'bg-indigo-100 flex items-center justify-center' : 'border-2 border-gray-200'}`}>
@@ -196,10 +223,10 @@ const ClientTable: React.FC<ClientTableProps> = ({ clients, onViewDetails }) => 
                   )}
                 </td>
                 <td className="px-6 py-4">
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="calendar"
-                      onClick={() => navigate(`/counsellor/chats?clientId=${client.id}`)}
+                      onClick={() => navigate(`/chats?clientId=${client.id}`)}
                       icon={<MessageCircle className="w-4 h-4" />}
                       className="px-3 py-2 text-sm flex-1 min-w-0"
                     >

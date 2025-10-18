@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface Column<T> {
     header: string;
     accessor: keyof T;

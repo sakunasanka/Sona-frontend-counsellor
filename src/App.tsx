@@ -5,7 +5,9 @@ import { ProfileProvider } from './contexts/ProfileContext';
 import NotFoundPage from './pages/Error/NotFoundPage';
 import ForbiddenPage from './pages/Error/ForbiddenPage';
 import SignUp from "./pages/Auth/SignUp";
+import SignUpOptions from "./pages/Auth/SignUpOptions";
 import SignIn from './pages/Auth/SignIn';
+import SignInOptions from './pages/Auth/SignInOptions';
 import GeneralUserSignIn from './pages/Auth/GeneralUserSignIn';
 import CounsellorDashboard from './pages/Counsellor/CounsellorDashboard';
 import ExampleUse from './pages/ExampleUse';
@@ -33,8 +35,10 @@ function App() {
         <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/example-use" element={<ExampleUse />} />
-        <Route path="/signup" element={<SignUp/>} ></Route>
+        <Route path="/signup" element={<SignUpOptions />} />
+        <Route path="/signup-professional" element={<SignUp />} />
         <Route path="/signin" element={<SignIn />} />
+        <Route path="/signin-options" element={<SignInOptions />} />
         <Route path="/general-user-signin" element={<GeneralUserSignIn />} />
         <Route path="/dashboard" element={
           <ProtectedRoute>

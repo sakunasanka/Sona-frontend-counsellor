@@ -151,21 +151,8 @@ const CounsellorProfile: React.FC = () => {
           return cleanHandle.startsWith('@') ? cleanHandle : `@${cleanHandle}`;
         };
 
-        // Handle name field - split full name for API
-        if (profileState.editForm.firstName !== undefined && profileState.editForm.firstName !== profileState.profile.firstName) {
-          const fullName = String(profileState.editForm.firstName || '').trim();
-          const nameParts = fullName.split(' ');
-          
-          if (nameParts.length === 1) {
-            // Single name - put everything in firstName
-            changedFields.firstName = nameParts[0];
-            changedFields.lastName = '';
-          } else {
-            // Multiple names - first word as firstName, rest as lastName
-            changedFields.firstName = nameParts[0];
-            changedFields.lastName = nameParts.slice(1).join(' ');
-          }
-        }
+        // Handle name field - NAME IS NO LONGER EDITABLE
+        // Removed firstName handling as name should not be changeable
         
         if (profileState.editForm.bio !== undefined && profileState.editForm.bio !== profileState.profile.bio) {
           changedFields.bio = String(profileState.editForm.bio || '').trim();

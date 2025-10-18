@@ -13,6 +13,7 @@ export { default as ClientFilters } from './ClientFilters';
 export { default as FilterDrawer } from './FilterDrawer';
 export { default as ClientStats } from './ClientStats';
 export { default as ClientList } from './ClientList';
+export { default as PrescriptionManager } from './PrescriptionManager';
 
 // Export types
 export type { Client } from './ClientTable';

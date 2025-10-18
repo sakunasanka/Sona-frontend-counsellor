@@ -8,25 +8,23 @@ import {
   FileText,
   BarChart3,
   MessageSquare,
-  CheckCircle,
   Star,
-  ArrowRight,
   Phone,
   Mail,
   MapPin,
-  ChevronDown
+  Send,
+  Clock,
+  Globe
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Container from '../components/ui/Container';
-import Dropdown from '../components/ui/Dropdown';
 
 function Home() {
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState('');
   const [showAuthFocus, setShowAuthFocus] = useState(false);
-  const [isDropdownInteracted, setIsDropdownInteracted] = useState(false);
   const [isVideoTransitioning, setIsVideoTransitioning] = useState(false);
+  const [isScrolledPastVideo, setIsScrolledPastVideo] = useState(false);
 
   // Scroll to top on component mount (page load/reload)
   useEffect(() => {
@@ -44,6 +42,11 @@ function Home() {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
+      // Check if user has scrolled past the video section (hero section)
+      // The hero section is min-h-screen, so we check if scrolled past viewport height
+      const heroSectionHeight = window.innerHeight;
+      setIsScrolledPastVideo(currentScrollY > heroSectionHeight * 0.8); // 80% of hero section
+      
       // If user is scrolling down and zoom is active, reset it
       if (currentScrollY > lastScrollY && showAuthFocus) {
         setShowAuthFocus(false);
@@ -59,140 +62,46 @@ function Home() {
     };
   }, [showAuthFocus]);
 
-  const handleGetStarted = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    // If role is selected, navigate based on role
-    if (selectedRole) {
-      if (selectedRole === 'general') {
-        navigate('/generalusersignin');
-      } else {
-        // For counsellor or psychiatrist, redirect to sign up page with role state
-        navigate('/signup', { state: { selectedRole } });
-      }
-      return;
-    }
-    
-    // Add zoom and pulse effect if no role selected (with delay for navbar too)
-    if (!selectedRole) {
-      // Wait for scroll animation to complete before showing zoom effect
-      setTimeout(() => {
-        setShowAuthFocus(true);
-        setIsDropdownInteracted(false);
-        // Auto-hide after 10 seconds if no interaction
-        setTimeout(() => {
-          if (!isDropdownInteracted) {
-            setShowAuthFocus(false);
-          }
-        }, 10000);
-      }, 800); // Wait 800ms for smooth scroll to complete
-    }
-  };
-
-  const handleGetStartedWithDelay = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    // If role is selected, navigate based on role
-    if (selectedRole) {
-      if (selectedRole === 'general') {
-        navigate('/generalusersignin');
-      } else {
-        // For counsellor or psychiatrist, redirect to sign up page with role state
-        navigate('/signup', { state: { selectedRole } });
-      }
-      return;
-    }
-    
-    // Add zoom and pulse effect if no role selected (delayed for CTA section)
-    if (!selectedRole) {
-      // Wait for scroll animation to complete before showing zoom effect
-      setTimeout(() => {
-        setShowAuthFocus(true);
-        setIsDropdownInteracted(false);
-        // Auto-hide after 10 seconds if no interaction
-        setTimeout(() => {
-          if (!isDropdownInteracted) {
-            setShowAuthFocus(false);
-          }
-        }, 10000);
-      }, 800); // Wait 800ms for smooth scroll to complete
-    }
-  };
-
   const handleSignIn = () => {
-    if (!selectedRole) {
-      setShowAuthFocus(true);
-      setIsDropdownInteracted(false);
-      // Auto-hide after 10 seconds if no interaction
-      setTimeout(() => {
-        if (!isDropdownInteracted) {
-          setShowAuthFocus(false);
-        }
-      }, 10000);
-      return;
-    }
-    
-    // Hide focus effect when user has selected a role
+    // Hide focus effect when user clicks sign in
     setShowAuthFocus(false);
-    
-    if (selectedRole === 'general') {
-      navigate('/generalusersignin');
-    } else {
-      // Pass the selected role to sign-in page for counsellor or psychiatrist
-      navigate('/signin', { state: { selectedRole } });
-    }
+    // Navigate to sign in selection page
+    navigate('/signin-options');
   };
 
   const handleSignUp = () => {
-    if (!selectedRole) {
-      setShowAuthFocus(true);
-      setIsDropdownInteracted(false);
-      // Auto-hide after 10 seconds if no interaction
-      setTimeout(() => {
-        if (!isDropdownInteracted) {
-          setShowAuthFocus(false);
-        }
-      }, 10000);
-      return;
-    }
-    
-    // Hide focus effect when user has selected a role
+    // Hide focus effect when user clicks sign up
     setShowAuthFocus(false);
-    
-    if (selectedRole === 'general') {
-      navigate('/generalusersignin');
-    } else {
-      // Pass the selected role to sign-up page for counsellor or psychiatrist
-      navigate('/signup', { state: { selectedRole } });
+    // Navigate to sign up page 
+    navigate('/signup');
+  };
+
+  const handleLearnMore = () => {
+    const aboutSection = document.getElementById('about');
+    if (aboutSection) {
+      aboutSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
     }
   };
 
-  const handleRoleSelect = (role: string) => {
-    setSelectedRole(role);
-    // Hide focus effect when user selects a role
-    setShowAuthFocus(false);
-    setIsDropdownInteracted(true);
+  const handleGetStartedToday = () => {
+    navigate('/general-user-signin');
   };
-
-  const handleDropdownInteraction = () => {
-    setIsDropdownInteracted(true);
-    setShowAuthFocus(false);
-  };
-
-  const roleOptions = [
-    { label: 'General User', value: 'general' },
-    { label: 'Counsellor', value: 'counsellor' },
-    { label: 'Psychiatrist', value: 'psychiatrist' }
-  ];
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 z-50 transition-all duration-300">
+      <nav className={`fixed top-0 left-0 right-0 backdrop-blur-sm shadow-sm z-50 transition-all duration-700 ease-in-out ${
+        isScrolledPastVideo ? 'bg-dark-500' : 'bg-dark-500/10'
+      }`}>
         <div className="w-full px-4 sm:px-6 md:px-8 lg:pl-16 lg:pr-6">
           <div className="flex items-center h-14 sm:h-16">
             {/* Logo - Left Corner aligned with content below */}
             <div className="flex items-center flex-shrink-0">
               <img 
-                src="/assets/images/Sona-logo.png" 
+                src="/assets/images/Sona-logo-light.png" 
                 alt="Sona Logo" 
                 className="h-6 sm:h-8 w-auto transition-transform duration-300 hover:scale-105"
               />
@@ -203,33 +112,21 @@ function Home() {
             
             {/* Navigation Links and Button - Desktop */}
             <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-pink-500 transition-all duration-300 font-medium relative group text-sm xl:text-base">
+              <a href="#features" className="text-white hover:text-buttonBlue-800 transition-all duration-300 font-medium relative group text-sm xl:text-base">
                 Features
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-buttonBlue-800 transition-all duration-300 group-hover:w-full"></span>
               </a>
-              <a href="#about" className="text-gray-600 hover:text-pink-500 transition-all duration-300 font-medium relative group text-sm xl:text-base">
+              <a href="#about" className="text-white hover:text-buttonBlue-800 transition-all duration-300 font-medium relative group text-sm xl:text-base">
                 About
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-buttonBlue-800 transition-all duration-300 group-hover:w-full"></span>
               </a>
-              <a href="#contact" className="text-gray-600 hover:text-pink-500 transition-all duration-300 font-medium relative group text-sm xl:text-base">
+              <a href="#contact" className="text-white hover:text-buttonBlue-800 transition-all duration-300 font-medium relative group text-sm xl:text-base">
                 Contact
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-buttonBlue-800 transition-all duration-300 group-hover:w-full"></span>
               </a>
-              <Button 
-                variant="special" 
-                onClick={handleGetStarted}
-                className="px-4 xl:px-6 py-2 text-sm font-medium transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                Get Started
-              </Button>
-            </div>
-
-            {/* Mobile Get Started Button */}
-            <div className="lg:hidden">
-              <Button 
-                variant="special" 
-                onClick={handleGetStarted}
-                className="px-4 py-2 text-sm font-medium transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+              <Button
+                onClick={handleSignIn}
+                className="px-4 xl:px-6 py-2 text-sm bg-white text-dark-500 font-medium transform hover:bg-gray-100 hover:text-gray-900 transition-all duration-300 shadow-lg"
               >
                 Get Started
               </Button>
@@ -284,7 +181,7 @@ function Home() {
                 }
               }}
             >
-              <source src="/assets/videos/healthcare-background-2.mp4" type="video/mp4" />
+              <source src="/assets/videos/healthcare-background.mp4" type="video/mp4" />
               {/* Fallback for browsers that don't support video */}
               <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white"></div>
             </video>
@@ -296,7 +193,7 @@ function Home() {
             ></div>
             
             {/* White tint overlay for better text readability */}
-            <div className="absolute inset-0 bg-secondary/90"></div>
+            <div className="absolute inset-0 bg-dark-500/70"></div>
             
             {/* Gradient overlay for better text readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/40"></div>
@@ -337,53 +234,36 @@ function Home() {
                 <div className={`hidden lg:block space-y-6 max-w-3xl transition-all duration-500 transform-gpu ${
                   showAuthFocus ? 'scale-110 translate-x-4 lg:translate-x-8' : 'scale-100 translate-x-0'
                 }`} style={{ transformOrigin: 'left center' }}>
-                  {/* Role Selection and Sign In - Same Line for larger screens */}
+                  {/* Welcome message */}
+                  <div className={`text-white/90 text-lg font-medium transition-all duration-300 ${
+                    showAuthFocus ? 'animate-pulse text-white font-semibold' : ''
+                  }`}>
+                    Join our mental health community
+                  </div>
+                  
+                  {/* Sign In and Sign Up Buttons - Same Line */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                    <div className="w-full sm:flex-1 sm:min-w-0 sm:max-w-xs">
-                      <div className="w-full">
-                        <div className="relative">
-                          <div 
-                            onMouseEnter={handleDropdownInteraction}
-                            onFocus={handleDropdownInteraction}
-                          >
-                            <Dropdown
-                              options={roleOptions}
-                              selected={selectedRole}
-                              placeholder="Choose who you are"
-                              onSelect={handleRoleSelect}
-                              className={`!mb-0 !p-0 transition-all duration-300 ${
-                                showAuthFocus && !isDropdownInteracted
-                                  ? '[&>div>button>span]:animate-pulse [&>div>button>span]:text-gray-600 [&>div>button>span]:font-semibold [&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-gray-300 [&>div>button]:!h-12 [&>div>button]:!text-base [&>div>button]:!font-medium' 
-                                  : '[&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-gray-300 [&>div>button]:!h-12 [&>div>button]:!text-base [&>div>button]:!font-medium'
-                              }`}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <Button 
-                      variant="special"
+                    <Button
                       onClick={handleSignIn}
-                      className="w-full sm:w-auto px-8 py-3 h-12 text-base font-medium transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl flex-shrink-0"
+                      className="w-full sm:w-auto px-8 py-3 h-12 text-base bg-white text-dark-500 font-medium transform hover:bg-dark-500 hover:text-white transition-all duration-300 shadow-lg hover:shadow-xl flex-shrink-0 rounded-lg"
                     >
                       Sign In
                     </Button>
-                  </div>
-
-                  {/* Not a member section */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
-                    <span className={`text-white/90 text-base transition-all duration-300 flex-shrink-0 ${
-                      showAuthFocus && !isDropdownInteracted ? 'animate-pulse font-semibold' : ''
-                    }`}>
-                      Not a member?
-                    </span>
-                    <Button 
-                      variant="border"
-                      onClick={handleSignUp}
-                      className="w-full sm:w-auto px-8 py-3 h-12 text-base font-medium border border-white/40 text-white hover:bg-white hover:text-gray-900 transition-all duration-300 flex-shrink-0"
-                    >
-                      Join with us!
-                    </Button>
+                    
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                      <span className={`text-white/80 text-base transition-all duration-300 flex-shrink-0 ${
+                        showAuthFocus ? 'animate-pulse font-semibold text-white' : ''
+                      }`}>
+                        New here?
+                      </span>
+                      <Button 
+                        variant="border"
+                        onClick={handleSignUp}
+                        className="w-full sm:w-auto px-8 py-3 h-12 text-base font-medium border border-white/40 text-white hover:bg-white hover:text-gray-900 transition-all duration-300 flex-shrink-0 rounded-lg"
+                      >
+                        Join with us!
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -391,49 +271,32 @@ function Home() {
               {/* Mobile Auth Controls - Show only on mobile and tablet */}
               <div className="lg:hidden flex justify-center mt-8">
                 <div className="w-full max-w-sm space-y-6">
-                  <div className={`relative ${
-                    showAuthFocus && !isDropdownInteracted 
-                      ? 'animate-bounce-gentle before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-r before:from-primary/30 before:via-secondary/30 before:to-primary/30 before:blur-lg before:animate-pulse before:-z-10' 
-                      : ''
+                  {/* Welcome message for mobile */}
+                  <div className={`text-white/90 text-lg font-medium text-center transition-all duration-300 ${
+                    showAuthFocus ? 'animate-pulse text-white font-semibold' : ''
                   }`}>
-                    <div 
-                      onMouseEnter={handleDropdownInteraction}
-                      onFocus={handleDropdownInteraction}
-                      onTouchStart={handleDropdownInteraction}
-                    >
-                      <Dropdown
-                        options={roleOptions}
-                        selected={selectedRole}
-                        placeholder="Choose who you are"
-                        onSelect={handleRoleSelect}
-                        className={`w-full transition-all duration-300 [&>div]:!w-full [&>div]:!relative [&>div>ul]:!absolute [&>div>ul]:!left-0 [&>div>ul]:!right-0 [&>div>ul]:!w-full [&>div>ul]:!mt-1 [&>div>ul]:!z-50 ${
-                          showAuthFocus && !isDropdownInteracted
-                            ? '[&>div>button>span]:animate-pulse [&>div>button>span]:text-gray-600 [&>div>button>span]:font-semibold [&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-2 [&>div>button]:!border-primary/60 [&>div>button]:!h-12 [&>div>button]:!text-base [&>div>button]:!font-medium [&>div>button]:!shadow-lg [&>div>button]:shadow-primary/25' 
-                            : '[&>div>button]:!bg-white [&>div>button]:!text-gray-900 [&>div>button]:!border-gray-300 [&>div>button]:!h-12 [&>div>button]:!text-base [&>div>button]:!font-medium'
-                        }`}
-                      />
-                    </div>
+                    Join our community
                   </div>
+                  
                   <div className="flex flex-col space-y-6">
                     <Button 
-                      variant="special"
                       onClick={handleSignIn}
-                      className="w-full px-6 py-3 h-12 text-base font-medium shadow-lg transition-all duration-300"
+                      className="w-full px-6 py-3 h-12 text-base bg-white text-dark-500 font-medium hover:bg-gray-800 hover:text-white shadow-lg transition-all duration-300 rounded-lg"
                     >
                       Sign In
                     </Button>
                     
                     {/* Not a member section for mobile */}
                     <div className="flex flex-col space-y-4">
-                      <span className={`text-white/90 text-base transition-all duration-300 text-center ${
-                        showAuthFocus && !isDropdownInteracted ? 'animate-pulse font-semibold' : ''
+                      <span className={`text-white/80 text-base transition-all duration-300 text-center ${
+                        showAuthFocus ? 'animate-pulse font-semibold text-white' : ''
                       }`}>
-                        Not a member?
+                        New here?
                       </span>
                       <Button 
                         variant="border"
                         onClick={handleSignUp}
-                        className="w-full px-6 py-3 h-12 text-base font-medium border border-white/40 text-white hover:bg-white hover:text-gray-900 transition-all duration-300"
+                        className="w-full px-6 py-3 h-12 text-base font-medium border border-white/40 text-white hover:bg-white hover:text-gray-900 transition-all duration-300 rounded-lg"
                       >
                         Join with us!
                       </Button>
@@ -706,13 +569,14 @@ function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md sm:max-w-none mx-auto">
               <Button 
                 variant="secondary"
-                onClick={handleGetStartedWithDelay}
+                onClick={handleGetStartedToday}
                 className="bg-white text-primary px-6 py-2 text-base font-medium hover:bg-gray-800 hover:text-white transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 Get Started Today
               </Button>
               <Button 
                 variant="border"
+                onClick={handleLearnMore}
                 className="border-2 border-white text-white px-6 py-2 text-base font-medium hover:bg-white hover:text-primary transition-all duration-300"
               >
                 Learn More
@@ -721,6 +585,199 @@ function Home() {
             <p className="text-white opacity-75 mt-4 sm:mt-6 text-xs sm:text-sm">
               Free to join • Secure & private • Available 24/7
             </p>
+          </div>
+        </Container>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="bg-white py-12 sm:py-16 md:py-20 lg:py-24 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-2xl"></div>
+          <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-tr from-secondary/20 to-primary/20 rounded-full blur-2xl"></div>
+        </div>
+        
+        <Container className="relative z-10">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
+              Get in Touch
+            </h2>
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Ready to transform mental health care? We'd love to hear from you. Reach out and let's start a conversation.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+            {/* Left Side - Contact Information */}
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
+                {/* Phone */}
+                <Card className="p-6 hover:shadow-lg transition-all duration-300 border-0 bg-gradient-to-br from-blue-50 to-indigo-50 group">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                      <Phone className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">Call Us</h3>
+                      <p className="text-gray-600">(011) 222 7 222</p>
+                      <p className="text-sm text-gray-500">Mon-Fri 9AM-6PM</p>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Email */}
+                <Card className="p-6 hover:shadow-lg transition-all duration-300 border-0 bg-gradient-to-br from-green-50 to-emerald-50 group">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                      <Mail className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">Email Us</h3>
+                      <p className="text-gray-600">support@sona.org.lk</p>
+                      <p className="text-sm text-gray-500">24/7 Response</p>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Location */}
+                <Card className="p-6 hover:shadow-lg transition-all duration-300 border-0 bg-gradient-to-br from-purple-50 to-pink-50 group sm:col-span-2 lg:col-span-1">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                      <MapPin className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">Visit Us</h3>
+                      <p className="text-gray-600">Colombo, Sri Lanka</p>
+                      <p className="text-sm text-gray-500">By appointment only</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Additional Info */}
+              <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 border border-primary/20">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Why Contact Us?</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0"></div>
+                    <span className="text-sm">Partnership opportunities for healthcare organizations</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <div className="w-2 h-2 bg-secondary rounded-full flex-shrink-0"></div>
+                    <span className="text-sm">Professional licensing and verification support</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0"></div>
+                    <span className="text-sm">Technical support and platform assistance</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <div className="w-2 h-2 bg-secondary rounded-full flex-shrink-0"></div>
+                    <span className="text-sm">Media inquiries and press relations</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Contact Form */}
+            <div>
+              <Card className="p-8 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h3>
+                <form className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                        placeholder="First"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                        placeholder="Last"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input
+                      type="email"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                      placeholder="me@hello.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                    <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                      <option value="">Choose a topic</option>
+                      <option value="partnership">Partnership Inquiry</option>
+                      <option value="support">Technical Support</option>
+                      <option value="licensing">Professional Licensing</option>
+                      <option value="media">Media Inquiry</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                    <textarea
+                      rows={4}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 resize-none"
+                      placeholder="Tell us more about your inquiry..."
+                    ></textarea>
+                  </div>
+
+                  <Button 
+                    variant="special" 
+                    className="w-full py-3 px-6 text-base font-medium transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                  >
+                    <Send className="h-4 w-4" />
+                    Send Message
+                  </Button>
+                </form>
+
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Clock className="h-4 w-4" />
+                    <span>We typically respond within 24 hours</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="text-center mt-16">
+            <div className="bg-gradient-to-r from-primary to-secondary rounded-2xl p-8 text-white">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Globe className="h-6 w-6" />
+                <h3 className="text-xl font-semibold">Join Our Global Community</h3>
+              </div>
+              <p className="text-white/90 mb-6 max-w-2xl mx-auto">
+                Be part of the revolution in mental health care. Connect with professionals and clients worldwide.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  variant="secondary"
+                  onClick={handleGetStartedToday}
+                  className="bg-white text-primary px-6 py-3 font-medium hover:bg-gray-100 transition-all duration-300"
+                >
+                  Get Started Today
+                </Button>
+                <Button 
+                  variant="border"
+                  onClick={() => navigate('/signin-options')}
+                  className="border-2 border-white text-white px-6 py-3 font-medium hover:bg-white hover:text-primary transition-all duration-300"
+                >
+                  Sign In
+                </Button>
+              </div>
+            </div>
           </div>
         </Container>
       </section>

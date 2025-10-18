@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { Smartphone, Star, Shield, Heart, Users, ArrowLeft, Calendar } from 'lucide-react';
-import Button from '../../components/ui/Button';
 
 function GeneralUserSignIn() {
   const navigate = useNavigate();
