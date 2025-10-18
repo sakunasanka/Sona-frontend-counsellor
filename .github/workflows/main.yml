@@ -4,7 +4,7 @@ name: Build and Deploy Frontend
 on:
   push:
     branches:
-      - release
+      - Release
 
 jobs:
   build-and-deploy:
