@@ -21,6 +21,12 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_CLOUDINARY_CLOUD_NAME: ${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}
+          VITE_CLOUDINARY_API_KEY: ${{ secrects.VITE_CLOUDINARY_API_KEY }}
+          VITE_CLOUDINARY_API_SECRET: ${{ secrects.VITE_CLOUDINARY_API_SECRET }}
+          CLOUDINARY_URL: ${{ secrects.CLOUDINARY_URL }}
 
       - name: Build Project
         run: npm run build
