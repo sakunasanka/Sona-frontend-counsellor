@@ -59,12 +59,14 @@ export const signinCounselor = async (credentials: SigninRequest): Promise<Couns
 export const signoutCounselor = async (): Promise<void> => {
   try {
     await apiClient.post('/api/auth/signout', {}, undefined, true);
-    // Remove the auth token
+    // Remove the auth token and user data
     apiClient.removeAuthToken();
+    localStorage.removeItem('counsellor_id');
   } catch (error) {
     console.error('Signout error:', error);
-    // Still remove token even if API call fails
+    // Still remove token and user data even if API call fails
     apiClient.removeAuthToken();
+    localStorage.removeItem('counsellor_id');
     throw error;
   }
 };
