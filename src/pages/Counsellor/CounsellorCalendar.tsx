@@ -710,7 +710,7 @@ const CounsellorCalendar: React.FC = () => {
                             <div className="text-xs text-gray-500 mt-1">
                               {session.duration} minutes
                             </div>
-                            {isSessionJoinable(session.date, session.time) && session.status === 'scheduled' && (
+                            {isSessionJoinable(session.date, session.time) && (session.status === 'scheduled' || session.status === 'ongoing') && (
                               <button
                                 onClick={() => joinSession(session.id)}
                                 className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2 transition-colors"

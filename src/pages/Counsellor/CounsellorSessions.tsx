@@ -208,7 +208,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, showDateLabel = fals
         {/* Action Button */}
         <div className="pt-2 border-t border-gray-100">
           <div className="flex gap-2">
-            {isSessionJoinable(session.date, session.timeSlot) && session.status === 'scheduled' && (
+            {isSessionJoinable(session.date, session.timeSlot) && (session.status === 'scheduled' || session.status === 'ongoing') && (
               <button 
                 onClick={() => joinSession(session.id)}
                 className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 px-4 py-2 font-medium transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5 rounded-xl cursor-pointer"
