@@ -26,7 +26,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange })
             : 'text-gray-600 hover:text-gray-900'
         }`}
       >
-        Credentials
+        Edu Qualifications
       </div>
       <div 
         onClick={() => onTabChange('achievements')}
@@ -36,7 +36,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange })
             : 'text-gray-600 hover:text-gray-900'
         }`}
       >
-        Achievements
+        Experiences
       </div>
     </div>
   );
