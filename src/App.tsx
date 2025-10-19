@@ -25,6 +25,7 @@ import CounsellorEarnings from './pages/Counsellor/CounsellorEarnings';
 import ClientDetails from './pages/Counsellor/ClientDetails';
 import CreatePrescription from './pages/Psychiatrist/CreatePrescription';
 import ViewPrescription from './pages/Psychiatrist/ViewPrescription';
+import MeetingPage from './pages/Counsellor/MeetingPage';
 
 
 function App() {
@@ -58,6 +59,7 @@ function App() {
   <Route path="/clients" element={<ProtectedRoute><CounsellorClients /></ProtectedRoute>} />
   <Route path="/earnings" element={<ProtectedRoute><CounsellorEarnings /></ProtectedRoute>} />
   <Route path="/clients/:clientId" element={<ProtectedRoute><ClientDetails /></ProtectedRoute>} />
+  <Route path="/meeting/:sessionId/:clientId" element={<MeetingPage />} />
 
   {/* Error routes */}
   <Route path="/forbidden" element={<ForbiddenPage />} />
