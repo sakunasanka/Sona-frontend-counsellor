@@ -4,8 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import 'tailwind-scrollbar';
-
 * {
   font-family: 'Outfit', sans-serif;
 }

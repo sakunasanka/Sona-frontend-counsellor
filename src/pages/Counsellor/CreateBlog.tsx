@@ -17,6 +17,7 @@ import {
 import { NavBar, Sidebar } from '../../components/layout';
 import FlashMessage from '../../components/ui/FlashMessage';
 import { createPost, CreatePostData } from '../../api/counsellorAPI';
+import { uploadBlogImage, validateImageFile } from '../../utils/cloudinaryUpload';
 
 interface BlogFormData {
   content: string;
@@ -89,7 +90,6 @@ const BlogCreator: React.FC = () => {
     if (!file) return;
 
     // Import Cloudinary upload function
-    const { uploadBlogImage, validateImageFile } = await import('../../utils/cloudinaryUpload');
     
     // Validate file
     const validation = validateImageFile(file);
