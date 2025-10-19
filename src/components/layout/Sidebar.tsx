@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, Calendar, Users, MessageCircle, FileText, DollarSign, LogOut } from 'lucide-react';
 import { Button } from '../ui';
+import { signoutCounselor } from '../../api/userAPI';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -188,11 +189,15 @@ const Sidebar: React.FC<SidebarProps> = ({
               isMinimized={isMinimized}
               title={isMinimized ? 'Log out' : undefined}
               icon={<LogOut size={20} className="text-white group-hover:text-red-600 transition-colors duration-200" />}
-              onClick={() => {
+              onClick={async () => {
                 console.log('Logout clicked');
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('counsellor_id');
-                navigate('/signin');
+                try {
+                  await signoutCounselor();
+                } catch (error) {
+                  console.error('Logout failed:', error);
+                  // Still redirect even if logout API fails
+                }
+                navigate('/');
                 onClose();
               }}
             >
