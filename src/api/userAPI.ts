@@ -125,6 +125,21 @@ export const signoutCounselor = async (): Promise<void> => {
   }
 };
 
+export const resetPassword = async (email: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response: ApiResponse<{ success: boolean; message: string }> = await apiClient.post('/auth/reset-password', { email });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error('Password reset failed: Invalid response format');
+  } catch (error) {
+    console.error('Password reset error:', error);
+    throw error;
+  }
+};
+
 export const getCurrentUser = async (): Promise<CounselorSignin['data']> => {
   try {
     const response: ApiResponse<CounselorSignin['data']> = await apiClient.get('/api/auth/profile', undefined, undefined, true);
