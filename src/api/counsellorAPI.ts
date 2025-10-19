@@ -143,11 +143,11 @@ export interface ClientDetails extends Client {
 export interface ClientNote {
   id: number;
   content: string;
-  created_at: string;
-  created_by: string;
-  is_private: boolean;
-  is_deleted: boolean;
-  counselor_id: number;
+  createdAt: string;
+  createdBy: string;
+  isPrivate: boolean;
+  isDeleted: boolean;
+  counselorId: number;
 }
 
 export interface ClientSession {
@@ -716,7 +716,9 @@ const calculateSeverityTrend = (sortedEntries: PHQ9Entry[]): 'improving' | 'wors
 export const createClientNote = async (clientId: string, noteData: {
   content: string;
   isPrivate: boolean;
-}): Promise<{ success: boolean; data: ClientNote }> => {
+}): Promise<{
+    message: string; success: boolean; data: ClientNote 
+}> => {
   try {
     const token = localStorage.getItem('auth_token');
     if (!token) {
@@ -734,6 +736,7 @@ export const createClientNote = async (clientId: string, noteData: {
       console.log('Extracted note data:', noteData);
       
       return {
+        message: response.message || 'Note created successfully',
         success: true,
         data: noteData
       };
