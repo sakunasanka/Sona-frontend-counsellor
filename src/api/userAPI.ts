@@ -18,6 +18,47 @@ interface SigninRequest {
   password: string;
 }
 
+interface SignupRequest {
+  email: string;
+  password: string;
+  displayName: string;
+  userType: string;
+  additionalData: {
+    title: string;
+    specialities: string[];
+    address: string;
+    contact_no: string;
+    license_no: string;
+    idCard: string;
+    isVolunteer: boolean;
+    isAvailable: boolean;
+    description: string;
+    rating: number;
+    sessionFee: number;
+    eduQualifications: Array<{
+      institution: string;
+      degree: string;
+      field: string;
+      grade: string;
+      year: number;
+      proof: string;
+    }>;
+    experiences: Array<{
+      position: string;
+      company: string;
+      description: string;
+      startDate: string;
+      endDate: string;
+      document: string;
+    }>;
+  };
+}
+
+interface SignupResponse {
+  success: boolean;
+  message: string;
+}
+
 export const signinCounselor = async (credentials: SigninRequest): Promise<CounselorSignin> => {
   try {
     const response: ApiResponse<CounselorSignin> = await apiClient.post('/auth/signin', credentials);
@@ -52,6 +93,21 @@ export const signinCounselor = async (credentials: SigninRequest): Promise<Couns
     throw new Error('Signin failed: Invalid response format');
   } catch (error) {
     console.error('Signin error:', error);
+    throw error;
+  }
+};
+
+export const signupCounselor = async (data: SignupRequest): Promise<SignupResponse> => {
+  try {
+    const response: ApiResponse<SignupResponse> = await apiClient.post('/auth/signup', data);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error('Signup failed: Invalid response format');
+  } catch (error) {
+    console.error('Signup error:', error);
     throw error;
   }
 };

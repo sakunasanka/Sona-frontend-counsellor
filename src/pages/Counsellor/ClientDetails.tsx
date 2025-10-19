@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { NavBar, Sidebar } from '../../components/layout';
 import { FlashMessage } from '../../components/ui';
@@ -526,12 +527,12 @@ const ClientDetails: React.FC = () => {
         const transformedNotes: Note[] = response.data.notes
           .filter(note => {
             // Show all public notes, but only private notes created by current counselor
-            if (!note.is_private) return true;
-            return note.counselor_id === currentCounsellorId;
+            if (!note.isPrivate) return true;
+            return note.counselorId === currentCounsellorId;
           })
           .map(note => {
             // Handle date properly with fallback
-            const createdDate = note.created_at ? new Date(note.created_at) : new Date();
+            const createdDate = note.createdAt ? new Date(note.createdAt) : new Date();
             const formattedDate = isNaN(createdDate.getTime()) ? 
               new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) :
               createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -540,9 +541,9 @@ const ClientDetails: React.FC = () => {
               id: note.id,
               content: note.content,
               createdAt: formattedDate,
-              createdBy: note.created_by,
-              isPrivate: note.is_private,
-              counselorId: note.counselor_id
+              createdBy: note.createdBy,
+              isPrivate: note.isPrivate,
+              counselorId: note.counselorId
             };
           });
         setNotes(transformedNotes);
@@ -732,8 +733,8 @@ const ClientDetails: React.FC = () => {
           // Handle date properly with robust fallback
           let formattedDate;
           try {
-            if (response.data.created_at) {
-              const createdDate = new Date(response.data.created_at);
+            if (response.data.createdAt) {
+              const createdDate = new Date(response.data.createdAt);
               if (!isNaN(createdDate.getTime())) {
                 formattedDate = createdDate.toLocaleDateString('en-US', { 
                   month: 'long', 
@@ -755,15 +756,15 @@ const ClientDetails: React.FC = () => {
             });
           }
             
-          console.log('Date handling - original:', response.data.created_at, 'formatted:', formattedDate);
+          console.log('Date handling - original:', response.data.createdAt, 'formatted:', formattedDate);
           
           // Validate required fields
-          if (!response.data.id || !response.data.content || !response.data.created_by) {
+          if (!response.data.id || !response.data.content || !response.data.createdBy) {
             console.error('Missing required fields in API response:', {
               id: response.data.id,
               content: response.data.content,
-              created_by: response.data.created_by,
-              counselor_id: response.data.counselor_id
+              createdBy: response.data.createdBy,
+              counselorId: response.data.counselorId
             });
             throw new Error('Incomplete note data from API');
           }
@@ -772,9 +773,9 @@ const ClientDetails: React.FC = () => {
             id: response.data.id,
             content: response.data.content,
             createdAt: formattedDate,
-            createdBy: response.data.created_by,
-            isPrivate: response.data.is_private,
-            counselorId: response.data.counselor_id
+            createdBy: response.data.createdBy,
+            isPrivate: response.data.isPrivate,
+            counselorId: response.data.counselorId
           };
           
           setNotes([newNoteObj, ...notes]);

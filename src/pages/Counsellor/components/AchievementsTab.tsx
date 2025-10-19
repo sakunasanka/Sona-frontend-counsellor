@@ -47,13 +47,13 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Star className="w-5 h-5 text-buttonBlue-500" />
-            Achievements & Awards
+            Experiences
           </h3>
           <button
             onClick={() => setShowAddAchievement(!showAddAchievement)}
             className="bg-buttonBlue-500 hover:bg-buttonBlue-700 text-white px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1"
           >
-            + Add Achievement
+            + Add Experience
           </button>
         </div>
         
@@ -124,11 +124,6 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({
             <div key={achievement.id} className="border-l-4 border-buttonBlue-500 pl-4 py-2 relative group">
               {editingAchievement === achievement.id ? (
                 <div className="space-y-2">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-2">
-                    <p className="text-blue-800 text-xs">
-                      Any changes will require admin re-approval before appearing on your public profile.
-                    </p>
-                  </div>
                   <input
                     key={`title-${achievement.id}`}
                     type="text"
@@ -224,11 +219,6 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({
               <div key={achievement.id} className="bg-white/70 rounded-lg p-4 border-l-4 border-purple-400 relative group">
                 {editingAchievement === achievement.id ? (
                   <div className="space-y-2">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-2">
-                      <p className="text-blue-800 text-xs">
-                        <strong>Note:</strong> Any changes will require admin re-approval before appearing on your public profile.
-                      </p>
-                    </div>
                     <input
                       key={`title-${achievement.id}`}
                       type="text"
