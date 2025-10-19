@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { getClientDetails, createClientNote, deleteClientNote, updateClientNote, addClientConcern, removeClientConcern, getClientMoodAnalysis, getClientPHQ9Analysis, getSessions, type ClientDetails as APIClientDetails, type MoodAnalysisResponse, type PHQ9AnalysisResponse, getClientEarnings } from '../../api/counsellorAPI';
 import { MoodChart, PHQ9Chart } from '../../components/charts';
 import { makeRequest } from '../../api/apiBase';
-import { PrescriptionManager } from './components';
+import { PrescriptionManager, ClientReport } from './components';
 import { 
   Calendar, 
   Clock, 
@@ -204,6 +204,8 @@ const ClientDetails: React.FC = () => {
   const [reportStartDate, setReportStartDate] = useState('');
   const [reportEndDate, setReportEndDate] = useState('');
   const [reportGenerating, setReportGenerating] = useState(false);
+  const [showReportView, setShowReportView] = useState(false);
+  const [reportData, setReportData] = useState<any>(null);
   
   // Mood analysis state
   const [moodData, setMoodData] = useState<MoodAnalysisResponse | null>(null);
@@ -1008,7 +1010,8 @@ const ClientDetails: React.FC = () => {
     setFlashMessage(prev => ({ ...prev, isVisible: false }));
   };
 
-  // Function to generate and download mock PDF report
+  // Function to generate and download mock PDF report (Legacy - removed for new modern UI)
+  /*
   const generateMockPDF = (clientName: string, startDate: string, endDate: string, sessionsInRange: any[], moodAnalysis?: MoodAnalysisResponse | null, phq9Analysis?: PHQ9AnalysisResponse | null) => {
     // Sessions are already filtered by date range and passed as parameter
     // No notes will be included in the report as per requirement
@@ -1533,6 +1536,7 @@ const ClientDetails: React.FC = () => {
     // Clean up URL
     URL.revokeObjectURL(url);
   };
+  */
 
   const handleGenerateReport = async () => {
     if (!reportStartDate || !reportEndDate) {
@@ -1655,15 +1659,20 @@ const ClientDetails: React.FC = () => {
       // Simulate additional processing time
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Generate and download report
-      const clientName = currentClient?.anonymous 
-        ? (currentClient?.nickname || 'Anonymous Client')
-        : (currentClient?.name || 'Client');
+      // Prepare report data for the new component
+      const clientReportData = {
+        startDate: reportStartDate,
+        endDate: reportEndDate,
+        sessions: reportSessions,
+        moodAnalysis: reportMoodData,
+        phq9Analysis: reportPHQ9Data
+      };
       
-      generateMockPDF(clientName, reportStartDate, reportEndDate, reportSessions, reportMoodData, reportPHQ9Data);
+      setReportData(clientReportData);
+      setShowReportView(true);
       
       // Show success message
-      showFlashMessage('success', 'Report generated and downloaded successfully!');
+      showFlashMessage('success', 'Report generated successfully!');
       
       // Close modal
       setIsReportModalOpen(false);
@@ -3137,6 +3146,25 @@ const ClientDetails: React.FC = () => {
           />
           </div>  
         </div>
+
+        {/* Client Report Modal */}
+        {showReportView && reportData && currentClient && (
+          <ClientReport
+            isOpen={showReportView}
+            onClose={() => setShowReportView(false)}
+            clientData={{
+              name: !currentClient.anonymous ? (currentClient as any).name : undefined,
+              nickname: currentClient.anonymous ? (currentClient as any).nickname : undefined,
+              anonymous: currentClient.anonymous,
+              status: currentClient.status,
+              joinDate: currentClient.joinDate,
+              concerns: currentClient.concerns,
+              sessionCount: currentClient.sessionCount,
+              totalEarnings: (currentClient as any).earnings
+            }}
+            reportData={reportData}
+          />
+        )}
       </div>
     </div>
   );

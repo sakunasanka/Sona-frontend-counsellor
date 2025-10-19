@@ -14,6 +14,7 @@ export { default as FilterDrawer } from './FilterDrawer';
 export { default as ClientStats } from './ClientStats';
 export { default as ClientList } from './ClientList';
 export { default as PrescriptionManager } from './PrescriptionManager';
+export { default as ClientReport } from './ClientReport';
 
 // Export types
 export type { Client } from './ClientTable';
