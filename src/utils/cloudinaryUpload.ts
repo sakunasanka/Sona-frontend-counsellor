@@ -8,7 +8,7 @@ export interface CloudinaryResponse {
   bytes: number;
 }
 
-export type ImageType = 'profile' | 'cover' | 'blog' | 'prescription';
+export type ImageType = 'profile' | 'cover' | 'blog' | 'prescription' | 'qualifications';
 
 export const uploadToCloudinary = async (file: File, imageType: ImageType = 'profile'): Promise<string> => {
   try {
@@ -76,6 +76,8 @@ const uploadUnsigned = async (file: File, cloudName: string, imageType: ImageTyp
     uploadPreset = 'blog_posts';
   } else if (imageType === 'prescription') {
     uploadPreset = 'prescriptions';
+  } else if (imageType === 'qualifications') {
+    uploadPreset = 'qualifications';
   }
   
   formData.append('upload_preset', uploadPreset);
@@ -143,4 +145,8 @@ export const uploadBlogImage = async (file: File): Promise<string> => {
 
 export const uploadPrescription = async (file: File): Promise<string> => {
   return uploadToCloudinary(file, 'prescription');
+};
+
+export const uploadQualification = async (file: File): Promise<string> => {
+  return uploadToCloudinary(file, 'qualifications');
 };

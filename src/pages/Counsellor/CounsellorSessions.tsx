@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from "react";
 import { NavBar, Sidebar } from "../../components/layout";
 import { Search, Calendar, Clock, User, Eye, ChevronDown, CheckCircle2, MapPin, X, AlertCircle, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui";
 import { FlashMessage } from "../../components/ui";
-import { apiClient, makeRequest } from "../../api/apiBase";
+import { apiClient } from "../../api/apiBase";
 
 interface User {
   id: number;
@@ -44,24 +45,17 @@ interface SessionCardProps {
   onShowFlashMessage?: (type: 'success' | 'error' | 'warning' | 'info', message: string) => void;
 }
 
-const SessionCard: React.FC<SessionCardProps> = ({ session, showDateLabel = false, dateLabel, onShowFlashMessage }) => {
+const SessionCard: React.FC<SessionCardProps> = ({ session, showDateLabel = false, dateLabel }) => {
   const navigate = useNavigate();
   
-  const joinSession = async (sessionId: number) => {
-    try {
-      const response = await makeRequest<{success: boolean; data: {sessionLink: string}}>(`/sessions/${sessionId}/link`, 'GET');
-      if (response.success && response.data?.sessionLink) {
-        window.open(response.data.sessionLink, '_blank');
-      } else {
-        onShowFlashMessage?.('error', 'Session link not found. The session may not be available.');
-      }
-    } catch (error: any) {
-      console.error('Error joining session:', error);
-      if (error.status === 404) {
-        onShowFlashMessage?.('error', 'Session not found. Please check if the session exists.');
-      } else {
-        onShowFlashMessage?.('error', 'Failed to join session. Please try again.');
-      }
+  const joinSession = async (sessionId: string) => {
+    // No need to fetch the link here anymore, the MeetingPage will do it.
+    // Just navigate to the meeting page, passing the session and user IDs.
+    if (session.userId) {
+      navigate(`/meeting/${sessionId}/${session.userId}`);
+    } else {
+      console.error('User ID is missing, cannot navigate to meeting.');
+      // Handle error appropriately, maybe show a flash message
     }
   };
   
@@ -210,7 +204,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, showDateLabel = fals
           <div className="flex gap-2">
             {isSessionJoinable(session.date, session.timeSlot) && (session.status === 'scheduled' || session.status === 'ongoing') && (
               <button 
-                onClick={() => joinSession(session.id)}
+                onClick={() => joinSession(session.id.toString())}
                 className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 px-4 py-2 font-medium transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5 rounded-xl cursor-pointer"
               >
                 <Video className="w-4 h-4" />
