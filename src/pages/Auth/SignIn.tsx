@@ -5,6 +5,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Checkbox from '../../components/ui/Checkbox';
+import PasswordResetModal from '../../components/auth/PasswordResetModal';
 import { signinCounselor } from '../../api/userAPI';
 
 const SignIn = () => {
@@ -21,6 +22,7 @@ const SignIn = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -118,7 +120,7 @@ const SignIn = () => {
               <button
                 type="button"
                 className="text-pink-500 hover:text-pink-600 text-sm font-medium hover:underline"
-                onClick={() => alert('Forgot password logic here')}
+                onClick={() => setShowPasswordReset(true)}
               >
                 Forgot Password?
               </button>
@@ -155,7 +157,12 @@ const SignIn = () => {
           </p>
           </div>
         </Card>
-        </div>
+        
+        <PasswordResetModal 
+          isOpen={showPasswordReset} 
+          onClose={() => setShowPasswordReset(false)} 
+        />
+      </div>
     </div>
   );
 };
