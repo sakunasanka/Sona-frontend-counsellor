@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { makeRequest } from '../../api/apiBase'; 
-import { ClientNote, createClientNote, getClientDetails } from '../../api/counsellorAPI';
+import { makeRequest } from '../../api/apiBase'; // Your API helper
+import { ClientNote, getClientDetails, createClientNote } from '../../api/counsellorAPI';
 import { PanelRightOpen, PanelRightClose } from 'lucide-react';
 
 // Declare Jitsi Meet External API for TypeScript
@@ -81,27 +81,18 @@ const MeetingPage: React.FC = () => {
 
          const apiNoteData = response.data; // Get the actual note object from API response
 
-         // 2. Format the date (using camelCase property)
-         let formattedDate = 'Date unavailable';
-         try {
-           formattedDate = new Date(apiNoteData.createdAt).toLocaleDateString('en-US', {
-               year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
-           });
-           if (formattedDate === 'Invalid Date') { throw new Error('Invalid Date'); }
-         } catch (dateError) {
-           console.error("Error formatting date:", dateError, apiNoteData.createdAt);
-           formattedDate = new Date().toLocaleDateString('en-US', { /* date options */ });
-         }
+         // 2. Keep the original date for sorting and create formatted version for display
+         console.log('Original API date:', apiNoteData.createdAt);
 
-         // 3. Create the new note object mapping API (camelCase) to ClientNote interface (snake_case)
+         // 3. Create the new note object mapping API (camelCase) to ClientNote interface
          const newNoteToAdd: Note = {
              id: apiNoteData.id,
              content: apiNoteData.content,
-             createdAt: formattedDate, // Use formatted date
-             createdBy: apiNoteData.createdBy, // Map camelCase to snake_case
-             isPrivate: apiNoteData.isPrivate, // Map camelCase to snake_case
+             createdAt: apiNoteData.createdAt, // Keep original ISO date string for sorting
+             createdBy: apiNoteData.createdBy,
+             isPrivate: apiNoteData.isPrivate,
              isDeleted: false, // Assume default
-             counselorId: apiNoteData.counselorId // Map camelCase to snake_case
+             counselorId: apiNoteData.counselorId
          };
          // --- END FIX ---
 
@@ -111,12 +102,13 @@ const MeetingPage: React.FC = () => {
          setNotes(prevNotes =>
            [newNoteToAdd, ...prevNotes]
            .sort((a, b) => {
-               // Robust sorting using created_at (formatted string might be harder, use original if possible or parse back)
+               // Use original ISO date string for reliable sorting
                try {
-                   // Attempt to parse back formatted dates for more reliable sorting
-                   // Or ideally, keep the original ISO string for sorting and format only for display
-                   return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-               } catch {
+                   const dateA = new Date(a.createdAt).getTime();
+                   const dateB = new Date(b.createdAt).getTime();
+                   return dateB - dateA; // Newest first
+               } catch (error) {
+                   console.warn('Error sorting notes by date:', error);
                    return 0; // Fallback if dates are unparseable
                }
            })
@@ -289,8 +281,32 @@ const MeetingPage: React.FC = () => {
 
 
     // --- Helper to format date ---
-    const formatDate = (dateString: string): string => { /* ... */
-        try { return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch { return dateString; }
+    const formatDate = (dateString: string | undefined | null): string => {
+        if (!dateString) {
+            return 'Date unavailable';
+        }
+        
+        try {
+            const date = new Date(dateString);
+            
+            // Check if the date is valid
+            if (isNaN(date.getTime())) {
+                console.warn('Invalid date string:', dateString);
+                return 'Invalid date';
+            }
+            
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric', 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true
+            });
+        } catch (error) {
+            console.error('Date formatting error:', error, 'for dateString:', dateString);
+            return 'Date error';
+        }
     };
 
     return (
@@ -366,17 +382,39 @@ const MeetingPage: React.FC = () => {
                                 </div>
                             ) : notes.length > 0 ? (
                                 [...notes]
-                                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                                    .map(note => (
-                                        <div key={note.id} className="mb-3 p-3 bg-gray-50 rounded border border-gray-200 shadow-sm">
-                                            {/* ... Note content and details ... */}
-                                             <p className="text-sm text-gray-800 whitespace-pre-wrap">{note.content}</p>
-                                             <div className="flex justify-between items-center mt-2">
-                                                 <p className="text-xs text-gray-500">{note.createdBy} - {formatDate(note.createdAt)}</p>
-                                                 {note.isPrivate && (<span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-medium">Private</span>)}
-                                             </div>
-                                        </div>
-                                    ))
+                                    .sort((a, b) => {
+                                        // Sort by date - use original ISO date string
+                                        try {
+                                            const dateA = new Date((a as any).createdAt || (a as any).created_at).getTime();
+                                            const dateB = new Date((b as any).createdAt || (b as any).created_at).getTime();
+                                            
+                                            // If dates are invalid, fall back to ID sorting
+                                            if (isNaN(dateA) || isNaN(dateB)) {
+                                                return (b as any).id - (a as any).id;
+                                            }
+                                            
+                                            return dateB - dateA; // Newest first
+                                        } catch (error) {
+                                            console.warn('Error sorting notes:', error);
+                                            return (b as any).id - (a as any).id; // Fallback to ID sorting
+                                        }
+                                    })
+                                    .map(note => {
+                                        // Debug log for first note
+                                        if (note === notes[0]) {
+                                            console.log('Sample note structure:', note);
+                                        }
+                                        return (
+                                            <div key={note.id} className="mb-3 p-3 bg-gray-50 rounded border border-gray-200 shadow-sm">
+                                                {/* ... Note content and details ... */}
+                                                <p className="text-sm text-gray-800 whitespace-pre-wrap">{note.content}</p>
+                                                <div className="flex justify-between items-center mt-2">
+                                                    <p className="text-xs text-gray-500">{note.createdBy} - {formatDate((note as any).createdAt || (note as any).created_at)}</p>
+                                                    {note.isPrivate && (<span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-medium">Private</span>)}
+                                                </div>
+                                            </div>
+                                        );
+                                    })
                             ) : (
                                 <p className="text-sm text-gray-500 italic text-center mt-4">No notes available for this client.</p>
                             )}
