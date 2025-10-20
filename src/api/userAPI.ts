@@ -18,6 +18,47 @@ interface SigninRequest {
   password: string;
 }
 
+interface SignupRequest {
+  email: string;
+  password: string;
+  displayName: string;
+  userType: string;
+  additionalData: {
+    title: string;
+    specialities: string[];
+    address: string;
+    contact_no: string;
+    license_no: string;
+    idCard: string;
+    isVolunteer: boolean;
+    isAvailable: boolean;
+    description: string;
+    rating: number;
+    sessionFee: number;
+    eduQualifications: Array<{
+      institution: string;
+      degree: string;
+      field: string;
+      grade: string;
+      year: number;
+      proof: string;
+    }>;
+    experiences: Array<{
+      position: string;
+      company: string;
+      description: string;
+      startDate: string;
+      endDate: string;
+      document: string;
+    }>;
+  };
+}
+
+interface SignupResponse {
+  success: boolean;
+  message: string;
+}
+
 export const signinCounselor = async (credentials: SigninRequest): Promise<CounselorSignin> => {
   try {
     const response: ApiResponse<CounselorSignin> = await apiClient.post('/auth/signin', credentials);
@@ -56,15 +97,47 @@ export const signinCounselor = async (credentials: SigninRequest): Promise<Couns
   }
 };
 
+export const signupCounselor = async (data: SignupRequest): Promise<SignupResponse> => {
+  try {
+    const response: ApiResponse<SignupResponse> = await apiClient.post('/auth/signup', data);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error('Signup failed: Invalid response format');
+  } catch (error) {
+    console.error('Signup error:', error);
+    throw error;
+  }
+};
+
 export const signoutCounselor = async (): Promise<void> => {
   try {
     await apiClient.post('/api/auth/signout', {}, undefined, true);
-    // Remove the auth token
+    // Remove the auth token and user data
     apiClient.removeAuthToken();
+    localStorage.removeItem('counsellor_id');
   } catch (error) {
     console.error('Signout error:', error);
-    // Still remove token even if API call fails
+    // Still remove token and user data even if API call fails
     apiClient.removeAuthToken();
+    localStorage.removeItem('counsellor_id');
+    throw error;
+  }
+};
+
+export const resetPassword = async (email: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response: ApiResponse<{ success: boolean; message: string }> = await apiClient.post('/auth/reset-password', { email });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error('Password reset failed: Invalid response format');
+  } catch (error) {
+    console.error('Password reset error:', error);
     throw error;
   }
 };

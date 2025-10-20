@@ -47,13 +47,13 @@ const CredentialsTab: React.FC<CredentialsTabProps> = ({
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Award className="w-5 h-5 text-buttonBlue-500" />
-            Professional Credentials
+            Educational Qualifications
           </h3>
           <button
             onClick={() => setShowAddCredential(!showAddCredential)}
             className="bg-buttonBlue-500 hover:bg-buttonBlue-600 text-white px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1"
           >
-            + Add Credential
+            + Add Qualification
           </button>
         </div>
         
@@ -124,11 +124,6 @@ const CredentialsTab: React.FC<CredentialsTabProps> = ({
             <div key={credential.id} className="border-l-4 border-buttonBlue-500 pl-4 py-2 relative group">
               {editingCredential === credential.id ? (
                 <div className="space-y-2">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-2">
-                    <p className="text-blue-800 text-xs">
-                      Any changes will require admin re-approval before appearing on your public profile.
-                    </p>
-                  </div>
                   <input
                     key={`title-${credential.id}`}
                     type="text"

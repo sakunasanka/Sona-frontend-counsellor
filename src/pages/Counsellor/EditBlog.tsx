@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Bold, Eye, Image, Italic, Link, List, Quote, Send, Type, X } from 'lucide-react';
 import { NavBar, Sidebar } from '../../components/layout';
 import FlashMessage from '../../components/ui/FlashMessage';
 import { getPost, updatePost, UpdatePostData } from '../../api/counsellorAPI';
+import { uploadBlogImage, validateImageFile } from '../../utils/cloudinaryUpload';
 
 type ViewMode = 'edit' | 'preview';
 
@@ -53,7 +55,9 @@ const EditBlog: React.FC = () => {
 								try {
 									const cached = sessionStorage.getItem(`edit_post_${blogId}`);
 									if (cached) fromState = JSON.parse(cached);
-								} catch {}
+								} catch {
+									console.warn('Failed to parse cached post data');
+								}
 							}
 					if (fromState) {
 						setForm({
@@ -65,7 +69,9 @@ const EditBlog: React.FC = () => {
 						});
 						setError(null);
 								// Clear cache after hydrate
-								try { sessionStorage.removeItem(`edit_post_${blogId}`); } catch {}
+								try { sessionStorage.removeItem(`edit_post_${blogId}`); } catch {
+									console.warn('Failed to clear cached post data');
+								}
 					} else {
 						// Fallback to API fetch
 						const post = await getPost(blogId);
@@ -151,7 +157,6 @@ const EditBlog: React.FC = () => {
 	const handleFileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
-		const { uploadBlogImage, validateImageFile } = await import('../../utils/cloudinaryUpload');
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
 			setUploadError(validation.error || 'Invalid file');

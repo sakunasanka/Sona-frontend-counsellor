@@ -87,7 +87,7 @@ const MultiSelectDropdown = ({ options, selected, onChange, label, required }: M
                 </div>
               );
             })}
-            {selected.length === 0 && <span className="text-gray-400">Select languages...</span>}
+            {selected.length === 0 && <span className="text-gray-400">Select specialities...</span>}
           </div>
           <ChevronRight
             className={`h-4 w-4 transition-transform duration-200 ${

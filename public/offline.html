@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You are Offline</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            flex-direction: column;
+        }
+        .container {
+            padding: 30px;
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 0.5em;
+            color: #dc3545;
+        }
+        p {
+            font-size: 1.1em;
+            margin-bottom: 1.5em;
+            color: #6c757d;
+        }
+        .icon {
+             width: 80px;
+             height: 80px;
+             margin-bottom: 20px;
+             stroke: #adb5bd;
+             stroke-width: 1.5;
+             fill: none;
+        }
+        /* --- Style for the button --- */
+        button {
+            background-color: #667eea; /* Indigo */
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 10px; /* Add some space above */
+        }
+        button:hover {
+            background-color: #5a67d8; /* Darker Indigo */
+        }
+        /* --- End button style --- */
+    </style>
+</head>
+<body>
+    <div class="container">
+         <img src="assets/images/Sona-flat.png" alt="Offline Illustration" style="width:150px; height:auto; margin-bottom:20px;"/>
+        <h1>Connection Offline</h1>
+        <p>It seems you've lost your internet connection. Please check your network and try again.</p>
+
+        <button onclick="window.location.reload()">Retry Connection</button>
+    </div>
+</body>
+</html>

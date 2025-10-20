@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback, useEffect } from 'react';
 import { CounsellorProfile, Credential, Achievement } from './types';
 import { Language } from './constants';
+import { uploadCoverImage, validateImageFile, uploadProfileImage } from '../../utils/cloudinaryUpload';
 
 export const useProfileState = (initialProfile: CounsellorProfile) => {
   const [profile, setProfile] = useState<CounsellorProfile>(initialProfile);
@@ -161,9 +163,6 @@ export const useImageHandlers = (
   const handleCoverImageUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    // Import Cloudinary upload function
-    const { uploadCoverImage, validateImageFile } = await import('../../utils/cloudinaryUpload');
     
     // Validate file
     const validation = validateImageFile(file);
@@ -192,9 +191,6 @@ export const useImageHandlers = (
   const handleProfileImageUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    // Import Cloudinary upload function
-    const { uploadProfileImage, validateImageFile } = await import('../../utils/cloudinaryUpload');
     
     // Validate file
     const validation = validateImageFile(file);
