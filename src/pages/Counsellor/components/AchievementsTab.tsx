@@ -35,7 +35,6 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({
   onEditAchievement,
   onSaveAchievement,
   onCancelAchievementEdit,
-  onStartAchievementEdit,
   onDeleteAchievement,
   isValidYear,
   hasAchievementChanged
@@ -49,12 +48,12 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({
             <Star className="w-5 h-5 text-buttonBlue-500" />
             Experiences
           </h3>
-          <button
+          {/* <button
             onClick={() => setShowAddAchievement(!showAddAchievement)}
             className="bg-buttonBlue-500 hover:bg-buttonBlue-700 text-white px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1"
           >
             + Add Experience
-          </button>
+          </button> */}
         </div>
         
         {/* Add new achievement form */}
@@ -181,12 +180,12 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({
                   <h4 className="font-semibold text-gray-900">{achievement.title}</h4>
                   <p className="text-gray-600">{achievement.description}</p>
                   <p className="text-sm text-gray-500">{achievement.date}</p>
-                  <button
+                  {/* <button
                     onClick={() => onStartAchievementEdit(achievement)}
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-80 hover:opacity-100 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs"
                   >
                     Edit
-                  </button>
+                  </button> */}
                 </>
               )}
             </div>
@@ -289,12 +288,12 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({
                           </p>
                         )}
                       </div>
-                      <button
+                      {/* <button
                         onClick={() => onStartAchievementEdit(achievement)}
                         className="opacity-0 group-hover:opacity-80 hover:opacity-100 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs"
                       >
                         Edit
-                      </button>
+                      </button> */}
                     </div>
                   </>
                 )}

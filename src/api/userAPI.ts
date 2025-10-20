@@ -10,6 +10,7 @@ interface CounselorSignin {
     idToken: string;
     email: string;
     displayName: string;
+    status?: 'pending' | 'approved' | 'rejected';
   }
 }
 
@@ -65,12 +66,8 @@ export const signinCounselor = async (credentials: SigninRequest): Promise<Couns
     
     if (response.success && response.data) {
       const { token } = response.data.data;
-      apiClient.setAuthToken(token);
       
-      // Store token in localStorage
-      localStorage.setItem('auth_token', token);
-      
-      // Decode JWT token to extract counsellor_id
+      // Decode JWT token to check counselor status before proceeding
       try {
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -80,11 +77,33 @@ export const signinCounselor = async (credentials: SigninRequest): Promise<Couns
         
         const payload = JSON.parse(jsonPayload);
         
+        // Check counselor status
+        if (payload.status === 'pending') {
+          throw new Error('Your account is pending approval. Please wait for admin approval before accessing the system.');
+        }
+        
+        if (payload.status === 'rejected') {
+          throw new Error('Your account has been rejected. Please contact support for more information.');
+        }
+        
+        // If status is approved or not present (assume approved), proceed
+        apiClient.setAuthToken(token);
+        
+        // Store token in localStorage
+        localStorage.setItem('auth_token', token);
+        
         if (payload && payload.id) {
           localStorage.setItem('counsellor_id', payload.id.toString());
         }
       } catch (decodeError) {
-        console.error('Error decoding token for counsellor_id:', decodeError);
+        if (decodeError instanceof Error && 
+            (decodeError.message.includes('pending') || decodeError.message.includes('rejected'))) {
+          throw decodeError; // Re-throw status-related errors
+        }
+        console.error('Error decoding token:', decodeError);
+        // For other decode errors, still allow sign-in but log the error
+        apiClient.setAuthToken(token);
+        localStorage.setItem('auth_token', token);
       }
       
       return response.data;

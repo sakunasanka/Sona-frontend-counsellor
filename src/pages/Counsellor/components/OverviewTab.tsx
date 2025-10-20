@@ -2,6 +2,7 @@ import React from 'react';
 import { BookOpen, Globe, Mail, Phone } from 'lucide-react';
 import { CounsellorProfile } from '../types';
 import { AVAILABLE_LANGUAGES, Language } from '../constants';
+import PhoneInput from '../../../components/ui/PhoneInput';
 
 interface OverviewTabProps {
   profile: CounsellorProfile;
@@ -146,13 +147,17 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             {!isEditing ? (
               <span className="text-gray-600">{profile.phone}</span>
             ) : (
-              <input
-                type="tel"
-                value={editForm?.phone || ''}
-                onChange={(e) => onInputChange?.('phone', e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                placeholder="Phone number"
-              />
+              <div className="flex-1">
+                <PhoneInput
+                  value={editForm?.phone || ''}
+                  onChange={(value) => onInputChange?.('phone', value)}
+                  country="LK"
+                  placeholder="Phone number"
+                  showValidation={true}
+                  autoFormat={true}
+                  className="text-sm"
+                />
+              </div>
             )}
           </div>
         </div>
