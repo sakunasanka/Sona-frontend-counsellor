@@ -74,25 +74,25 @@ const MeetingPage: React.FC = () => {
        // 1. Check the nested 'data' object and its properties using API's camelCase
        if (response.success && response.data &&
            typeof response.data.id === 'number' &&
-           response.data.createdAt && // Check existence
-           response.data.createdBy && // Check existence
-           typeof response.data.counselorId === 'number' // Check camelCase from API
+           response.data.created_at && // Check existence
+           response.data.created_by && // Check existence
+           typeof response.data.counselor_id === 'number' // Check camelCase from API
        ) {
 
          const apiNoteData = response.data; // Get the actual note object from API response
 
          // 2. Keep the original date for sorting and create formatted version for display
-         console.log('Original API date:', apiNoteData.createdAt);
+         console.log('Original API date:', apiNoteData.created_at);
 
-         // 3. Create the new note object mapping API (camelCase) to ClientNote interface
+         // 3. Create the new note object mapping API (snake_case) to Note interface
          const newNoteToAdd: Note = {
              id: apiNoteData.id,
              content: apiNoteData.content,
-             createdAt: apiNoteData.createdAt, // Keep original ISO date string for sorting
-             createdBy: apiNoteData.createdBy,
-             isPrivate: apiNoteData.isPrivate,
-             isDeleted: false, // Assume default
-             counselorId: apiNoteData.counselorId
+             created_at: apiNoteData.created_at, // Keep original ISO date string for sorting
+             created_by: apiNoteData.created_by,
+             is_private: apiNoteData.is_private,
+             is_deleted: false, // Assume default
+             counselor_id: apiNoteData.counselor_id
          };
          // --- END FIX ---
 
@@ -104,8 +104,8 @@ const MeetingPage: React.FC = () => {
            .sort((a, b) => {
                // Use original ISO date string for reliable sorting
                try {
-                   const dateA = new Date(a.createdAt).getTime();
-                   const dateB = new Date(b.createdAt).getTime();
+                   const dateA = new Date(a.created_at).getTime();
+                   const dateB = new Date(b.created_at).getTime();
                    return dateB - dateA; // Newest first
                } catch (error) {
                    console.warn('Error sorting notes by date:', error);
@@ -127,10 +127,10 @@ const MeetingPage: React.FC = () => {
          console.error('Nested data exists:', !!response.data);
          if(response.data) {
              console.error('ID type:', typeof response.data.id);
-             console.error('isPrivate type:', typeof response.data.isPrivate);
-             console.error('createdAt exists:', !!response.data.createdAt);
-             console.error('createdBy exists:', !!response.data.createdBy);
-             console.error('counselorId type:', typeof response.data.counselorId);
+             console.error('is_private type:', typeof response.data.is_private);
+             console.error('created_at exists:', !!response.data.created_at);
+             console.error('created_by exists:', !!response.data.created_by);
+             console.error('counselor_id type:', typeof response.data.counselor_id);
          }
 
          console.error('Failed to create note - API response structure mismatch or failure:', response);
@@ -226,7 +226,7 @@ const MeetingPage: React.FC = () => {
                     // ... (filtering logic - keep as is) ...
                     const clientData = clientDetailsResponse.data;
                     const currentCounsellorId = parseInt(localStorage.getItem('counsellor_id') || '0');
-                    fetchedNotes = clientData.notes.filter(note => !note.isDeleted && (!note.isPrivate || note.counselorId === currentCounsellorId));
+                    fetchedNotes = clientData.notes.filter(note => !note.is_deleted && (!note.is_private || note.counselor_id === currentCounsellorId));
                     console.log(`[fetchData] Setting ${fetchedNotes.length} notes.`);
                     setNotes(fetchedNotes);
                 } else {
@@ -385,8 +385,8 @@ const MeetingPage: React.FC = () => {
                                     .sort((a, b) => {
                                         // Sort by date - use original ISO date string
                                         try {
-                                            const dateA = new Date((a as any).createdAt || (a as any).created_at).getTime();
-                                            const dateB = new Date((b as any).createdAt || (b as any).created_at).getTime();
+                                            const dateA = new Date((a as any).created_at || (a as any).created_at).getTime();
+                                            const dateB = new Date((b as any).created_at || (b as any).created_at).getTime();
                                             
                                             // If dates are invalid, fall back to ID sorting
                                             if (isNaN(dateA) || isNaN(dateB)) {
@@ -409,8 +409,8 @@ const MeetingPage: React.FC = () => {
                                                 {/* ... Note content and details ... */}
                                                 <p className="text-sm text-gray-800 whitespace-pre-wrap">{note.content}</p>
                                                 <div className="flex justify-between items-center mt-2">
-                                                    <p className="text-xs text-gray-500">{note.createdBy} - {formatDate((note as any).createdAt || (note as any).created_at)}</p>
-                                                    {note.isPrivate && (<span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-medium">Private</span>)}
+                                                    <p className="text-xs text-gray-500">{note.created_by} - {formatDate((note as any).created_at || (note as any).created_at)}</p>
+                                                    {note.is_private && (<span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-medium">Private</span>)}
                                                 </div>
                                             </div>
                                         );
