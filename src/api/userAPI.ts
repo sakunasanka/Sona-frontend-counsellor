@@ -10,6 +10,7 @@ interface CounselorSignin {
     idToken: string;
     email: string;
     displayName: string;
+    status?: 'pending' | 'approved' | 'rejected';
   }
 }
 
@@ -18,13 +19,92 @@ interface SigninRequest {
   password: string;
 }
 
+interface SignupRequest {
+  email: string;
+  password: string;
+  displayName: string;
+  userType: string;
+  additionalData: {
+    title: string;
+    specialities: string[];
+    address: string;
+    contact_no: string;
+    license_no: string;
+    idCard: string;
+    isVolunteer: boolean;
+    isAvailable: boolean;
+    description: string;
+    rating: number;
+    sessionFee: number;
+    eduQualifications: Array<{
+      institution: string;
+      degree: string;
+      field: string;
+      grade: string;
+      year: number;
+      proof: string;
+    }>;
+    experiences: Array<{
+      position: string;
+      company: string;
+      description: string;
+      startDate: string;
+      endDate: string;
+      document: string;
+    }>;
+  };
+}
+
+interface SignupResponse {
+  success: boolean;
+  message: string;
+}
+
 export const signinCounselor = async (credentials: SigninRequest): Promise<CounselorSignin> => {
   try {
     const response: ApiResponse<CounselorSignin> = await apiClient.post('/auth/signin', credentials);
     
     if (response.success && response.data) {
       const { token } = response.data.data;
-      apiClient.setAuthToken(token);
+      
+      // Decode JWT token to check counselor status before proceeding
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const payload = JSON.parse(jsonPayload);
+        
+        // Check counselor status
+        if (payload.status === 'pending') {
+          throw new Error('Your account is pending approval. Please wait for admin approval before accessing the system.');
+        }
+        
+        if (payload.status === 'rejected') {
+          throw new Error('Your account has been rejected. Please contact support for more information.');
+        }
+        
+        // If status is approved or not present (assume approved), proceed
+        apiClient.setAuthToken(token);
+        
+        // Store token in localStorage
+        localStorage.setItem('auth_token', token);
+        
+        if (payload && payload.id) {
+          localStorage.setItem('counsellor_id', payload.id.toString());
+        }
+      } catch (decodeError) {
+        if (decodeError instanceof Error && 
+            (decodeError.message.includes('pending') || decodeError.message.includes('rejected'))) {
+          throw decodeError; // Re-throw status-related errors
+        }
+        console.error('Error decoding token:', decodeError);
+        // For other decode errors, still allow sign-in but log the error
+        apiClient.setAuthToken(token);
+        localStorage.setItem('auth_token', token);
+      }
       
       return response.data;
     }
@@ -36,15 +116,47 @@ export const signinCounselor = async (credentials: SigninRequest): Promise<Couns
   }
 };
 
+export const signupCounselor = async (data: SignupRequest): Promise<SignupResponse> => {
+  try {
+    const response: ApiResponse<SignupResponse> = await apiClient.post('/auth/signup', data);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error('Signup failed: Invalid response format');
+  } catch (error) {
+    console.error('Signup error:', error);
+    throw error;
+  }
+};
+
 export const signoutCounselor = async (): Promise<void> => {
   try {
     await apiClient.post('/api/auth/signout', {}, undefined, true);
-    // Remove the auth token
+    // Remove the auth token and user data
     apiClient.removeAuthToken();
+    localStorage.removeItem('counsellor_id');
   } catch (error) {
     console.error('Signout error:', error);
-    // Still remove token even if API call fails
+    // Still remove token and user data even if API call fails
     apiClient.removeAuthToken();
+    localStorage.removeItem('counsellor_id');
+    throw error;
+  }
+};
+
+export const resetPassword = async (email: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response: ApiResponse<{ success: boolean; message: string }> = await apiClient.post('/auth/reset-password', { email });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error('Password reset failed: Invalid response format');
+  } catch (error) {
+    console.error('Password reset error:', error);
     throw error;
   }
 };

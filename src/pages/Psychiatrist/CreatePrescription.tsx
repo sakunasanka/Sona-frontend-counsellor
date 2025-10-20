@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { NavBar, SidebarForPsy } from "../../components/layout";
 import {
   Calendar,
@@ -9,9 +9,7 @@ import {
   Save,
   FileText,
   ChevronDown,
-  Edit,
   Send,
-  CheckCircle,
   Clock,
   Archive,
   Sun,
@@ -20,7 +18,8 @@ import {
   Moon,
   X,
   AlertCircle,
-  CheckCheck
+  CheckCheck,
+  Eye
 } from "lucide-react";
 
 interface Notification {
@@ -28,15 +27,6 @@ interface Notification {
   type: 'success' | 'error' | 'warning' | 'info';
   title: string;
   message: string;
-}
-
-interface MedicineTemplate {
-  id: string;
-  name: string;
-  commonDosages: string[];
-  category: string;
-  form: 'tablet' | 'liquid' | 'capsule' | 'injection';
-  unit: string; // mg, ml, etc.
 }
 
 interface TimingDosage {
@@ -75,15 +65,15 @@ interface SavedPrescription {
   endDate: string;
   medicines: Medicine[];
   notes: string;
-  status: 'active' | 'discontinued';
   isNotified: boolean;
   createdAt: string;
   lastModified: string;
 }
 
 const CreatePrescription = () => {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'create' | 'saved'>('create');
   const [highlightedPrescriptionId, setHighlightedPrescriptionId] = useState<string | null>(null);
@@ -108,12 +98,30 @@ const CreatePrescription = () => {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
 
+  const handleViewPrescription = (prescription: SavedPrescription) => {
+    // Navigate to the view prescription page
+    navigate(`/psychiatrist/view-prescription/${prescription.id}`);
+  };
+
+  const createNewPrescription = () => {
+    // Clear form to start fresh
+    setSelectedPatient(null);
+    setStartDate('');
+    setEndDate('');
+    setAddedMedicines([]);
+    setNotes('');
+    setActiveTab('create');
+  };
+
   // Handle URL parameters to set the active tab and highlight prescription
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     const prescriptionIdParam = searchParams.get('prescriptionId');
     
-    if (tabParam === 'saved') {
+    // Check if coming from view prescription with saved tab state
+    if (location.state?.tab === 'saved') {
+      setActiveTab('saved');
+    } else if (tabParam === 'saved') {
       setActiveTab('saved');
     } else if (tabParam === 'create') {
       setActiveTab('create');
@@ -134,7 +142,7 @@ const CreatePrescription = () => {
         setHighlightedPrescriptionId(null);
       }, 3000);
     }
-  }, [searchParams]);
+  }, [searchParams, location.state]);
 
   // Mock patient data
   const patients: Patient[] = [
@@ -146,21 +154,7 @@ const CreatePrescription = () => {
     { id: "6", name: "Kamal Perera", age: 38, gender: "Male", patientId: "PT006" }
   ];
 
-  // Mock medicine templates with auto-suggestions
-  const medicineTemplates: MedicineTemplate[] = [
-    { id: "1", name: "Paracetamol", commonDosages: ["500mg", "650mg", "1000mg"], category: "Analgesic", form: "tablet", unit: "mg" },
-    { id: "2", name: "Amoxicillin", commonDosages: ["250mg", "500mg", "875mg"], category: "Antibiotic", form: "capsule", unit: "mg" },
-    { id: "3", name: "Sertraline", commonDosages: ["25mg", "50mg", "100mg"], category: "Antidepressant", form: "tablet", unit: "mg" },
-    { id: "4", name: "Lorazepam", commonDosages: ["0.5mg", "1mg", "2mg"], category: "Anxiolytic", form: "tablet", unit: "mg" },
-    { id: "5", name: "Risperidone", commonDosages: ["1mg", "2mg", "3mg", "4mg"], category: "Antipsychotic", form: "tablet", unit: "mg" },
-    { id: "6", name: "Lithium Carbonate", commonDosages: ["300mg", "400mg", "450mg"], category: "Mood Stabilizer", form: "tablet", unit: "mg" },
-    { id: "7", name: "Fluoxetine", commonDosages: ["10mg", "20mg", "40mg"], category: "Antidepressant", form: "capsule", unit: "mg" },
-    { id: "8", name: "Alprazolam", commonDosages: ["0.25mg", "0.5mg", "1mg"], category: "Anxiolytic", form: "tablet", unit: "mg" },
-    { id: "9", name: "Quetiapine", commonDosages: ["25mg", "50mg", "100mg", "200mg"], category: "Antipsychotic", form: "tablet", unit: "mg" },
-    { id: "10", name: "Escitalopram", commonDosages: ["5mg", "10mg", "20mg"], category: "Antidepressant", form: "tablet", unit: "mg" },
-    { id: "11", name: "Cough Syrup", commonDosages: ["5ml", "10ml", "15ml"], category: "Cough Suppressant", form: "liquid", unit: "ml" },
-    { id: "12", name: "Amoxicillin Suspension", commonDosages: ["125mg/5ml", "250mg/5ml"], category: "Antibiotic", form: "liquid", unit: "ml" }
-  ];
+  // No medicine templates - doctors will type medicine names manually
 
   // Form state
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -168,7 +162,6 @@ const CreatePrescription = () => {
   const [endDate, setEndDate] = useState("");
   const [addedMedicines, setAddedMedicines] = useState<Medicine[]>([]);
   const [notes, setNotes] = useState("");
-  const [status, setStatus] = useState<'active' | 'discontinued'>('active');
   const [showPatientDropdown, setShowPatientDropdown] = useState(false);
 
   // Medicine adding state
@@ -186,9 +179,7 @@ const CreatePrescription = () => {
     specialInstructions: ""
   });
 
-  const [medicineSearch, setMedicineSearch] = useState("");
-  const [showMedicineDropdown, setShowMedicineDropdown] = useState(false);
-  const [selectedMedicineTemplate, setSelectedMedicineTemplate] = useState<MedicineTemplate | null>(null);
+  // State variables for prescription management
 
   // Saved prescriptions state with localStorage persistence
   const [savedPrescriptions, setSavedPrescriptions] = useState<SavedPrescription[]>(() => {
@@ -223,7 +214,6 @@ const CreatePrescription = () => {
           }
         ],
         notes: "Patient showing signs of mild depression. Monitor closely.",
-        status: "active",
         isNotified: true,
         createdAt: "2025-07-13T10:30:00Z",
         lastModified: "2025-07-13T10:30:00Z"
@@ -267,7 +257,6 @@ const CreatePrescription = () => {
           }
         ],
         notes: "Anxiety and depression symptoms. Monitor for side effects.",
-        status: "active",
         isNotified: true,
         createdAt: "2025-07-12T14:20:00Z",
         lastModified: "2025-07-12T14:20:00Z"
@@ -296,7 +285,6 @@ const CreatePrescription = () => {
           }
         ],
         notes: "Patient requested to discontinue medication.",
-        status: "discontinued",
         isNotified: false,
         createdAt: "2025-07-10T09:15:00Z",
         lastModified: "2025-07-10T09:15:00Z"
@@ -356,7 +344,6 @@ const CreatePrescription = () => {
           }
         ],
         notes: "Bipolar disorder treatment plan. Regular monitoring required.",
-        status: "active",
         isNotified: true,
         createdAt: "2025-07-08T11:45:00Z",
         lastModified: "2025-07-08T11:45:00Z"
@@ -400,7 +387,6 @@ const CreatePrescription = () => {
           }
         ],
         notes: "Anxiety and depression treatment. Start with lower dose of Lorazepam.",
-        status: "discontinued",
         isNotified: false,
         createdAt: "2025-07-10T14:20:00Z",
         lastModified: "2025-07-15T09:30:00Z"
@@ -445,7 +431,6 @@ const CreatePrescription = () => {
           }
         ],
         notes: "Post-traumatic stress disorder treatment. Patient responding well to therapy.",
-        status: "active",
         isNotified: true,
         createdAt: "2025-07-14T16:45:00Z",
         lastModified: "2025-07-14T16:45:00Z"
@@ -489,7 +474,6 @@ const CreatePrescription = () => {
           }
         ],
         notes: "Major depression with insomnia. Combination therapy for sleep and mood improvement.",
-        status: "active",
         isNotified: true,
         createdAt: "2025-07-15T09:20:00Z",
         lastModified: "2025-07-15T09:20:00Z"
@@ -549,7 +533,6 @@ const CreatePrescription = () => {
           }
         ],
         notes: "Acute psychosis episode. Multi-modal treatment with tablets, liquid, and injection forms.",
-        status: "active",
         isNotified: true,
         createdAt: "2025-07-16T11:30:00Z",
         lastModified: "2025-07-16T11:30:00Z"
@@ -574,28 +557,8 @@ const CreatePrescription = () => {
     }
   }, []);
 
-  const [editingPrescription, setEditingPrescription] = useState<SavedPrescription | null>(null);
-
   // Handle clicking outside the medicine dropdown to close it
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.medicine-dropdown-container')) {
-        setShowMedicineDropdown(false);
-      }
-    };
-
-    if (showMedicineDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showMedicineDropdown]);
-
-  // Filter medicines based on search
-  const filteredMedicines = medicineTemplates.filter(med =>
-    med.name.toLowerCase().includes(medicineSearch.toLowerCase()) ||
-    med.category.toLowerCase().includes(medicineSearch.toLowerCase())
-  );
+  // No medicine filtering needed - doctors type medicine names directly
 
   // Add medicine to the prescription
   const addMedicineToList = () => {
@@ -650,34 +613,11 @@ const CreatePrescription = () => {
       durationType: "",
       specialInstructions: ""
     });
-    setMedicineSearch("");
-    setSelectedMedicineTemplate(null);
   };
 
   // Remove medicine from list
   const removeMedicineFromList = (id: string) => {
     setAddedMedicines(addedMedicines.filter(med => med.id !== id));
-  };
-
-  // Select medicine template
-  const selectMedicineTemplate = (template: MedicineTemplate) => {
-    setCurrentMedicine({
-      ...currentMedicine,
-      name: template.name,
-      form: template.form,
-      unit: template.unit
-    });
-    setSelectedMedicineTemplate(template);
-    setMedicineSearch(template.name);
-    setShowMedicineDropdown(false);
-  };
-
-  // Select dosage
-  const selectDosage = (dosage: string) => {
-    setCurrentMedicine({
-      ...currentMedicine,
-      dosage: dosage
-    });
   };
 
   // Handle timing dosage changes
@@ -724,37 +664,24 @@ const CreatePrescription = () => {
     }
 
     const newPrescription: SavedPrescription = {
-      id: editingPrescription ? editingPrescription.id : Date.now().toString(),
+      id: Date.now().toString(),
       patientId: selectedPatient.id,
       patientName: selectedPatient.name,
       startDate,
       endDate,
       medicines: addedMedicines,
       notes,
-      status,
-      isNotified: editingPrescription ? true : false, // Auto-notify for edits, manual for new prescriptions
-      createdAt: editingPrescription ? editingPrescription.createdAt : new Date().toISOString(),
+      isNotified: false,
+      createdAt: new Date().toISOString(),
       lastModified: new Date().toISOString()
     };
 
-    if (editingPrescription) {
-      updateSavedPrescriptions(savedPrescriptions.map(p => 
-        p.id === editingPrescription.id ? newPrescription : p
-      ));
-      setEditingPrescription(null);
-      showNotification(
-        'success',
-        'Prescription Updated',
-        'Prescription updated successfully! Patient has been automatically notified of the changes.'
-      );
-    } else {
-      updateSavedPrescriptions([...savedPrescriptions, newPrescription]);
-      showNotification(
-        'success',
-        'Prescription Saved',
-        'Prescription saved successfully! Remember to notify the patient when ready.'
-      );
-    }
+    updateSavedPrescriptions([...savedPrescriptions, newPrescription]);
+    showNotification(
+      'success',
+      'Prescription Saved',
+      'Prescription saved successfully! Remember to notify the patient when ready.'
+    );
 
     // Reset form
     resetForm();
@@ -768,7 +695,6 @@ const CreatePrescription = () => {
     setEndDate("");
     setAddedMedicines([]);
     setNotes("");
-    setStatus('active');
     setCurrentMedicine({
       id: "",
       name: "",
@@ -782,21 +708,6 @@ const CreatePrescription = () => {
       durationType: "",
       specialInstructions: ""
     });
-    setMedicineSearch("");
-    setSelectedMedicineTemplate(null);
-  };
-
-  // Edit prescription
-  const editPrescription = (prescription: SavedPrescription) => {
-    const patient = patients.find(p => p.id === prescription.patientId);
-    setSelectedPatient(patient || null);
-    setStartDate(prescription.startDate);
-    setEndDate(prescription.endDate);
-    setAddedMedicines(prescription.medicines);
-    setNotes(prescription.notes);
-    setStatus(prescription.status);
-    setEditingPrescription(prescription);
-    setActiveTab('create');
   };
 
   // Notify patient
@@ -809,18 +720,6 @@ const CreatePrescription = () => {
       'Patient Notified',
       'Patient has been notified about the prescription!'
     );
-  };
-
-  // Delete prescription
-  const deletePrescription = (prescriptionId: string) => {
-    if (confirm("Are you sure you want to delete this prescription?")) {
-      updateSavedPrescriptions(savedPrescriptions.filter(p => p.id !== prescriptionId));
-      showNotification(
-        'success',
-        'Prescription Deleted',
-        'Prescription has been deleted successfully!'
-      );
-    }
   };
 
   const timingOptions = [
@@ -857,10 +756,9 @@ const CreatePrescription = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <NavBar onMenuClick={toggleSidebar} />
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar - Desktop */}
-        <div className="w-80 bg-white border-r hidden lg:block">
+        {/* Sidebar - Let the Sidebar component handle its own positioning */}
+        <div className="hidden lg:block">
           <SidebarForPsy isOpen={true} onClose={closeSidebar} />
         </div>
         
@@ -870,17 +768,19 @@ const CreatePrescription = () => {
         </div>
         
         {/* Main content */}
-        <div className="flex-1 overflow-auto p-4 lg:p-6 bg-gray-50">
-          {/* Page Header */}
-          <div className="mb-6 lg:mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
-                  Prescription Manager
-                </h1>
-                <p className="text-gray-600">Create, manage and track patient prescriptions</p>
-              </div>
-              <div className="flex gap-3">
+        <div className="flex-1 overflow-auto">
+          <NavBar onMenuClick={toggleSidebar} />
+          <div className="p-4 lg:p-6 bg-gray-50">
+            {/* Page Header */}
+            <div className="mb-6 lg:mb-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                    Prescription Manager
+                  </h1>
+                  <p className="text-gray-600">Create, manage and track patient prescriptions</p>
+                </div>
+                <div className="flex gap-3">
                 
               </div>
             </div>
@@ -891,14 +791,17 @@ const CreatePrescription = () => {
             <div className="border-b border-gray-200">
               <nav className="-mb-px flex space-x-8">
                 <button
-                  onClick={() => setActiveTab('create')}
+                  onClick={() => {
+                    setActiveTab('create');
+                    createNewPrescription();
+                  }}
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
                     activeTab === 'create'
                       ? 'border-secondaryDusk text-secondaryDarker'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  {editingPrescription ? 'Edit Prescription' : 'Create Prescription'}
+                  Create Prescription
                 </button>
                 <button
                   onClick={() => setActiveTab('saved')}
@@ -919,7 +822,7 @@ const CreatePrescription = () => {
               {/* Patient Selection & Basic Info - Reorganized */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-secondaryDusk to-secondaryDarker px-6 py-4">
+                <div className="bg-gradient-to-r from-gray-900 to-secondaryDusk px-6 py-4">
                   <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                     <FileText className="w-6 h-6" />
                     Prescription Details
@@ -940,57 +843,46 @@ const CreatePrescription = () => {
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            {editingPrescription ? 'Patient (Cannot be changed)' : 'Select Patient *'}
+                            Select Patient *
                           </label>
-                          {editingPrescription ? (
-                            <div className="w-full p-3 border-2 border-gray-300 rounded-xl bg-gray-100 text-gray-700 cursor-not-allowed">
-                              <span className="font-medium">
-                                {selectedPatient ? selectedPatient.name : "Unknown Patient"}
+                          <div className="relative">
+                            <button
+                              onClick={() => setShowPatientDropdown(!showPatientDropdown)}
+                              className="w-full p-3 border-2 border-gray-200 rounded-xl text-left bg-white hover:border-secondaryDusk transition-all duration-200 flex items-center justify-between shadow-sm"
+                            >
+                              <span className={selectedPatient ? "text-gray-900 font-medium" : "text-gray-500"}>
+                                {selectedPatient ? selectedPatient.name : "Choose a patient..."}
                               </span>
-                              <div className="text-sm text-gray-500 mt-1">
-                                Patient cannot be changed when editing prescription
+                              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showPatientDropdown ? 'rotate-180' : ''}`} />
+                            </button>
+                            
+                            {showPatientDropdown && (
+                              <div className="absolute top-full left-0 right-0 z-20 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-64 overflow-y-auto animate-fade-in">
+                                {patients.map((patient) => (
+                                  <button
+                                    key={patient.id}
+                                    onClick={() => {
+                                      setSelectedPatient(patient);
+                                      setShowPatientDropdown(false);
+                                    }}
+                                    className="w-full p-4 text-left hover:bg-secondaryDusk/10 border-b border-gray-100 last:border-b-0 transition-all duration-200 group"
+                                  >
+                                    <div className="font-semibold text-gray-600 group-hover:text-gray-900">{patient.name}</div>
+                                    <div className="text-sm text-gray-600 mt-1 group-hover:text-gray-900">
+                                      ID: {patient.patientId} • {patient.age} years • {patient.gender}
+                                    </div>
+                                  </button>
+                                ))}
                               </div>
-                            </div>
-                          ) : (
-                            <div className="relative">
-                              <button
-                                onClick={() => setShowPatientDropdown(!showPatientDropdown)}
-                                className="w-full p-3 border-2 border-gray-200 rounded-xl text-left bg-white hover:border-secondaryDusk transition-all duration-200 flex items-center justify-between shadow-sm"
-                              >
-                                <span className={selectedPatient ? "text-gray-900 font-medium" : "text-gray-500"}>
-                                  {selectedPatient ? selectedPatient.name : "Choose a patient..."}
-                                </span>
-                                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showPatientDropdown ? 'rotate-180' : ''}`} />
-                              </button>
-                              
-                              {showPatientDropdown && (
-                                <div className="absolute top-full left-0 right-0 z-20 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-64 overflow-y-auto animate-fade-in">
-                                  {patients.map((patient) => (
-                                    <button
-                                      key={patient.id}
-                                      onClick={() => {
-                                        setSelectedPatient(patient);
-                                        setShowPatientDropdown(false);
-                                      }}
-                                      className="w-full p-4 text-left hover:bg-blue-50 border-b border-gray-100 last:border-b-0 transition-all duration-200 group"
-                                    >
-                                      <div className="font-semibold text-gray-900 group-hover:text-blue-700">{patient.name}</div>
-                                      <div className="text-sm text-gray-600 mt-1 group-hover:text-blue-600">
-                                        ID: {patient.patientId} • {patient.age} years • {patient.gender}
-                                      </div>
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
 
                         {selectedPatient && (
-                          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+                          <div className="bg-gradient-to-br from-secondaryDusk/5 to-secondaryDarker/10 border border-secondaryDusk/20 rounded-xl p-6">
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                <Users className="w-5 h-5 text-blue-600" />
+                              <div className="w-10 h-10 bg-secondaryDusk/10 rounded-full flex items-center justify-center">
+                                <Users className="w-5 h-5 text-secondaryDusk" />
                               </div>
                               <div>
                                 <h4 className="font-semibold text-gray-900">{selectedPatient.name}</h4>
@@ -1016,33 +908,22 @@ const CreatePrescription = () => {
                     <div className="lg:col-span-6">
                       <div className="flex items-center gap-2 mb-4">
                         <Calendar className="w-5 h-5 text-secondaryDusk" />
-                        <h3 className="text-lg font-semibold text-gray-900">Prescription Duration & Status</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">Prescription Duration</h3>
                       </div>
                       
                       <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              {editingPrescription ? 'Start Date (Cannot be changed)' : 'Start Date *'}
+                              Start Date *
                             </label>
                             <input
                               type="date"
                               value={startDate}
                               onChange={(e) => setStartDate(e.target.value)}
-                              className={`w-full p-3 border-2 rounded-xl transition-all shadow-sm ${
-                                editingPrescription 
-                                  ? 'border-gray-300 bg-gray-100 text-gray-700 cursor-not-allowed' 
-                                  : 'border-gray-200 focus:border-secondaryDusk'
-                              }`}
-                              readOnly={!!editingPrescription}
-                              disabled={!!editingPrescription}
-                              required={!editingPrescription}
+                              className="w-full p-3 border-2 border-gray-200 focus:border-secondaryDusk rounded-xl transition-all shadow-sm"
+                              required
                             />
-                            {editingPrescription && (
-                              <div className="text-xs text-gray-500 mt-1">
-                                Start date cannot be modified when editing
-                              </div>
-                            )}
                           </div>
                           
                           <div>
@@ -1067,54 +948,6 @@ const CreatePrescription = () => {
                           </div>
                         )} */}
 
-                        {/* Status Selection */}
-                        <div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <CheckCircle className="w-4 h-4 text-secondaryDusk" />
-                            <h4 className="text-base font-semibold text-gray-900">Prescription Status</h4>
-                          </div>
-                          
-                          <div>
-                            
-                            
-                            {/* Toggle Switch */}
-                            <div className="flex items-center space-x-4">
-                              <div className="flex items-center space-x-3">
-                                <button
-                                  type="button"
-                                  onClick={() => setStatus(status === 'active' ? 'discontinued' : 'active')}
-                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                                    status === 'active'
-                                      ? 'bg-green-600'
-                                      : 'bg-red-500'
-                                  }`}
-                                >
-                                  <span
-                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                      status === 'active' ? 'translate-x-6' : 'translate-x-1'
-                                    }`}
-                                  />
-                                </button>
-                                <span className={`text-sm font-medium ${
-                                  status === 'active' ? 'text-green-700' : 'text-red-700'
-                                }`}>
-                                  {status === 'active' ? 'Active' : 'Discontinued'}
-                                </span>
-                              </div>
-                            </div>
-                            
-                            <div className={`mt-3 p-3 rounded-lg text-sm ${
-                              status === 'active' 
-                                ? 'bg-green-50 text-green-700 border border-green-200' 
-                                : 'bg-red-50 text-red-700 border border-red-200'
-                            }`}>
-                              {status === 'active' 
-                                ? '✓ This prescription is currently active and can be dispensed'
-                                : '⚠ This prescription has been discontinued and should not be dispensed'
-                              }
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -1142,11 +975,6 @@ const CreatePrescription = () => {
                           <div className="text-xs text-gray-500">
                             {notes.length}/500 characters
                           </div>
-                          {editingPrescription && (
-                            <div className="text-xs text-blue-600 font-medium">
-                              Currently editing prescription
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -1166,61 +994,24 @@ const CreatePrescription = () => {
                   <div className="space-y-6">
                     {/* Medicine Name and Type - First Row */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* Medicine Search */}
+                      {/* Medicine Name Input */}
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Medicine Name *
+                          Medicine Name & Manufacturer*
                         </label>
-                        <div className="relative medicine-dropdown-container">
-                          <input
-                            type="text"
-                            value={medicineSearch}
-                            onChange={(e) => {
-                              setMedicineSearch(e.target.value);
-                              setShowMedicineDropdown(true);
-                              
-                              // Update current medicine name for custom medicines
-                              setCurrentMedicine({
-                                ...currentMedicine,
-                                name: e.target.value
-                              });
-                              
-                              // Clear selected template if typing custom medicine
-                              if (selectedMedicineTemplate && !filteredMedicines.some(med => med.name.toLowerCase().includes(e.target.value.toLowerCase()))) {
-                                setSelectedMedicineTemplate(null);
-                              }
-                            }}
-                            onFocus={() => setShowMedicineDropdown(true)}
-                            placeholder="Search for medicine..."
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:border-secondaryDusk"
-                            required
-                          />
-                          {showMedicineDropdown && medicineSearch && (
-                            <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-white border border-gray-300 rounded-lg shadow-xl max-h-60 overflow-y-auto animate-fade-in">
-                              {filteredMedicines.length > 0 ? (
-                                filteredMedicines.map((medicine) => (
-                                  <button
-                                    key={medicine.id}
-                                    type="button"
-                                    onMouseDown={(e) => {
-                                      e.preventDefault(); // Prevent input blur
-                                      selectMedicineTemplate(medicine);
-                                    }}
-                                    className="w-full p-3 text-left hover:bg-secondary border-b border-gray-100 last:border-b-0 transition-all duration-200 group"
-                                  >
-                                    <div className="font-medium text-gray-900 group-hover:text-gray-800">{medicine.name}</div>
-                                    <div className="text-sm text-gray-600 group-hover:text-gray-800">{medicine.category}</div>
-                                  </button>
-                                ))
-                              ) : (
-                                <div className="p-3 text-center text-gray-500">
-                                  <div className="text-sm">No matching medicines found</div>
-                                  <div className="text-xs mt-1 text-blue-600">Continue typing to use "<span className="font-medium">{medicineSearch}</span>" as a custom medicine</div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
+                        <input
+                          type="text"
+                          value={currentMedicine.name}
+                          onChange={(e) => {
+                            setCurrentMedicine({
+                              ...currentMedicine,
+                              name: e.target.value
+                            });
+                          }}
+                          placeholder="Enter medicine name..."
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:border-secondaryDusk"
+                          required
+                        />
                       </div>
 
                         {/* Medicine Type Selection */}
@@ -1267,47 +1058,28 @@ const CreatePrescription = () => {
                         </div>
                     </div>
 
-                    {/* Dosage Selection */}
-                    {(selectedMedicineTemplate || (medicineSearch && currentMedicine.name)) && currentMedicine.form && (
+                    {/* Dosage Input */}
+                    {currentMedicine.name && currentMedicine.form && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Dosage *
                         </label>
-                        {selectedMedicineTemplate ? (
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                            {selectedMedicineTemplate.commonDosages.map((dosage) => (
-                              <button
-                                key={dosage}
-                                type="button"
-                                onClick={() => selectDosage(dosage)}
-                                className={`p-2 rounded-lg border text-sm transition-colors ${
-                                  currentMedicine.dosage === dosage
-                                    ? 'bg-secondaryDusk text-white border-secondaryDusk'
-                                    : 'bg-white text-gray-700 border-gray-300 hover:border-secondaryDusk'
-                                }`}
-                              >
-                                {dosage}
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="max-w-md">
-                            <input
-                              type="text"
-                              value={currentMedicine.dosage}
-                              onChange={(e) => setCurrentMedicine({...currentMedicine, dosage: e.target.value})}
-                              placeholder={
-                                currentMedicine.form === 'liquid' 
-                                  ? "Type the dosage, ex: 5ml" 
-                                  : currentMedicine.form === 'injection'
-                                  ? "Type the dosage, ex: 1ml or 50mg"
-                                  : "Type the dosage, ex: 100mg"
-                              }
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:border-secondaryDusk"
-                              required
-                            />
-                          </div>
-                        )}
+                        <div className="max-w-md">
+                          <input
+                            type="text"
+                            value={currentMedicine.dosage}
+                            onChange={(e) => setCurrentMedicine({...currentMedicine, dosage: e.target.value})}
+                            placeholder={
+                              currentMedicine.form === 'liquid' 
+                                ? "Enter dosage, e.g: 5ml" 
+                                : currentMedicine.form === 'injection'
+                                ? "Enter dosage, e.g: 1ml or 50mg"
+                                : "Enter dosage, e.g: 100mg"
+                            }
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:border-secondaryDusk"
+                            required
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -1415,7 +1187,7 @@ const CreatePrescription = () => {
                                             currentMedicine.form === 'liquid' 
                                               ? "Enter ml" 
                                               : currentMedicine.form === 'injection'
-                                              ? "Enter ml or units"
+                                              ? "Enter ml"
                                               : "Enter amount"
                                           }
                                           value={existingDosage?.customAmount || ''}
@@ -1545,7 +1317,7 @@ const CreatePrescription = () => {
 
                   <button
                     onClick={addMedicineToList}
-                    className="mt-4 px-2 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                    className="mt-4 px-2 py-2 bg-secondaryDusk text-white rounded-lg hover:bg-secondaryDarker transition-colors flex items-center justify-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
                     Add to Prescription
@@ -1619,7 +1391,7 @@ const CreatePrescription = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        {editingPrescription ? 'Update Prescription' : 'Save Prescription'}
+                        Save Prescription
                       </h3>
                       <p className="text-sm text-gray-600">
                         {addedMedicines.length} medicine(s) added • {selectedPatient ? `For ${selectedPatient.name}` : 'No patient selected'}
@@ -1628,18 +1400,6 @@ const CreatePrescription = () => {
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    {editingPrescription && (
-                      <button
-                        onClick={() => {
-                          setEditingPrescription(null);
-                          resetForm();
-                        }}
-                        className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors flex items-center gap-2"
-                      >
-                        Cancel Edit
-                      </button>
-                    )}
-                    
                     <button
                       onClick={savePrescription}
                       disabled={!selectedPatient || !startDate || !endDate || addedMedicines.length === 0}
@@ -1650,7 +1410,7 @@ const CreatePrescription = () => {
                       }`}
                     >
                       <Save className="w-5 h-5" />
-                      {editingPrescription ? 'Update Prescription' : 'Save Prescription'}
+                      Save Prescription
                     </button>
                   </div>
                 </div>
@@ -1690,7 +1450,7 @@ const CreatePrescription = () => {
                       id={`prescription-${prescription.id}`}
                       className={`border border-gray-200 rounded-lg p-6 transition-all duration-500 ${
                         highlightedPrescriptionId === prescription.id 
-                          ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-300' 
+                          ? 'ring-2 ring-secondaryDusk bg-secondaryDusk/5 border-secondaryDusk/30' 
                           : 'hover:shadow-md'
                       }`}
                     >
@@ -1709,25 +1469,8 @@ const CreatePrescription = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className={`px-2 py-1 rounded text-xs flex items-center gap-1 ${
-                            prescription.status === 'active'
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-red-100 text-red-700'
-                          }`}>
-                            {prescription.status === 'active' ? (
-                              <>
-                                <CheckCircle className="w-3 h-3" />
-                                Active
-                              </>
-                            ) : (
-                              <>
-                                <Clock className="w-3 h-3" />
-                                Discontinued
-                              </>
-                            )}
-                          </span>
-                          <span className={`px-2 py-1 rounded text-xs flex items-center gap-1 ${
                             prescription.isNotified
-                              ? 'bg-blue-100 text-blue-700'
+                              ? 'bg-secondaryDusk/10 text-secondaryDusk'
                               : 'bg-yellow-100 text-yellow-700'
                           }`}>
                             {prescription.isNotified ? (
@@ -1771,35 +1514,21 @@ const CreatePrescription = () => {
 
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => editPrescription(prescription)}
-                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center gap-1"
+                          onClick={() => handleViewPrescription(prescription)}
+                          className="px-3 py-1 bg-secondaryDarker text-white rounded hover:bg-secondaryDusk transition-colors flex items-center gap-1"
                         >
-                          <Edit className="w-3 h-3" />
-                          Edit
+                          <Eye className="w-3 h-3" />
+                          View Details
                         </button>
                         
                         {!prescription.isNotified && (
                           <button
                             onClick={() => notifyPatient(prescription.id)}
-                            className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-1"
+                            className="px-3 py-1 bg-secondaryDusk text-white rounded hover:bg-secondaryDarker transition-colors flex items-center gap-1"
                           >
                             <Send className="w-3 h-3" />
                             Notify Patient
                           </button>
-                        )}
-                        
-                        <button
-                          onClick={() => deletePrescription(prescription.id)}
-                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors flex items-center gap-1"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                          Delete
-                        </button>
-                        
-                        {prescription.isNotified && new Date(prescription.lastModified) > new Date(prescription.createdAt) && (
-                          <span className="px-2 py-1 bg-green-50 text-green-600 rounded text-xs border border-green-200">
-                            Auto-notified on edit
-                          </span>
                         )}
                       </div>
                     </div>
@@ -1809,7 +1538,6 @@ const CreatePrescription = () => {
             </div>
           )}
         </div>
-      </div>
 
       {/* Notification Container */}
       <div className="fixed top-4 right-4 z-50 space-y-2 max-w-md">
@@ -1868,6 +1596,8 @@ const CreatePrescription = () => {
             </div>
           </div>
         ))}
+      </div>
+        </div>
       </div>
     </div>
   );

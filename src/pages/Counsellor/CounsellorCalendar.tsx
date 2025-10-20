@@ -1,535 +1,202 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavBar, Sidebar } from '../../components/layout';
-import {
-  CalendarHeader,
-  StatusLegend,
-  CalendarGrid,
-  CalendarSidebar,
-  TimeSlotsModal,
-  MarkUnavailableModal,
-  UnavailableDayDetailsModal,
-  HistoricalDetailsModal,
-  PendingRequestsModal,
-  TimeSlot,
-  Session,
-  UnavailableDate,
-  HistoricalDate,
-  UnavailabilityRule,
-  CalendarDay
-} from './components/Calendar';
+import { FlashMessage } from '../../components/ui';
+import { 
+  Calendar, 
+  Clock, 
+  ChevronLeft, 
+  ChevronRight, 
+  Plus,
+  Minus,
+  CheckCircle,
+  XCircle,
+  User,
+  Settings,
+  Video
+} from 'lucide-react';
+import { 
+  getMonthlyAvailability, 
+  setAvailability, 
+  setUnavailability, 
+  getCounselorSessions,
+  type TimeSlot,
+  type Session,
+  type AvailabilityRequest
+} from '../../api/calendarAPI';
+//import { makeRequest } from '../../api/apiBase';
+import SessionFeeManager from './components/SessionFeeManager';
+import { useNavigate } from 'react-router-dom';
 
 const CounsellorCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [showTimeSlots, setShowTimeSlots] = useState(false);
-  const [showUnavailable, setShowUnavailable] = useState(false);
-  const [showUnavailableDetails, setShowUnavailableDetails] = useState(false);
-  const [showHistoricalDetails, setShowHistoricalDetails] = useState(false);
-  const [selectedHistoricalDate, setSelectedHistoricalDate] = useState<HistoricalDate | null>(null);
-  const [selectedUnavailableDate, setSelectedUnavailableDate] = useState<UnavailableDate | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [unavailabilityType, setUnavailabilityType] = useState('full-day');
-  const [showPendingRequests, setShowPendingRequests] = useState(false);
-  const [unavailabilityRules, setUnavailabilityRules] = useState<UnavailabilityRule[]>([]);
+  // const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedTimeRange, setSelectedTimeRange] = useState({ start: '09:00', end: '17:00' });
+  const [monthlyTimeSlots, setMonthlyTimeSlots] = useState<{ [date: string]: TimeSlot[] }>({});
+  const [monthlyLoading, setMonthlyLoading] = useState(false);
+  // const [sessionsLoading, setSessionsLoading] = useState(false);
+  const navigate = useNavigate();
+  
+  const [flashMessage, setFlashMessage] = useState<{
+    type: 'success' | 'error' | 'warning' | 'info';
+    message: string;
+    isVisible: boolean;
+  }>({
+    type: 'info',
+    message: '',
+    isVisible: false
+  });
+  
+  // Session Fee Manager Modal State
+  const [isSessionFeeModalOpen, setIsSessionFeeModalOpen] = useState(false);
+  
+  // TODO: Get counselor ID from auth context or user profile
+  // For now using hardcoded ID - replace with actual user's counselor ID
+  const counselorIdString = localStorage.getItem('counsellor_id');
+  const counselorId = counselorIdString ? parseInt(counselorIdString, 10) : null;
+
+  console.log('Using counselor ID:', counselorId);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
 
-  // Get current date and previous dates for mock data
-  const yesterday = new Date(currentDate);
-  yesterday.setDate(currentDate.getDate() - 1);
-  const twoDaysAgo = new Date(currentDate);
-  twoDaysAgo.setDate(currentDate.getDate() - 2);
-  const threeDaysAgo = new Date(currentDate);
-  threeDaysAgo.setDate(currentDate.getDate() - 3);
-  const fourDaysAgo = new Date(currentDate);
-  fourDaysAgo.setDate(currentDate.getDate() - 4);
-  const fiveDaysAgo = new Date(currentDate);
-  fiveDaysAgo.setDate(currentDate.getDate() - 5);
-  
-  // Get future dates for mock data
-  const tomorrow = new Date(currentDate);
-  tomorrow.setDate(currentDate.getDate() + 1);
-  const twoDaysLater = new Date(currentDate);
-  twoDaysLater.setDate(currentDate.getDate() + 2);
-  const threeDaysLater = new Date(currentDate);
-  threeDaysLater.setDate(currentDate.getDate() + 3);
-  const fourDaysLater = new Date(currentDate);
-  fourDaysLater.setDate(currentDate.getDate() + 4);
-  const fiveDaysLater = new Date(currentDate);
-  fiveDaysLater.setDate(currentDate.getDate() + 5);
-
-  // Format dates for mock data
-  const formatDateString = (date: Date) => date.toISOString().split('T')[0];
-  const todayString = formatDateString(currentDate);
-  const yesterdayString = formatDateString(yesterday);
-  const twoDaysAgoString = formatDateString(twoDaysAgo);
-  const threeDaysAgoString = formatDateString(threeDaysAgo);
-  const fourDaysAgoString = formatDateString(fourDaysAgo);
-  const fiveDaysAgoString = formatDateString(fiveDaysAgo);
-  const tomorrowString = formatDateString(tomorrow);
-  const twoDaysLaterString = formatDateString(twoDaysLater);
-  const threeDaysLaterString = formatDateString(threeDaysLater);
-  const fourDaysLaterString = formatDateString(fourDaysLater);
-  const fiveDaysLaterString = formatDateString(fiveDaysLater);
-
-  // Sample data
-  const [sessions, setSessions] = useState<Session[]>([
-    // Today's sessions - more than 3 to test the limit
-    {
-      id: '1',
-      clientName: 'Oshadhi Perera',
-      date: todayString,
-      time: '09:00',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '2',
-      clientName: 'Naduni Perera',
-      date: todayString,
-      time: '10:30',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '3',
-      clientName: 'Nethmi Gunasekara',
-      date: todayString,
-      time: '13:00',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '3a',
-      clientName: 'Rashika Perera',
-      date: todayString,
-      time: '14:30',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '3b',
-      clientName: 'Bavindu Thathsara',
-      date: todayString,
-      time: '16:00',
-      duration: 45,
-      status: 'confirmed'
-    },
-    
-    // Tomorrow's sessions - more than 3 to test the limit
-    {
-      id: '4',
-      clientName: 'Rashika Perera',
-      date: tomorrowString,
-      time: '09:30',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '5',
-      clientName: 'Naduni Perera',
-      date: tomorrowString,
-      time: '11:00',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '5a',
-      clientName: 'Suren Rasika',
-      date: tomorrowString,
-      time: '13:30',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '5b',
-      clientName: 'Gamindu Welikanna',
-      date: tomorrowString,
-      time: '15:00',
-      duration: 45,
-      status: 'confirmed'
-    },
-    
-    // Two days later sessions
-    {
-      id: '6',
-      clientName: 'Ramesh Diaz',
-      date: twoDaysLaterString,
-      time: '10:30',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '7',
-      clientName: 'Sadeera Saminda',
-      date: twoDaysLaterString,
-      time: '14:00',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '7a',
-      clientName: 'Sudika Perera',
-      date: twoDaysLaterString,
-      time: '15:30',
-      duration: 60,
-      status: 'confirmed'
-    },
-    
-    // Three days later sessions
-    {
-      id: '8',
-      clientName: 'Kalunika Fernando',
-      date: threeDaysLaterString,
-      time: '09:00',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '8a',
-      clientName: 'Gagana Thathsara',
-      date: threeDaysLaterString,
-      time: '11:30',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '8b',
-      clientName: 'Oshadha Rashendra',
-      date: threeDaysLaterString,
-      time: '14:00',
-      duration: 60,
-      status: 'confirmed'
-    },
-    {
-      id: '8c',
-      clientName: 'Bagasha Perera',
-      date: threeDaysLaterString,
-      time: '16:30',
-      duration: 45,
-      status: 'confirmed'
-    },
-    
-    // Four days later sessions
-    {
-      id: '9',
-      clientName: 'Sathsara Perera',
-      date: fourDaysLaterString,
-      time: '09:30',
-      duration: 45,
-      status: 'confirmed'
-    },
-    {
-      id: '10',
-      clientName: 'Namal Perera',
-      date: fourDaysLaterString,
-      time: '11:00',
-      duration: 60,
-      status: 'confirmed'
-    },
-    
-    // Five days later sessions
-    {
-      id: '11',
-      clientName: 'Gayantha Udawatte',
-      date: fiveDaysLaterString,
-      time: '10:00',
-      duration: 45,
-      status: 'confirmed'
-    }
-  ]);
-
-  // Historical data (sessions and unavailability before today)
-  const [historicalSessions, setHistoricalSessions] = useState<Session[]>([
-    // Yesterday's sessions
-    {
-      id: 'h1',
-      clientName: 'Sadeera Kalum',
-      date: yesterdayString,
-      time: '10:00',
-      duration: 60,
-      status: 'completed'
-    },
-    {
-      id: 'h2',
-      clientName: 'Manusha Niroshan',
-      date: yesterdayString,
-      time: '14:00',
-      duration: 45,
-      status: 'completed'
-    },
-    
-    // Two days ago sessions
-    {
-      id: 'h3',
-      clientName: 'Niroshan Dikwella',
-      date: twoDaysAgoString,
-      time: '09:00',
-      duration: 60,
-      status: 'completed'
-    },
-    {
-      id: 'h4',
-      clientName: 'Sudira Perera',
-      date: twoDaysAgoString,
-      time: '15:00',
-      duration: 45,
-      status: 'completed'
-    },
-    
-    // Three days ago sessions
-    {
-      id: 'h5',
-      clientName: 'Namesha Silva',
-      date: threeDaysAgoString,
-      time: '11:30',
-      duration: 60,
-      status: 'completed'
-    },
-    
-    // Four days ago sessions
-    {
-      id: 'h6',
-      clientName: 'Nethmi Nimesha',
-      date: fourDaysAgoString,
-      time: '13:00',
-      duration: 45,
-      status: 'completed'
-    },
-    {
-      id: 'h7',
-      clientName: 'Sudeera Saminda',
-      date: fourDaysAgoString,
-      time: '16:30',
-      duration: 60,
-      status: 'completed'
-    },
-    
-    // Five days ago sessions
-    {
-      id: 'h8',
-      clientName: 'Rashika Perera',
-      date: fiveDaysAgoString,
-      time: '10:00',
-      duration: 45,
-      status: 'completed'
-    }
-  ]);
-
-  const [historicalUnavailableDates] = useState<UnavailableDate[]>([
-    {
-      id: 'hu1',
-      date: '2025-06-29',
-      reason: 'Medical appointment',
-      isFullDay: true
-    },
-    {
-      id: 'hu2',
-      date: '2025-07-01',
-      reason: 'Training session',
-      isFullDay: false,
-      timeRange: {
-        start: '13:00',
-        end: '15:00'
-      }
-    }
-  ]);
-
-  const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>([
-    {
-      id: '1',
-      date: '2025-07-04',
-      reason: 'Personal leave',
-      isFullDay: true
-    },
-    {
-      id: '2',
-      date: '2025-07-07',
-      reason: 'Conference',
-      isFullDay: false,
-      timeRange: {
-        start: '09:00',
-        end: '17:00'
-      }
-    },
-    {
-      id: '3',
-      date: '2025-07-08',
-      reason: 'Training session',
-      isFullDay: false,
-      timeRange: {
-        start: '14:00',
-        end: '16:00'
-      }
-    },
-    {
-      id: '4',
-      date: '2025-07-10',
-      reason: 'Medical appointment',
-      isFullDay: false,
-      timeRange: {
-        start: '10:00',
-        end: '12:00'
-      }
-    },
-    {
-      id: '5',
-      date: '2025-07-15',
-      reason: 'Vacation',
-      isFullDay: true
-    },
-    {
-      id: '6',
-      date: '2025-07-20',
-      reason: 'Team building',
-      isFullDay: false,
-      timeRange: {
-        start: '13:00',
-        end: '18:00'
-      }
-    }
-  ]);
-
-  const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-
-  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-  // Track available dates
-  const [availableDates, setAvailableDates] = useState<string[]>([
-    tomorrowString, // Make tomorrow available by default
-    threeDaysLaterString, // Make three days later available by default
-    fiveDaysLaterString // Make five days later available by default
-  ]);
-
-  // Function to check if a date is unavailable
-  const isDateUnavailable = (date: Date) => {
-    // By default, all days are unavailable
-    const dateString = date.toISOString().split('T')[0];
-    
-    // If the date is in availableDates, it's available (not unavailable)
-    return !availableDates.includes(dateString);
+  // Flash message helpers
+  const showFlashMessage = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
+    setFlashMessage({
+      type,
+      message,
+      isVisible: true
+    });
   };
-  
-  // Mock time slots data
-  const generateTimeSlots = (date: Date) => {
-    const timeSlots = [];
-    const dateString = date.toISOString().split('T')[0];
-    
-    // Check if the date is available
-    const isUnavailable = isDateUnavailable(date);
-    
-    // Only generate time slots for available days
-    if (!isUnavailable) {
-      const sessionsForDate = sessions.filter(session => session.date === dateString);
+
+  const hideFlashMessage = () => {
+    setFlashMessage(prev => ({ ...prev, isVisible: false }));
+  };
+
+  // Build YYYY-MM-DD in local time to avoid timezone shifts
+  const formatDateKey = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  // Helper function to check if a session is joinable
+  const isSessionJoinable = (sessionDate: string, timeSlot: string): boolean => {
+    try {
+      const now = new Date();
+      const sessionDateTime = new Date(`${sessionDate} ${timeSlot}`);
+      const diffInMinutes = (sessionDateTime.getTime() - now.getTime()) / (1000 * 60);
       
-      // Generate time slots from 9:00 to 17:00 (9 AM to 5 PM)
-      for (let hour = 9; hour <= 17; hour++) {
-        const time = `${hour.toString().padStart(2, '0')}:00`;
-        const sessionAtTime = sessionsForDate.find(session => session.time === time);
-        
-        timeSlots.push({
-          id: `slot-${dateString}-${time}`,
-          time,
-          isBooked: !!sessionAtTime,
-          isAvailable: true,
-          client: sessionAtTime ? {
-            name: sessionAtTime.clientName,
-            duration: sessionAtTime.duration
-          } : undefined
+      // Show button if session is within 10 minutes before start OR within 1.5 hours (90 minutes) after start
+      return (diffInMinutes >= -90 && diffInMinutes <= 10);
+    } catch (error) {
+      console.error('Error parsing session date:', error);
+      return false;
+    }
+  };
+
+  // Helper function to join a session
+  const joinSession = async (sessionId: string, userId: number) => {
+    // No need to fetch the link here anymore, the MeetingPage will do it.
+    // Just navigate to the meeting page, passing the session and user IDs.
+    if (sessionId && userId) {
+      navigate(`/meeting/${sessionId}/${userId}`);
+    } else {
+      console.error('User ID is missing, cannot navigate to meeting.');
+      // Handle error appropriately, maybe show a flash message
+    }
+  };
+
+  // Get today's sessions
+  const getTodaysSessions = () => {
+    const today = formatDateKey(new Date());
+    return sessions.filter(session => session.date === today);
+  };
+
+  // Load time slots for all days in the current month
+  const loadMonthlyTimeSlots = async () => {
+    if (!counselorId) {
+      console.error('No counselor ID available');
+      setMonthlyTimeSlots({});
+      setMonthlyLoading(false);
+      return;
+    }
+
+    setMonthlyLoading(true);
+    console.log('Starting to load monthly availability...');
+    
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1; // API expects 1-based month
+    
+    try {
+      const monthlyData = await getMonthlyAvailability(counselorId, year, month);
+      console.log('Monthly availability data received:', monthlyData);
+      
+      const monthSlots: { [date: string]: TimeSlot[] } = {};
+      
+      // Transform the API response into our expected format
+      if (monthlyData.availability && Array.isArray(monthlyData.availability)) {
+        monthlyData.availability.forEach((dayData) => {
+          if (dayData.date && Array.isArray(dayData.slots)) {
+            // Transform MonthlyAvailabilitySlot[] to TimeSlot[]
+            const timeSlots: TimeSlot[] = dayData.slots.map(slot => ({
+              id: slot.id,
+              counselorId: monthlyData.counselorId,
+              date: dayData.date,
+              time: slot.time,
+              isBooked: slot.isBooked,
+              isAvailable: slot.isAvailable,
+              updatedAt: new Date().toISOString(),
+              createdAt: new Date().toISOString()
+            }));
+            monthSlots[dayData.date] = timeSlots;
+          }
         });
       }
+      
+      console.log('Transformed monthly time slots:', monthSlots);
+      setMonthlyTimeSlots(monthSlots);
+    } catch (error) {
+      console.error('Error loading monthly availability:', error);
+      setMonthlyTimeSlots({});
     }
     
-    return timeSlots;
+    setMonthlyLoading(false);
   };
 
-  // Mock time slots
-  const timeSlots = selectedDate ? generateTimeSlots(selectedDate) : [];
-
-  // Function to get calendar days for current month view
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDayOfMonth = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const today = new Date();
-
-    const isSameDay = (d1: Date, d2: Date) => {
-      // Create new Date objects to avoid time issues
-      const date1 = new Date(d1);
-      date1.setHours(0, 0, 0, 0);
-      
-      const date2 = new Date(d2);
-      date2.setHours(0, 0, 0, 0);
-      
-      return date1.getTime() === date2.getTime();
-    };
-
-    // Create calendar days - use 35 days (5 weeks) instead of 42 days (6 weeks)
-    // This will remove the extra block line at the bottom
-    const days: (CalendarDay | null)[] = Array(35).fill(null);
-    
-    for (let i = 0; i < daysInMonth; i++) {
-      const currentDate = new Date(year, month, i + 1);
-      const dateString = currentDate.toISOString().split('T')[0];
-      
-      // Check if date is unavailable (default is true)
-      const isUnavailable = isDateUnavailable(currentDate);
-      
-      // Get sessions for this date - include both current and historical sessions
-      // For past days, always show sessions regardless of availability
-      // For current and future days, only show sessions if the day is available
-      let allSessions: Session[] = [];
-      
-      // Create a normalized version of currentDate for comparison
-      const normalizedCurrentDate = new Date(currentDate);
-      normalizedCurrentDate.setHours(0, 0, 0, 0);
-      
-      // Create a normalized version of today for comparison
-      const normalizedToday = new Date();
-      normalizedToday.setHours(0, 0, 0, 0);
-      
-      // Check if this is a past day
-      const isPastDay = normalizedCurrentDate < normalizedToday;
-      
-      // For past days, always show sessions regardless of availability
-      // For current and future days, only show sessions if the day is available
-      if (isPastDay || !isUnavailable) {
-        const currentSessions = sessions.filter(session => session.date === dateString);
-        const historicalSessionsForDate = historicalSessions.filter(session => session.date === dateString);
-        allSessions = [...currentSessions, ...historicalSessionsForDate];
-      }
-      
-      // Get all time slots for this date (both unavailable and available)
-      const timeSlots = unavailableDates
-        .filter(slot => slot.date === dateString && !slot.isFullDay && slot.timeRange)
-        .map(slot => ({
-          start: slot.timeRange?.start,
-          end: slot.timeRange?.end,
-          isAvailable: slot.isAvailable || false
-        }));
-      
-      // Check if this day has any available time slots
-      const hasAvailableSlots = timeSlots.some(slot => slot.isAvailable);
-      
-      days[firstDayOfMonth + i] = {
-        date: currentDate,
-        sessions: allSessions,
-        unavailableSlots: timeSlots,
-        isToday: isSameDay(currentDate, today),
-        isPastDay: isPastDay,
-        isUnavailable: isUnavailable && !hasAvailableSlots, // If it has available slots, it's not fully unavailable
-        unavailableDetails: undefined
-      };
+  // Load sessions
+  const loadSessions = async () => {
+    if (!counselorId) {
+      console.error('No counselor ID available');
+      setSessions([]);
+      return;
     }
-    
-    return days;
+
+    try {
+      const sessionData = await getCounselorSessions(counselorId);
+      setSessions(sessionData);
+    } catch (error) {
+      console.error('Error loading sessions:', error);
+      setSessions([]);
+    }
   };
 
+  useEffect(() => {
+    loadSessions();
+    loadMonthlyTimeSlots();
+  }, []);
+
+  useEffect(() => {
+    loadMonthlyTimeSlots();
+  }, [currentDate]);
+
+  // No longer need useEffect for individual time slots
+
+  // Calendar navigation
   const navigateMonth = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
       const newDate = new Date(prev);
@@ -542,279 +209,204 @@ const CounsellorCalendar: React.FC = () => {
     });
   };
 
-  // Function to handle clicking on a date
-  const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
+  // Helper function to get availability status for a date
+  const getAvailabilityStatus = (dateString: string) => {
+    const daySlots = monthlyTimeSlots[dateString] || [];
     
-    // Check if the date is in the past
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time part for proper comparison
+    // Create a map of all 24 hours with their status
+    const hourStatuses: Array<{ hour: number; status: 'available' | 'booked' | 'unavailable' }> = [];
     
-    // Create a normalized version of the clicked date for comparison
-    const normalizedDate = new Date(date);
-    normalizedDate.setHours(0, 0, 0, 0);
-    
-    if (normalizedDate < today) {
-      // If the date is in the past, show historical details but don't allow changes
-      const dateString = date.toISOString().split('T')[0];
-      const historicalSessionsForDate = historicalSessions.filter(session => session.date === dateString);
+    for (let hour = 0; hour < 24; hour++) {
+      const hourTime = `${String(hour).padStart(2, '0')}:00`;
+      const existingSlot = daySlots.find(slot => slot.time === hourTime);
       
-      setSelectedHistoricalDate({
-        date: date,
-        sessions: historicalSessionsForDate,
-        unavailableSlots: [],
-        unavailableDetails: undefined
+      let status: 'available' | 'booked' | 'unavailable';
+      if (existingSlot) {
+        if (existingSlot.isBooked) {
+          status = 'booked';
+        } else if (existingSlot.isAvailable) {
+          status = 'available';
+        } else {
+          status = 'unavailable';
+        }
+      } else {
+        // If no slot exists in DB, consider it unavailable
+        status = 'unavailable';
+      }
+      
+      hourStatuses.push({ hour, status });
+    }
+    
+    const availableCount = hourStatuses.filter(h => h.status === 'available').length;
+    const bookedCount = hourStatuses.filter(h => h.status === 'booked').length;
+    
+    if (availableCount > 0 && bookedCount === 0) {
+      return 'available'; // Has available slots, no bookings
+    } else if (availableCount > 0 && bookedCount > 0) {
+      return 'partially-booked'; // Has both available and booked slots
+    } else if (bookedCount > 0 && availableCount === 0) {
+      return 'fully-booked'; // Has bookings but no available slots
+    } else {
+      return 'unavailable'; // All 24 hours are unavailable (either explicitly set or not in DB)
+    }
+  };
+
+  // Get calendar days
+  const getDaysInMonth = () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+
+    const days = [];
+    
+    // Add empty cells for days before month starts
+    for (let i = 0; i < firstDayOfMonth; i++) {
+      days.push(null);
+    }
+    
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+  const date = new Date(year, month, day);
+  const dateString = formatDateKey(date);
+      const daysSessions = sessions.filter(session => session.date === dateString);
+      const availabilityStatus = getAvailabilityStatus(dateString);
+      
+      days.push({
+        date,
+        sessions: daysSessions,
+        isToday: date.toDateString() === today.toDateString(),
+        isPast: date < today,
+        availabilityStatus
       });
-      setShowHistoricalDetails(true);
+    }
+    
+    return days;
+  };
+
+  // Handle setting availability
+  const handleSetAvailability = async (isAvailable: boolean) => {
+    if (!selectedDate || !counselorId) {
+      if (!counselorId) {
+        showFlashMessage('error', 'No counselor ID available. Please log in again.');
+      }
       return;
     }
     
-    // For current or future dates, check availability
-    const isUnavailable = isDateUnavailable(date);
-    
-    if (isUnavailable) {
-      // If the date is unavailable (default), show the unavailable day details modal
-      const dateString = date.toISOString().split('T')[0];
-      const unavailableDate = {
-        id: `unavailable-${dateString}`,
-        date: dateString,
-        isFullDay: true
-      };
-      setSelectedUnavailableDate(unavailableDate);
-      setShowUnavailableDetails(true);
-    } else {
-      // If the date is available, show the time slots modal for available day
-      setShowTimeSlots(true);
-    }
-  };
+    setLoading(true);
+    try {
+      const dateString = formatDateKey(selectedDate);
 
-  // Handle marking a date as unavailable
-  const handleMarkAsUnavailable = (recurFor4Weeks = false, timeRange: {start: string, end: string} | null = null) => {
-    if (selectedDate) {
-      // Check if the date is in the past
+      // Check if selected date is in the past
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Reset time part for proper comparison
-      
-      // Create a normalized version of the selected date for comparison
-      const normalizedDate = new Date(selectedDate);
-      normalizedDate.setHours(0, 0, 0, 0);
-      
-      if (normalizedDate < today) {
-        console.error("Cannot modify availability for past dates");
+      today.setHours(0, 0, 0, 0);
+      const selected = new Date(selectedDate);
+      selected.setHours(0, 0, 0, 0);
+      if (selected < today) {
+        showFlashMessage('warning', 'Cannot set availability for past dates.');
+        setLoading(false);
         return;
       }
+
+      // Validate range
+      const [startH] = selectedTimeRange.start.split(':').map(Number);
+      let endH: number;
       
-      const dateString = selectedDate.toISOString().split('T')[0];
-      console.log('Marking date as unavailable:', dateString);
-      console.log('Recur for 4 weeks:', recurFor4Weeks);
-      console.log('Time range:', timeRange);
+      if (selectedTimeRange.end === '23:59') {
+        endH = 24; // Treat 23:59 as 24:00 for calculation purposes
+      } else {
+        [endH] = selectedTimeRange.end.split(':').map(Number);
+      }
       
-      // Create a list of dates to process
-      const datesToProcess = [dateString];
+      if (Number.isNaN(startH) || Number.isNaN(endH) || endH <= startH) {
+        showFlashMessage('warning', 'Please select a valid time range (end must be greater than start).');
+        setLoading(false);
+        return;
+      }
+
+      // Check if setting availability for today and time is in the past
+      const now = new Date();
+      const isToday = selected.getTime() === today.getTime();
       
-      // If recurFor4Weeks is true, mark this week and 3 more weeks (total of 4 weeks)
-      if (recurFor4Weeks) {
-        for (let i = 1; i <= 3; i++) {
-          const nextWeekDate = new Date(selectedDate);
-          nextWeekDate.setDate(selectedDate.getDate() + (i * 7)); // Add 7 days for each week
-          const nextWeekDateStr = nextWeekDate.toISOString().split('T')[0];
-          datesToProcess.push(nextWeekDateStr);
+      if (isToday) {
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        
+        // Round up to the next hour if we're past the current hour
+        const nextAvailableHour = currentMinute > 0 ? currentHour + 1 : currentHour;
+        
+        if (startH < nextAvailableHour) {
+          const nextHourFormatted = `${String(nextAvailableHour).padStart(2, '0')}:00`;
+          showFlashMessage('warning', `Cannot set availability for past times. You can only set availability from ${nextHourFormatted} onwards.`);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Calculate number of hours in the range
+      const hourCount = endH - startH;
+      console.log(`Setting availability for ${hourCount} hour(s): ${selectedTimeRange.start} to ${selectedTimeRange.end}`);
+
+      // Build 1-hour slot ranges: each hour gets its own slot
+      // Example: 9-10 (1 hour) = only 9:00-10:00
+      // Example: 9-11 (2 hours) = 9:00-10:00 and 10:00-11:00
+      // Special case: 23:00-23:59 = 23:00-23:59
+      const slotRanges: Array<{ start: string; end: string }> = [];
+      
+      if (selectedTimeRange.end === '23:59' && startH === 23) {
+        // Special case: 23:00 to 23:59
+        slotRanges.push({ start: '23:00', end: '23:59' });
+      } else {
+        // Normal case: create hourly slots
+        for (let h = startH; h < endH; h++) {
+          const s = `${String(h).padStart(2, '0')}:00`;
+          const e = `${String(h + 1).padStart(2, '0')}:00`;
+          slotRanges.push({ start: s, end: e });
         }
       }
       
-      if (timeRange) {
-        // For partial day unavailability, add to unavailableDates with time range
-        const newUnavailableDates = [...unavailableDates];
-        
-        // Add unavailable entries for each date
-        datesToProcess.forEach(date => {
-          const unavailableEntry = {
-            id: `unavailable-${date}-${timeRange.start}-${timeRange.end}`,
-            date: date,
-            isFullDay: false,
-            timeRange: {
-              start: timeRange.start,
-              end: timeRange.end
-            }
-          };
-          
-          // Check if there's already an entry for this date and time range
-          const existingIndex = newUnavailableDates.findIndex(
-            entry => entry.date === date && 
-                   !entry.isFullDay && 
-                   entry.timeRange?.start === timeRange.start && 
-                   entry.timeRange?.end === timeRange.end
-          );
-          
-          if (existingIndex === -1) {
-            newUnavailableDates.push(unavailableEntry);
-          }
-        });
-        
-        // Update unavailableDates state
-        setUnavailableDates(newUnavailableDates);
-      } else {
-        // For full day unavailability, remove from availableDates
-        const newAvailableDates = availableDates.filter(date => !datesToProcess.includes(date));
-        setAvailableDates(newAvailableDates);
-      }
-      
-      // Close the modal
-      setShowTimeSlots(false);
+      console.log(`Generated ${slotRanges.length} slot range(s):`, slotRanges);
+
+      // Make one request per 1-hour slot
+      const tasks = slotRanges.map(({ start, end }) => {
+        const payload: AvailabilityRequest = {
+          Counselorid: counselorId,
+          startDate: dateString,
+          endDate: dateString,
+          startTime: start,
+          endTime: end,
+        };
+        return isAvailable ? setAvailability(payload) : setUnavailability(payload);
+      });
+      await Promise.all(tasks);
+
+      // Reload monthly view to refresh availability data
+      await loadMonthlyTimeSlots();
+      showFlashMessage('success', `Successfully ${isAvailable ? 'set availability' : 'set unavailability'} for ${dateString}`);
+    } catch (error) {
+      console.error('Error setting availability:', error);
+      showFlashMessage('error', `Failed to ${isAvailable ? 'set availability' : 'set unavailability'}. Please try again.`);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Handle marking a date as available - directly mark it without showing another popup
-  const handleMarkAsAvailable = (recurFor4Weeks = false, timeRange: {start: string, end: string} | null = null) => {
-    if (selectedUnavailableDate) {
-      const dateStr = selectedUnavailableDate.date;
-      const selectedDate = new Date(dateStr);
-      
-      // Check if the date is in the past
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Reset time part for proper comparison
-      
-      // Create a normalized version of the selected date for comparison
-      const normalizedDate = new Date(selectedDate);
-      normalizedDate.setHours(0, 0, 0, 0);
-      
-      if (normalizedDate < today) {
-        console.error("Cannot modify availability for past dates");
-        return;
-      }
-      
-      console.log('Marking date as available:', dateStr);
-      console.log('Recur for 4 weeks:', recurFor4Weeks);
-      console.log('Time range:', timeRange);
-      
-      // Create a list of dates to process
-      const datesToProcess = [dateStr];
-      
-      // If recurFor4Weeks is true, mark this week and 3 more weeks (total of 4 weeks)
-      if (recurFor4Weeks) {
-        for (let i = 1; i <= 3; i++) {
-          const nextWeekDate = new Date(selectedDate);
-          nextWeekDate.setDate(selectedDate.getDate() + (i * 7)); // Add 7 days for each week
-          const nextWeekDateStr = nextWeekDate.toISOString().split('T')[0];
-          datesToProcess.push(nextWeekDateStr);
-        }
-      }
-      
-      if (timeRange) {
-        // For partial day availability, add available slots to the calendar
-        // These will be tracked as available slots within an otherwise unavailable day
-        const newAvailableSlots = [...unavailableDates];
-        
-        // Add available time slots for each date
-        datesToProcess.forEach(date => {
-          const availableSlot = {
-            id: `available-${date}-${timeRange.start}-${timeRange.end}`,
-            date: date,
-            isFullDay: false,
-            isAvailable: true, // Mark this slot as available
-            timeRange: {
-              start: timeRange.start,
-              end: timeRange.end
-            }
-          };
-          
-          // Check if there's already an entry for this date and time range
-          const existingIndex = newAvailableSlots.findIndex(
-            entry => entry.date === date && 
-                   !entry.isFullDay && 
-                   entry.timeRange?.start === timeRange.start && 
-                   entry.timeRange?.end === timeRange.end &&
-                   entry.isAvailable === true
-          );
-          
-          if (existingIndex === -1) {
-            newAvailableSlots.push(availableSlot);
-          }
-        });
-        
-        // Update unavailableDates state to include the available slots
-        setUnavailableDates(newAvailableSlots);
-      } else {
-        // For full day availability, add to availableDates
-        const newAvailableDates = [...availableDates];
-        
-        // Add each date if it's not already available
-        datesToProcess.forEach(dateStr => {
-          if (!newAvailableDates.includes(dateStr)) {
-            newAvailableDates.push(dateStr);
-          }
-        });
-        
-        // Update the available dates
-        setAvailableDates(newAvailableDates);
-      }
-      
-      // Close the modal
-      setShowUnavailableDetails(false);
-      setSelectedUnavailableDate(null);
-    }
-  };
-
-  const handleUnavailableSlotClick = (date: Date, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent triggering the day click
-    const dateString = date.toISOString().split('T')[0];
-    const unavailableDate = unavailableDates.find(unavailable => unavailable.date === dateString);
-    
-    if (unavailableDate) {
-      setSelectedUnavailableDate(unavailableDate);
-      setShowUnavailableDetails(true);
-    }
-  };
-
-  // Helper function to check if a time slot is unavailable for partial day restrictions
-  const isTimeSlotUnavailable = (date: Date, time: string) => {
-    const dateString = date.toISOString().split('T')[0];
-    const unavailableEntry = unavailableDates.find(u => u.date === dateString && !u.isFullDay);
-    
-    if (!unavailableEntry || !unavailableEntry.timeRange) return false;
-    
-    const slotTime = time.padStart(5, '0'); // Ensure format like "09:00"
-    const startTime = unavailableEntry.timeRange.start;
-    const endTime = unavailableEntry.timeRange.end;
-    
-    return slotTime >= startTime && slotTime <= endTime;
-  };
-
-  const handleSessionAction = (sessionId: string, action: 'accept' | 'reject') => {
-    // Here you would implement the logic to accept/reject the session
-    console.log(`${action} session ${sessionId}`);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed': return 'text-green-600 bg-green-100 border-green-200';
-      case 'pending': return 'text-orange-600 bg-orange-100 border-orange-200';
-      case 'completed': return 'text-blue-600 bg-blue-100 border-blue-200';
-      default: return 'text-gray-600 bg-gray-100 border-gray-200';
-    }
-  };
-
-  const handleSaveUnavailabilityRules = (rules: UnavailabilityRule[]) => {
-    setUnavailabilityRules(rules);
-    
-    // Here you would typically:
-    // 1. Save rules to backend
-    // 2. Update calendar UI to reflect new rules
-    // 3. Show success message
-    console.log('Saving unavailability rules:', rules);
-  };
-
-  const days = getDaysInMonth(currentDate);
+  const days = getDaysInMonth();
+  const todaysSessions = getTodaysSessions();
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
   return (
     <div className="flex flex-col h-screen">
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar - Let the Sidebar component handle its own positioning */}
+        {/* Sidebar */}
         <div className="hidden lg:block">
           <Sidebar isOpen={true} onClose={closeSidebar} />
         </div>
         
-        {/* Mobile Sidebar */}
         <div className="lg:hidden">
           <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         </div>
@@ -824,93 +416,697 @@ const CounsellorCalendar: React.FC = () => {
           <NavBar onMenuClick={toggleSidebar} />
           <div className="p-4 lg:p-6">
             {/* Header */}
-            <CalendarHeader 
-              onMarkUnavailable={() => setShowUnavailable(true)} 
-              onSaveUnavailabilityRules={handleSaveUnavailabilityRules}
-              existingRules={unavailabilityRules}
-            />
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">My Calendar</h1>
+                  <p className="text-gray-600">Manage your availability and view your sessions</p>
+                </div>
+                <button
+                  onClick={() => setIsSessionFeeModalOpen(true)}
+                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Session Fees
+                </button>
+              </div>
+            </div>
 
-            {/* Status Legend */}
-            <StatusLegend />
+            {/* Monthly Availability Summary */}
+            <div className="mb-6 bg-white rounded-lg shadow p-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Monthly Availability Overview</h3>
+              {monthlyLoading ? (
+                <div className="text-sm text-gray-600 flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                  Loading availability data...
+                </div>
+              ) : (() => {
+                console.log('Rendering monthly overview. Monthly time slots:', monthlyTimeSlots);
+                const allSlots = Object.values(monthlyTimeSlots).flat();
+                console.log('All slots flattened:', allSlots);
+                
+                if (allSlots.length === 0) {
+                  return (
+                    <div className="text-sm text-gray-600">
+                      No availability configured yet. Start by selecting dates and setting your availability.
+                    </div>
+                  );
+                }
+                
+                const totalAvailable = allSlots.filter(slot => slot.isAvailable && !slot.isBooked).length;
+                const totalBooked = allSlots.filter(slot => slot.isBooked).length;
+                
+                // Calculate total unavailable as: future slots - marked available slots
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const totalPossibleSlots = 24 * daysInMonth;
+                
+                // Calculate expired slots (past times from current moment)
+                const now = new Date();
+                let expiredSlots = 0;
+                for (let day = 1; day <= daysInMonth; day++) {
+                  const date = new Date(year, month, day);
+                  for (let hour = 0; hour < 24; hour++) {
+                    const slotTime = new Date(date);
+                    slotTime.setHours(hour, 0, 0, 0);
+                    if (slotTime < now) {
+                      expiredSlots++;
+                    }
+                  }
+                }
+                
+                const futureSlots = totalPossibleSlots - expiredSlots;
+                const totalUnavailable = futureSlots - totalAvailable;
+                
+                const daysWithSlots = Object.keys(monthlyTimeSlots).filter(date => monthlyTimeSlots[date].length > 0).length;
+                
+                return (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{daysWithSlots}</div>
+                      <div className="text-blue-800">Days Configured</div>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">{totalAvailable}</div>
+                      <div className="text-green-800">Available Slots</div>
+                    </div>
+                    <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                      <div className="text-2xl font-bold text-yellow-600">{totalBooked}</div>
+                      <div className="text-yellow-800">Booked Slots</div>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <div className="text-2xl font-bold text-gray-600">{totalUnavailable}</div>
+                      <div className="text-gray-800">Unavailable Slots</div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 h-full">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
               {/* Calendar */}
               <div className="xl:col-span-3">
-                <CalendarGrid
-                  currentDate={currentDate}
-                  days={days}
-                  months={months}
-                  daysOfWeek={daysOfWeek}
-                  onNavigateMonth={navigateMonth}
-                  onToday={() => setCurrentDate(new Date())}
-                  onDateClick={handleDateClick}
-                  onUnavailableSlotClick={handleUnavailableSlotClick}
-                  onSessionAction={handleSessionAction}
-                  getStatusColor={getStatusColor}
-                />
+                <div className="bg-white rounded-lg shadow p-6">
+                  {/* Calendar Header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      {months[currentDate.getMonth()]} {currentDate.getFullYear()}
+                    </h2>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => navigateMonth('prev')}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-gray-600" />
+                      </button>
+                      <button
+                        onClick={() => setCurrentDate(new Date())}
+                        className="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200 transition-colors"
+                      >
+                        Today
+                      </button>
+                      <button
+                        onClick={() => navigateMonth('next')}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
+                        <ChevronRight className="w-5 h-5 text-gray-600" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Calendar Grid */}
+                  <div className="grid grid-cols-7 gap-1">
+                    {/* Day headers */}
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                      <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
+                        {day}
+                      </div>
+                    ))}
+                    
+                    {/* Calendar days */}
+                    {days.map((day, index) => (
+                      <div key={index} className="min-h-[100px] border border-gray-200 p-1">
+                        {day && (
+                          <div
+                            className={`cursor-pointer p-2 rounded-md transition-colors ${
+                              day.isToday 
+                                ? 'bg-blue-100 border border-blue-300' 
+                                : 'hover:bg-gray-50'
+                            } ${
+                              selectedDate?.toDateString() === day.date.toDateString()
+                                ? 'ring-2 ring-blue-500'
+                                : ''
+                            }`}
+                            onClick={() => setSelectedDate(day.date)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className={`text-sm ${day.isToday ? 'font-bold text-blue-600' : 'text-gray-900'}`}>
+                                {day.date.getDate()}
+                              </div>
+                              
+                              {/* Availability indicator (always show) */}
+                              {day.availabilityStatus && (
+                                <div className={`w-2 h-2 rounded-full ${
+                                  day.availabilityStatus === 'available' ? 'bg-green-500' :
+                                  day.availabilityStatus === 'partially-booked' ? 'bg-yellow-500' :
+                                  day.availabilityStatus === 'fully-booked' ? 'bg-red-500' :
+                                  day.availabilityStatus === 'unavailable' ? 'bg-gray-400' :
+                                  'bg-gray-200'
+                                }`} title={
+                                  day.availabilityStatus === 'available' ? 'Available' :
+                                  day.availabilityStatus === 'partially-booked' ? 'Partially Booked' :
+                                  day.availabilityStatus === 'fully-booked' ? 'Fully Booked' :
+                                  day.availabilityStatus === 'unavailable' ? 'Unavailable' :
+                                  'No slots set'
+                                } />
+                              )}
+                            </div>
+                            
+                            {/* Show sessions */}
+                            {day.sessions.slice(0, 2).map((session, idx) => (
+                              <div key={idx} className="text-xs bg-green-100 text-green-700 px-1 py-0.5 rounded mt-1 truncate">
+                                {session.time} - {session.clientName}
+                              </div>
+                            ))}
+
+                            {/* Available time slots preview for the day */}
+                            {(() => {
+                              const dateKey = formatDateKey(day.date);
+                              const slots = monthlyTimeSlots[dateKey] || [];
+                              const available = slots.filter(s => s.isAvailable && !s.isBooked);
+                              if (available.length === 0) return null;
+                              return (
+                                <div className="mt-1">
+                                  {available.slice(0, 2).map((s) => (
+                                    <div key={`${dateKey}-${s.id}`} className="text-[10px] bg-blue-50 text-blue-700 px-1 py-0.5 rounded mt-1 inline-block mr-1">
+                                      {s.time}
+                                    </div>
+                                  ))}
+                                  {available.length > 2 && (
+                                    <span className="text-[10px] text-gray-500">+{available.length - 2} more</span>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                            
+                            {day.sessions.length > 2 && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                +{day.sessions.length - 2} more
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Availability Legend */}
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Availability Status</h4>
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div className="flex items-center">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span className="text-gray-600">Available</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                        <span className="text-gray-600">Partially Booked</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                        <span className="text-gray-600">Fully Booked</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full mr-2"></div>
+                        <span className="text-gray-600">Unavailable</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Right Sidebar */}
-              <CalendarSidebar
-                sessions={sessions}
-                onSessionAction={handleSessionAction}
-                onShowPendingRequests={() => setShowPendingRequests(true)}
-                getStatusColor={getStatusColor}
-              />
+              <div className="space-y-6">
+                {/* Schedule for Selected Date or Today */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+                    {selectedDate 
+                      ? `${selectedDate.toLocaleDateString('en-US', { 
+                          weekday: 'short', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })} Schedule`
+                      : "Today's Schedule"
+                    }
+                  </h3>
+                  
+                  {(() => {
+                    // Get sessions for selected date or today
+                    const displaySessions = selectedDate 
+                      ? sessions.filter(session => session.date === formatDateKey(selectedDate))
+                      : todaysSessions;
+                    
+                    const dateLabel = selectedDate 
+                      ? selectedDate.toLocaleDateString('en-US', { 
+                          weekday: 'long', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })
+                      : 'today';
+                    
+                    return displaySessions.length === 0 ? (
+                      <p className="text-gray-500 text-sm">No sessions scheduled for {dateLabel}</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {displaySessions.map((session) => (
+                          <div key={session.id} className="border border-gray-200 rounded-lg p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <Clock className="w-4 h-4 text-gray-500 mr-2" />
+                                <span className="font-medium text-gray-900">{session.time}</span>
+                              </div>
+                              <span className={`px-2 py-1 text-xs rounded-full ${
+                                session.status === 'scheduled' ? 'bg-green-100 text-green-700' :
+                                session.status === 'ongoing' ? 'bg-green-100 text-green-700' :
+                                session.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                session.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                {session.status}
+                              </span>
+                            </div>
+                            <div className="flex items-center mt-1">
+                              <User className="w-4 h-4 text-gray-500 mr-2" />
+                              <span className="text-sm text-gray-600">{session.clientName}</span>
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              {session.duration} minutes
+                            </div>
+                            {isSessionJoinable(session.date, session.time) && (session.status === 'scheduled' || session.status === 'ongoing') && (
+                              <button
+                                onClick={() => joinSession(session.id, session.clientId)}
+                                className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+                              >
+                                <Video className="w-4 h-4" />
+                                Join Now
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Selected Date Details */}
+                {selectedDate && (
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      {selectedDate.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </h3>
+
+                    {/* Current Availability Status */}
+                    {(() => {
+                      const selectedDateString = formatDateKey(selectedDate);
+                      const availabilityStatus = getAvailabilityStatus(selectedDateString);
+                      const daySlots = monthlyTimeSlots[selectedDateString] || [];
+                      
+                      // Calculate counts for all 24 hours
+                      let availableCount = 0, bookedCount = 0, unavailableCount = 0;
+                      
+                      for (let hour = 0; hour < 24; hour++) {
+                        const hourTime = `${String(hour).padStart(2, '0')}:00`;
+                        const existingSlot = daySlots.find(slot => slot.time === hourTime);
+                        
+                        if (existingSlot) {
+                          if (existingSlot.isBooked) {
+                            bookedCount++;
+                          } else if (existingSlot.isAvailable) {
+                            availableCount++;
+                          } else {
+                            unavailableCount++;
+                          }
+                        } else {
+                          // If no slot exists in DB, count as unavailable
+                          unavailableCount++;
+                        }
+                      }
+                      
+                      if (availableCount > 0 || bookedCount > 0 || unavailableCount > 0) {
+                        
+                        return (
+                          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center mb-2">
+                              <div className={`w-3 h-3 rounded-full mr-2 ${
+                                availabilityStatus === 'available' ? 'bg-green-500' :
+                                availabilityStatus === 'partially-booked' ? 'bg-yellow-500' :
+                                availabilityStatus === 'fully-booked' ? 'bg-red-500' :
+                                'bg-gray-400'
+                              }`} />
+                              <span className="text-sm font-medium text-gray-900">
+                                Current Status: {
+                                  availabilityStatus === 'available' ? 'Available' :
+                                  availabilityStatus === 'partially-booked' ? 'Partially Booked' :
+                                  availabilityStatus === 'fully-booked' ? 'Fully Booked' :
+                                  'Unavailable'
+                                }
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-600 space-y-1">
+                              <div>Available slots: {availableCount}</div>
+                              <div>Booked slots: {bookedCount}</div>
+                              <div>Unavailable slots: {unavailableCount}</div>
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        // This should never happen since we always have 24 hours, but keep as fallback
+                        return (
+                          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                            <div className="text-sm text-gray-800">
+                              All 24 hours are unavailable for this date.
+                            </div>
+                          </div>
+                        );
+                      }
+                    })()}
+
+                    {/* Availability Controls */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Set Time Range
+                      </label>
+                      <div className="flex space-x-2">
+                        <select
+                          value={selectedTimeRange.start}
+                          onChange={(e) => setSelectedTimeRange(prev => ({ ...prev, start: e.target.value }))}
+                          className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
+                        >
+                          {Array.from({ length: 24 }, (_, i) => {
+                            // Check if this time slot should be disabled for today
+                            const today = new Date();
+                            const selectedToday = selectedDate && selectedDate.toDateString() === today.toDateString();
+                            
+                            let isDisabled = false;
+                            if (selectedToday) {
+                              const currentHour = today.getHours();
+                              const currentMinute = today.getMinutes();
+                              const nextAvailableHour = currentMinute > 0 ? currentHour + 1 : currentHour;
+                              isDisabled = i < nextAvailableHour;
+                            }
+                            
+                            return (
+                              <option 
+                                key={i} 
+                                value={`${i.toString().padStart(2, '0')}:00`}
+                                disabled={isDisabled}
+                                style={isDisabled ? { color: '#9CA3AF' } : {}}
+                              >
+                                {`${i.toString().padStart(2, '0')}:00`} {isDisabled ? '' : ''}
+                              </option>
+                            );
+                          })}
+                        </select>
+                        <span className="self-center text-gray-500">to</span>
+                        <select
+                          value={selectedTimeRange.end}
+                          onChange={(e) => setSelectedTimeRange(prev => ({ ...prev, end: e.target.value }))}
+                          className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
+                        >
+                          {Array.from({ length: 24 }, (_, i) => {
+                            const hour = i + 1; // Start from 1:00
+                            const timeValue = hour === 24 ? '23:59' : `${hour.toString().padStart(2, '0')}:00`;
+                            const displayText = hour === 24 ? '23:59' : `${hour.toString().padStart(2, '0')}:00`;
+                            
+                            // Check if this end time is valid for the selected start time
+                            const [startH] = selectedTimeRange.start.split(':').map(Number);
+                            const isValidEndTime = hour > startH;
+                            
+                            return (
+                              <option 
+                                key={i} 
+                                value={timeValue}
+                                disabled={!isValidEndTime}
+                                style={{ 
+                                  opacity: isValidEndTime ? 1 : 0.4,
+                                  color: isValidEndTime ? 'inherit' : '#9CA3AF'
+                                }}
+                              >
+                                {displayText} {!isValidEndTime ? '' : ''}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                      {(() => {
+                        const today = new Date();
+                        const selectedToday = selectedDate && selectedDate.toDateString() === today.toDateString();
+                        
+                        if (selectedToday) {
+                          const currentHour = today.getHours();
+                          const currentMinute = today.getMinutes();
+                          const nextAvailableHour = currentMinute > 0 ? currentHour + 1 : currentHour;
+                          const nextHourFormatted = `${String(nextAvailableHour).padStart(2, '0')}:00`;
+                          
+                          return (
+                            <div className="text-xs text-blue-600 mt-1 flex items-center">
+                              <Clock className="w-3 h-3 mr-1" />
+                              Current time: {today.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}. 
+                              You can set availability from {nextHourFormatted} onwards.
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                      {(() => {
+                        const [startH] = selectedTimeRange.start.split(':').map(Number);
+                        const endTime = selectedTimeRange.end;
+                        const [endH] = endTime.split(':').map(Number);
+                        const actualEndH = endTime === '23:59' ? 24 : endH;
+                        
+                        if (actualEndH <= startH) {
+                          return <div className="text-xs text-red-600 mt-1">End time must be greater than start time</div>;
+                        }
+                        return null;
+                      })()}
+                    </div>
+
+                    <div className="flex space-x-2">
+                      {(() => {
+                        // Check if selected date is in the past
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const selected = new Date(selectedDate);
+                        selected.setHours(0, 0, 0, 0);
+                        const isPastDate = selected < today;
+                        
+                        // Check if time range is valid
+                        const [startH] = selectedTimeRange.start.split(':').map(Number);
+                        const endTime = selectedTimeRange.end;
+                        const [endH] = endTime.split(':').map(Number);
+                        const actualEndH = endTime === '23:59' ? 24 : endH;
+                        const isValidRange = actualEndH > startH;
+                        
+                        const isDisabled = loading || isPastDate || !isValidRange;
+                        
+                        return (
+                          <>
+                            <button
+                              onClick={() => handleSetAvailability(true)}
+                              disabled={isDisabled}
+                              className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center justify-center text-sm"
+                            >
+                              <Plus className="w-4 h-4 mr-1" />
+                              Set Available
+                            </button>
+                            <button
+                              onClick={() => handleSetAvailability(false)}
+                              disabled={isDisabled}
+                              className="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center justify-center text-sm"
+                            >
+                              <Minus className="w-4 h-4 mr-1" />
+                              Set Unavailable
+                            </button>
+                          </>
+                        );
+                      })()}
+                    </div>
+                    
+                    {(() => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const selected = new Date(selectedDate);
+                      selected.setHours(0, 0, 0, 0);
+                      if (selected < today) {
+                        return <div className="text-xs text-red-600 mt-2">Cannot set availability for past dates</div>;
+                      }
+                      return null;
+                    })()}
+
+                    {/* Time Slots - Show all 24 hours */}
+                    <div className="mt-6">
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">Time Slots (24 Hours)</h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        {Array.from({ length: 24 }, (_, i) => {
+                          const hourTime = `${String(i).padStart(2, '0')}:00`;
+                          const selectedDateString = formatDateKey(selectedDate);
+                          const daySlots = monthlyTimeSlots[selectedDateString] || [];
+                          
+                          // Check if this time slot is in the past for today
+                          const today = new Date();
+                          const selectedToday = selectedDate.toDateString() === today.toDateString();
+                          let isPastTime = false;
+                          
+                          if (selectedToday) {
+                            const currentHour = today.getHours();
+                            const currentMinute = today.getMinutes();
+                            const nextAvailableHour = currentMinute > 0 ? currentHour + 1 : currentHour;
+                            isPastTime = i < nextAvailableHour;
+                          }
+                          
+                          // Find if this hour has a slot in the database
+                          const existingSlot = daySlots.find(slot => slot.time === hourTime);
+                          
+                          let status: 'booked' | 'available' | 'unavailable' | 'past';
+                          if (isPastTime) {
+                            status = 'past';
+                          } else if (existingSlot) {
+                            if (existingSlot.isBooked) {
+                              status = 'booked';
+                            } else if (existingSlot.isAvailable) {
+                              status = 'available';
+                            } else {
+                              status = 'unavailable';
+                            }
+                          } else {
+                            // If no slot exists in DB, consider it unavailable
+                            status = 'unavailable';
+                          }
+                          
+                          return (
+                            <div
+                              key={i}
+                              className={`p-2 rounded-md text-xs text-center border ${
+                                status === 'past'
+                                  ? 'bg-gray-50 border-gray-300 text-gray-400 opacity-60'
+                                  : status === 'booked'
+                                    ? 'bg-red-100 border-red-200 text-red-700'
+                                    : status === 'available'
+                                      ? 'bg-green-100 border-green-200 text-green-700'
+                                      : 'bg-gray-100 border-gray-200 text-gray-500'
+                              }`}
+                              title={isPastTime ? 'Past time - cannot modify' : ''}
+                            >
+                              <div className="font-medium">{hourTime}</div>
+                              <div className="flex items-center justify-center mt-1">
+                                {status === 'past' ? (
+                                  <Clock className="w-3 h-3" />
+                                ) : status === 'booked' ? (
+                                  <XCircle className="w-3 h-3" />
+                                ) : status === 'available' ? (
+                                  <CheckCircle className="w-3 h-3" />
+                                ) : (
+                                  <Minus className="w-3 h-3" />
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                        
+                      <div className="mt-3 text-xs text-gray-500">
+                        <div className="flex items-center space-x-3 flex-wrap">
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-green-100 border border-green-200 rounded mr-1"></div>
+                            Available
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-red-100 border border-red-200 rounded mr-1"></div>
+                            Booked
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-gray-100 border border-gray-200 rounded mr-1"></div>
+                            Unavailable
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-gray-50 border border-gray-300 rounded mr-1 opacity-60"></div>
+                            Past Time
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sessions for selected day */}
+                    {/* {(() => {
+                      const key = formatDateKey(selectedDate);
+                      const daySessions = sessions.filter(s => s.date === key);
+                      return (
+                        <div className="mt-6">
+                          <h4 className="text-sm font-medium text-gray-700 mb-3">Sessions</h4>
+                          {daySessions.length === 0 ? (
+                            <div className="text-xs text-gray-500">No sessions for this day.</div>
+                          ) : (
+                            <div className="space-y-2">
+                              {daySessions.map((s) => (
+                                <div key={s.id} className="border border-gray-200 rounded p-2">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center text-sm">
+                                      <Clock className="w-4 h-4 text-gray-500 mr-2" />
+                                      <span className="font-medium text-gray-900">{s.time}</span>
+                                    </div>
+                                    <span className={`px-2 py-0.5 text-[11px] rounded-full ${
+                                      s.status === 'scheduled' ? 'bg-green-100 text-green-700' :
+                                      s.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                                      s.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                      s.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                      s.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                                      'bg-gray-100 text-gray-700'
+                                    }`}>
+                                      {s.status}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center mt-1 text-sm text-gray-700">
+                                    <User className="w-4 h-4 text-gray-500 mr-2" />
+                                    {s.clientName}
+                                  </div>
+                                  <div className="text-xs text-gray-500 mt-1">{s.duration} minutes</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()} */}
+                  </div>
+                )}
+              </div>
             </div>
-
-            {/* Time Slots Modal */}
-            {showTimeSlots && selectedDate && (
-              <TimeSlotsModal
-                selectedDate={selectedDate}
-                timeSlots={timeSlots}
-                sessions={sessions}
-                isTimeSlotUnavailable={isTimeSlotUnavailable}
-                onClose={() => setShowTimeSlots(false)}
-                onMarkAsUnavailable={handleMarkAsUnavailable}
-              />
-            )}
-
-              {showUnavailable && (
-              <MarkUnavailableModal
-                unavailabilityType={unavailabilityType}
-                onUnavailabilityTypeChange={setUnavailabilityType}
-                sessions={sessions}
-                unavailableDates={unavailableDates}
-                onClose={() => {
-                  setShowUnavailable(false);
-                  setUnavailabilityType('full-day');
-                }}
-              />
-            )}
-
-            {/* Unavailable Day Details Modal */}
-            {showUnavailableDetails && selectedUnavailableDate && (
-              <UnavailableDayDetailsModal
-                isOpen={showUnavailableDetails}
-                onClose={() => setShowUnavailableDetails(false)}
-                unavailableDate={selectedUnavailableDate}
-                onMarkAsAvailable={handleMarkAsAvailable}
-              />
-            )}
-
-            <HistoricalDetailsModal
-              isOpen={showHistoricalDetails}
-              onClose={() => {
-                setShowHistoricalDetails(false);
-                setSelectedHistoricalDate(null);
-              }}
-              historicalData={selectedHistoricalDate}
-            />
-
-            <PendingRequestsModal
-              isOpen={showPendingRequests}
-              onClose={() => setShowPendingRequests(false)}
-              pendingSessions={sessions.filter(s => s.status === 'confirmed')}
-            />
           </div>
         </div>
       </div>
+      
+      {/* Flash Message */}
+      <FlashMessage
+        type={flashMessage.type}
+        message={flashMessage.message}
+        isVisible={flashMessage.isVisible}
+        onClose={hideFlashMessage}
+      />
+
+      {/* Session Fee Manager Modal */}
+      <SessionFeeManager
+        isOpen={isSessionFeeModalOpen}
+        onClose={() => setIsSessionFeeModalOpen(false)}
+        onSuccess={() => showFlashMessage('success', 'Session fee settings updated successfully!')}
+        onError={(error) => showFlashMessage('error', error)}
+      />
     </div>
   );
 };

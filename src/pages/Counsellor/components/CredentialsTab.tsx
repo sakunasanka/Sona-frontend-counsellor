@@ -47,14 +47,14 @@ const CredentialsTab: React.FC<CredentialsTabProps> = ({
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Award className="w-5 h-5 text-buttonBlue-500" />
-            Professional Credentials
+            Educational Qualifications
           </h3>
-          <button
+          {/* <button
             onClick={() => setShowAddCredential(!showAddCredential)}
             className="bg-buttonBlue-500 hover:bg-buttonBlue-600 text-white px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1"
           >
-            + Add Credential
-          </button>
+            + Add Qualification
+          </button> */}
         </div>
         
         {/* Add new credential form */}
@@ -124,11 +124,6 @@ const CredentialsTab: React.FC<CredentialsTabProps> = ({
             <div key={credential.id} className="border-l-4 border-buttonBlue-500 pl-4 py-2 relative group">
               {editingCredential === credential.id ? (
                 <div className="space-y-2">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-2">
-                    <p className="text-blue-800 text-xs">
-                      Any changes will require admin re-approval before appearing on your public profile.
-                    </p>
-                  </div>
                   <input
                     key={`title-${credential.id}`}
                     type="text"
@@ -186,12 +181,12 @@ const CredentialsTab: React.FC<CredentialsTabProps> = ({
                   <h4 className="font-semibold text-gray-900">{credential.title}</h4>
                   <p className="text-gray-600">{credential.institution}</p>
                   <p className="text-sm text-gray-500">{credential.year}</p>
-                  <button
+                  {/* <button
                     onClick={() => onStartCredentialEdit(credential)}
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-80 hover:opacity-100 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs"
                   >
                     Edit
-                  </button>
+                  </button> */}
                 </>
               )}
             </div>

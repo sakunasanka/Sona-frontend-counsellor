@@ -5,16 +5,12 @@ import { CalendarDay, Session } from './types';
 interface CalendarDayCellProps {
   day: CalendarDay | null;
   onDateClick: (date: Date) => void;
-  onUnavailableSlotClick: (date: Date, e: React.MouseEvent) => void;
-  onSessionAction: (sessionId: string, action: 'accept' | 'reject') => void;
   getStatusColor: (status: string) => string;
 }
 
 const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
   day,
   onDateClick,
-  onUnavailableSlotClick,
-  onSessionAction,
   getStatusColor
 }) => {
   if (!day) {

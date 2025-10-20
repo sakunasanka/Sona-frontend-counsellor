@@ -9,3 +9,17 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js') // Path relative to the root domain
+      .then((registration) => {
+        console.log('Service Worker registered successfully with scope: ', registration.scope);
+      })
+      .catch((error) => {
+        console.error('Service Worker registration failed: ', error);
+      });
+  });
+} else {
+    console.log('Service Worker is not supported by this browser.');
+}

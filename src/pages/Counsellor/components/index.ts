@@ -1,4 +1,3 @@
-export { default as StatusIndicator } from './StatusIndicator';
 export { default as ProfileStats } from './ProfileStats';
 export { default as TabNavigation } from './TabNavigation';
 export { default as ProfileHeader } from './ProfileHeader';
@@ -8,13 +7,14 @@ export { default as CredentialsTab } from './CredentialsTab';
 export { default as AchievementsTab } from './AchievementsTab';
 
 // New Client components
-export { default as ClientCard } from './ClientCard';
+export { default as ClientTable } from './ClientTable';
 export { default as ClientSearch } from './ClientSearch';
 export { default as ClientFilters } from './ClientFilters';
 export { default as FilterDrawer } from './FilterDrawer';
 export { default as ClientStats } from './ClientStats';
 export { default as ClientList } from './ClientList';
+export { default as PrescriptionManager } from './PrescriptionManager';
 
 // Export types
-export type { Client } from './ClientCard';
+export type { Client } from './ClientTable';
 export type { FilterType, AnonymousFilterType, StudentFilterType } from './ClientFilters';

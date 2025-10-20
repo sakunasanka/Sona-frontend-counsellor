@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { X, Calendar, Settings, AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { X, AlertTriangle, Plus, Trash2 } from 'lucide-react';
 
-interface UnavailabilityRule {
+export interface UnavailabilityRule {
   id: string;
   type: 'weekdays' | 'weekends' | 'specific-days' | 'date-range' | 'daily-time';
   days?: string[];

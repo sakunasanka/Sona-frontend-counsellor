@@ -1,11 +1,17 @@
 import Home from './pages/Home';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import { ProfileProvider } from './contexts/ProfileContext';
+import NotFoundPage from './pages/Error/NotFoundPage';
+import ForbiddenPage from './pages/Error/ForbiddenPage';
 import SignUp from "./pages/Auth/SignUp";
+import SignUpOptions from "./pages/Auth/SignUpOptions";
 import SignIn from './pages/Auth/SignIn';
+import SignInOptions from './pages/Auth/SignInOptions';
 import GeneralUserSignIn from './pages/Auth/GeneralUserSignIn';
 import CounsellorDashboard from './pages/Counsellor/CounsellorDashboard';
 import ExampleUse from './pages/ExampleUse';
-import CounsellorFeedbacks from './pages/Counsellor/CounsellorFeedbacks';
+// import CounsellorFeedbacks from './pages/Counsellor/CounsellorFeedbacks';
 import CounsellorSessions from './pages/Counsellor/CounsellorSessions';
 import CounsellorSessionDetails from './pages/Counsellor/CounsellorSessionDetails';
 import CounsellorBlogs from './pages/Counsellor/CounsellorBlogs';
@@ -17,50 +23,55 @@ import CounsellorCalendar from './pages/Counsellor/CounsellorCalendar';
 import CounsellorClients from './pages/Counsellor/CounsellorClients';
 import CounsellorEarnings from './pages/Counsellor/CounsellorEarnings';
 import ClientDetails from './pages/Counsellor/ClientDetails';
-import PsychiatristDashboard from './pages/Psychiatrist/PsychiatristDashboard';
-import PsychiatristChat from './pages/Psychiatrist/PsychiatristChats';
-import PsychiatristSessions from './pages/Psychiatrist/PsychiatristSessions';
-import PsychiatristSessionDetails from './pages/Psychiatrist/PsychiatristSessionDetails';
-import PsychiatristFeedbacks from './pages/Psychiatrist/PsychiatristFeedbacks';
-import PsychiatristPatients from './pages/Psychiatrist/PsychiatristPatients';
-import PatientDetails from './pages/Psychiatrist/PatientDetails';
 import CreatePrescription from './pages/Psychiatrist/CreatePrescription';
+import ViewPrescription from './pages/Psychiatrist/ViewPrescription';
+import MeetingPage from './pages/Counsellor/MeetingPage';
 
 
 function App() {
 
   return (
-    <Router>
-      <Routes>
+    <ProfileProvider>
+      <Router>
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/example-use" element={<ExampleUse />} />
-        <Route path="/signup" element={<SignUp/>} ></Route>
+        <Route path="/signup" element={<SignUpOptions />} />
+        <Route path="/signup-professional" element={<SignUp />} />
         <Route path="/signin" element={<SignIn />} />
-        <Route path="/generalusersignin" element={<GeneralUserSignIn />} />
-        <Route path="/counsellor-dashboard" element={<CounsellorDashboard />} />
-        <Route path="/psychiatrist-dashboard" element={<PsychiatristDashboard />} />
-        <Route path="/counsellor-feedbacks" element={<CounsellorFeedbacks />} />
-        <Route path="/counsellor-blogs" element={<CounsellorBlogs />} />
-        <Route path="/counsellor-sessions" element={<CounsellorSessions />} />
-        <Route path="/counsellor-session-details" element={<CounsellorSessionDetails />} />
-        <Route path="/counsellor/create-blog" element={<CreateBlog />} />
-        <Route path="/counsellor/edit-blog/:blogId" element={<EditBlog />} />
-        <Route path="/counsellor/chats" element={<CounsellorChats />} />
-        <Route path="/counsellor-profile" element={<CounsellorProfile />} />
-        <Route path="/counsellor-calendar" element={<CounsellorCalendar />} />
-        <Route path="/counsellor-clients" element={<CounsellorClients />} />
-        <Route path="/counsellor/earnings" element={<CounsellorEarnings />} />
-        <Route path="/counsellor-clients/:clientId" element={<ClientDetails />} />
-        <Route path="/psychiatrist-chats" element={<PsychiatristChat />} />
-        <Route path="/psychiatrist-sessions" element={<PsychiatristSessions />} />
-        <Route path="/psychiatrist-session-details" element={<PsychiatristSessionDetails />} />
-        <Route path="/psychiatrist-feedbacks" element={<PsychiatristFeedbacks />} />
-        <Route path="/psychiatrist-patients" element={<PsychiatristPatients />} />
-        <Route path="/psychiatrist-patients/:clientId" element={<PatientDetails />} />
-        <Route path="/psychiatrist/create-prescription" element={<CreatePrescription />} />
-        
-      </Routes>
-    </Router>
+        <Route path="/signin-options" element={<SignInOptions />} />
+        <Route path="/general-user-signin" element={<GeneralUserSignIn />} />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <CounsellorDashboard />
+          </ProtectedRoute>
+        } />
+
+  {/* Counsellor protected routes */}
+  <Route path="/blogs" element={<ProtectedRoute><CounsellorBlogs /></ProtectedRoute>} />
+  <Route path="/sessions" element={<ProtectedRoute><CounsellorSessions /></ProtectedRoute>} />
+  <Route path="/session-details" element={<ProtectedRoute><CounsellorSessionDetails /></ProtectedRoute>} />
+  <Route path="/create-blog" element={<ProtectedRoute><CreateBlog /></ProtectedRoute>} />
+  <Route path="/edit-blog/:blogId" element={<ProtectedRoute><EditBlog /></ProtectedRoute>} />
+  <Route path="/chats" element={<ProtectedRoute><CounsellorChats /></ProtectedRoute>} />
+  <Route path="/profile" element={<ProtectedRoute><CounsellorProfile /></ProtectedRoute>} />
+  <Route path="/calendar" element={<ProtectedRoute><CounsellorCalendar /></ProtectedRoute>} />
+  <Route path="/clients" element={<ProtectedRoute><CounsellorClients /></ProtectedRoute>} />
+  <Route path="/earnings" element={<ProtectedRoute><CounsellorEarnings /></ProtectedRoute>} />
+  <Route path="/clients/:clientId" element={<ProtectedRoute><ClientDetails /></ProtectedRoute>} />
+  <Route path="/meeting/:sessionId/:clientId" element={<MeetingPage />} />
+
+  {/* Error routes */}
+  <Route path="/forbidden" element={<ForbiddenPage />} />
+  <Route path="*" element={<NotFoundPage />} />
+
+          {/* Psychiatrist protected routes */}
+        <Route path="/psychiatrist/create-prescription" element={<ProtectedRoute><CreatePrescription /></ProtectedRoute>} />
+        <Route path="/psychiatrist/view-prescription/:prescriptionId" element={<ProtectedRoute><ViewPrescription /></ProtectedRoute>} />
+
+        </Routes>
+      </Router>
+    </ProfileProvider>
   );
 }
 

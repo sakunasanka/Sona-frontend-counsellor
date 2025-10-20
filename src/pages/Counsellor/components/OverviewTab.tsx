@@ -2,6 +2,7 @@ import React from 'react';
 import { BookOpen, Globe, Mail, Phone } from 'lucide-react';
 import { CounsellorProfile } from '../types';
 import { AVAILABLE_LANGUAGES, Language } from '../constants';
+import PhoneInput from '../../../components/ui/PhoneInput';
 
 interface OverviewTabProps {
   profile: CounsellorProfile;
@@ -15,6 +16,8 @@ interface OverviewTabProps {
   onAddSpecialization: () => void;
   onRemoveSpecialization: (specialization: string) => void;
   onSpecializationInputKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  editForm?: Partial<CounsellorProfile>;
+  onInputChange?: (field: string, value: any) => void;
 }
 
 const OverviewTab: React.FC<OverviewTabProps> = ({
@@ -28,7 +31,9 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   onRemoveLanguage,
   onAddSpecialization,
   onRemoveSpecialization,
-  onSpecializationInputKeyPress
+  onSpecializationInputKeyPress,
+  editForm,
+  onInputChange
 }) => {
   return (
     <div className="space-y-6">
@@ -139,7 +144,21 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
           <div className="flex items-center gap-3">
             <Phone className="w-5 h-5 text-gray-400" />
-            <span className="text-gray-600">{profile.phone}</span>
+            {!isEditing ? (
+              <span className="text-gray-600">{profile.phone}</span>
+            ) : (
+              <div className="flex-1">
+                <PhoneInput
+                  value={editForm?.phone || ''}
+                  onChange={(value) => onInputChange?.('phone', value)}
+                  country="LK"
+                  placeholder="Phone number"
+                  showValidation={true}
+                  autoFormat={true}
+                  className="text-sm"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

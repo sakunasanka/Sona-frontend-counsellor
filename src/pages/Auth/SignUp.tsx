@@ -1,21 +1,14 @@
 import { useState, useRef } from 'react';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import Checkbox from '../../components/ui/Checkbox';
 import MultiSelectDropdown from '../../components/ui/MultiSelectDropdown';
 import Card from '../../components/ui/Card';
-
-const languageOptions = [
-  { value: 'sinhala', label: 'Sinhala' },
-  { value: 'english', label: 'English' },
-  { value: 'tamil', label: 'Tamil' },
-  { value: 'chinese', label: 'Chinese' },
-  { value: 'japanese', label: 'Japanese' },
-  { value: 'telugu', label: 'Telugu' },
-  { value: 'hindi', label: 'Hindi' },
-];
+import { signupCounselor } from '../../api/userAPI';
+import { uploadQualification } from '../../utils/cloudinaryUpload';
+import { validatePhoneNumber } from '../../utils/phoneValidation';
+import PhoneInput from '../../components/ui/PhoneInput';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -23,46 +16,50 @@ const SignUp = () => {
   
   // Get the selected role from navigation state if available
   const passedRole = location.state?.selectedRole;
-  const initialUserType = (passedRole === 'counsellor' || passedRole === 'psychiatrist') 
-    ? passedRole as 'counsellor' | 'psychiatrist'
-    : 'counsellor';
+  const initialUserType = (passedRole === 'Counselor' || passedRole === 'Psychiatrist') 
+    ? passedRole as 'Counselor' | 'Psychiatrist'
+    : 'Counselor';
   
-  const [userType, setUserType] = useState<'counsellor' | 'psychiatrist'>(initialUserType);
+  const [userType, setUserType] = useState<'Counselor' | 'Psychiatrist'>(initialUserType);
   const [formData, setFormData] = useState({
-    fullName: '',
+    displayName: '',
     email: '',
-    mobile: '',
     password: '',
     confirmPassword: '',
-    qualification: '',
-    license: '',
-    experience: '',
-    specialization: '',
-    institution: '',
-    languages: [] as string[],
-    bio: '',
-    daysAvailable: [],
-    hoursAvailable: '',
-    documents: null as File | null,
-    agreed: false,
+    title: '',
+    specialities: [] as string[],
+    address: '',
+    contact_no: '',
+    license_no: '',
+    idCard: '',
+    isVolunteer: false,
+    isAvailable: true,
+    description: '',
+    sessionFee: '',
+    eduQualifications: [{
+      institution: '',
+      degree: '',
+      field: '',
+      grade: '',
+      year: '',
+      proof: null as File | null,
+      proofUrl: '',
+    }],
+    experiences: [{
+      position: '',
+      company: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+      document: null as File | null,
+      documentUrl: '',
+    }],
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
-  const [requiredFieldErrors, setRequiredFieldErrors] = useState<{ [key: string]: boolean }>({});
-  const [touchedFields, setTouchedFields] = useState<{ [key: string]: boolean }>({});
   
   const formRef = useRef<HTMLFormElement>(null);
-
-  const scrollToFirstError = () => {
-    const firstErrorElement = document.querySelector('.error-field');
-    if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
-        });
-    }
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -72,95 +69,175 @@ const SignUp = () => {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+  };
+
+  const handleQualificationChange = (index: number, field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      eduQualifications: prev.eduQualifications.map((qual, i) =>
+        i === index ? { ...qual, [field]: value } : qual
+      ),
+    }));
     
-    // Clear required field error when user starts typing
-    if (requiredFieldErrors[name]) {
-      setRequiredFieldErrors(prev => ({ ...prev, [name]: false }));
+    // Clear error
+    const errorKey = `eduQualifications[${index}].${field}`;
+    if (errors[errorKey]) {
+      setErrors(prev => ({ ...prev, [errorKey]: '' }));
     }
   };
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    const requiredFields = ['fullName', 'email', 'mobile', 'password', 'confirmPassword', 'qualification', 'license', 'experience', 'specialization', 'hoursAvailable'];
+  const handleExperienceChange = (index: number, field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      experiences: prev.experiences.map((exp, i) =>
+        i === index ? { ...exp, [field]: value } : exp
+      ),
+    }));
     
-    // Mark field as touched
-    setTouchedFields(prev => ({ ...prev, [name]: true }));
-    
-    // Show required field error if field is required and empty
-    if (requiredFields.includes(name) && !value.trim()) {
-      setRequiredFieldErrors(prev => ({ ...prev, [name]: true }));
+    // Clear error
+    const errorKey = `experiences[${index}].${field}`;
+    if (errors[errorKey]) {
+      setErrors(prev => ({ ...prev, [errorKey]: '' }));
     }
   };
 
-  const getRequiredFieldMessage = (fieldName: string) => {
-    if (!touchedFields[fieldName] && !requiredFieldErrors[fieldName]) return null;
-    if (!requiredFieldErrors[fieldName]) return null;
+  const handleQualificationFileChange = (index: number, file: File | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      eduQualifications: prev.eduQualifications.map((qual, i) =>
+        i === index ? { ...qual, proof: file, proofUrl: '' } : qual
+      ),
+    }));
     
-    const fieldLabels: { [key: string]: string } = {
-      fullName: 'Full Name',
-      email: 'Email Address',
-      mobile: 'Mobile Number',
-      password: 'Password',
-      confirmPassword: 'Confirm Password',
-      qualification: 'Highest Qualification',
-      license: 'License / Registration Number',
-      experience: 'Years of Experience',
-      specialization: 'Area of Specialization',
-      hoursAvailable: 'Preferred Working Hours'
-    };
-
-    return (
-      <div className="bg-red-50 border-l-4 border-red-400 p-3 mt-2 rounded-r-md">
-        <div className="flex items-center">
-          <AlertCircle className="w-4 h-4 text-red-400 mr-2" />
-          <p className="text-sm text-red-700">
-            <span className="font-medium">{fieldLabels[fieldName]}</span> is required to proceed
-          </p>
-        </div>
-      </div>
-    );
-  };
-
-  const handleLanguageChange = (selectedLanguages: string[]) => {
-    setFormData((prev) => ({ ...prev, languages: selectedLanguages }));
-    if (errors.languages) {
-      setErrors(prev => ({ ...prev, languages: '' }));
+    // Clear error
+    const errorKey = `eduQualifications[${index}].proof`;
+    if (errors[errorKey]) {
+      setErrors(prev => ({ ...prev, [errorKey]: '' }));
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, documents: file }));
-      if (errors.documents) {
-        setErrors(prev => ({ ...prev, documents: '' }));
-      }
+  const handleExperienceFileChange = (index: number, file: File | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      experiences: prev.experiences.map((exp, i) =>
+        i === index ? { ...exp, document: file, documentUrl: '' } : exp
+      ),
+    }));
+    
+    // Clear error
+    const errorKey = `experiences[${index}].document`;
+    if (errors[errorKey]) {
+      setErrors(prev => ({ ...prev, [errorKey]: '' }));
     }
+  };
+
+  const addQualification = () => {
+    setFormData((prev) => ({
+      ...prev,
+      eduQualifications: [
+        ...prev.eduQualifications,
+        {
+          institution: '',
+          degree: '',
+          field: '',
+          grade: '',
+          year: '',
+          proof: null,
+          proofUrl: '',
+        },
+      ],
+    }));
+  };
+
+  const removeQualification = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      eduQualifications: prev.eduQualifications.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addExperience = () => {
+    setFormData((prev) => ({
+      ...prev,
+      experiences: [
+        ...prev.experiences,
+        {
+          position: '',
+          company: '',
+          description: '',
+          startDate: '',
+          endDate: '',
+          document: null,
+          documentUrl: '',
+        },
+      ],
+    }));
+  };
+
+  const removeExperience = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      experiences: prev.experiences.filter((_, i) => i !== index),
+    }));
   };
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
     
-    if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
+    if (!formData.displayName.trim()) newErrors.displayName = 'Display name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
-    if (!formData.mobile.trim()) newErrors.mobile = 'Mobile number is required';
     if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-    if (!formData.qualification.trim()) newErrors.qualification = 'Qualification is required';
-    if (!formData.license.trim()) newErrors.license = 'License number is required';
-    if (!formData.experience.trim()) newErrors.experience = 'Experience is required';
-    if (!formData.specialization.trim()) newErrors.specialization = 'Specialization is required';
-    if (formData.languages.length === 0) newErrors.languages = 'At least one language is required';
-    if (!formData.hoursAvailable.trim()) newErrors.hoursAvailable = 'Working hours are required';
-    if (!formData.documents) newErrors.documents = 'Document upload is required';
-    if (!formData.agreed) newErrors.agreed = 'You must agree to terms and conditions';
+    if (!formData.title.trim()) newErrors.title = 'Title is required';
+    if (formData.specialities.length === 0) newErrors.specialities = 'At least one speciality is required';
+    if (!formData.address.trim()) newErrors.address = 'Address is required';
+    // Validate phone number
+    if (!formData.contact_no.trim()) {
+      newErrors.contact_no = 'Contact number is required';
+    } else {
+      const phoneValidation = validatePhoneNumber(formData.contact_no, 'LK');
+      if (!phoneValidation.isValid) {
+        newErrors.contact_no = phoneValidation.error || 'Invalid phone number';
+      }
+    }
+    if (!formData.license_no.trim()) newErrors.license_no = 'License number is required';
+    if (!formData.idCard.trim()) newErrors.idCard = 'ID Card is required';
+    if (!formData.description.trim()) newErrors.description = 'Description is required';
+    if (!formData.sessionFee.trim()) newErrors.sessionFee = 'Session fee is required';
+    if (formData.sessionFee && !formData.isVolunteer && parseFloat(formData.sessionFee) < 1000) newErrors.sessionFee = 'Session fee must be at least 1000 LKR for non-volunteers';
+    if (formData.sessionFee && formData.isVolunteer && parseFloat(formData.sessionFee) < 0) newErrors.sessionFee = 'Session fee cannot be negative';
+    
+    // Validate educational qualifications
+    formData.eduQualifications.forEach((qual, index) => {
+      if (!qual.institution.trim()) newErrors[`eduQualifications[${index}].institution`] = 'Institution is required';
+      if (!qual.degree.trim()) newErrors[`eduQualifications[${index}].degree`] = 'Degree is required';
+      if (!qual.field.trim()) newErrors[`eduQualifications[${index}].field`] = 'Field is required';
+      if (!qual.grade.trim()) newErrors[`eduQualifications[${index}].grade`] = 'Grade is required';
+      if (!qual.year.trim()) newErrors[`eduQualifications[${index}].year`] = 'Year is required';
+      if (!qual.proof && !qual.proofUrl) newErrors[`eduQualifications[${index}].proof`] = 'Proof document is required';
+    });
+    
+    // Validate experiences
+    formData.experiences.forEach((exp, index) => {
+      if (!exp.position.trim()) newErrors[`experiences[${index}].position`] = 'Position is required';
+      if (!exp.company.trim()) newErrors[`experiences[${index}].company`] = 'Company is required';
+      if (!exp.description.trim()) newErrors[`experiences[${index}].description`] = 'Description is required';
+      if (!exp.startDate.trim()) newErrors[`experiences[${index}].startDate`] = 'Start date is required';
+      if (!exp.endDate.trim()) newErrors[`experiences[${index}].endDate`] = 'End date is required';
+      if (!exp.document && !exp.documentUrl) newErrors[`experiences[${index}].document`] = 'Document is required';
+      
+      // Validate date logic
+      if (exp.startDate && exp.endDate) {
+        const startDate = new Date(exp.startDate);
+        const endDate = new Date(exp.endDate);
+        
+        if (endDate <= startDate) {
+          newErrors[`experiences[${index}].endDate`] = 'End date must be after start date';
+        }
+      }
+    });
     
     setErrors(newErrors);
-    
-    // Scroll to first error if any
-    if (Object.keys(newErrors).length > 0) {
-      setTimeout(scrollToFirstError, 100);
-    }
     
     return Object.keys(newErrors).length === 0;
   };
@@ -172,10 +249,67 @@ const SignUp = () => {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Upload qualification documents
+      const eduQualifications = await Promise.all(
+        formData.eduQualifications.map(async (qual) => {
+          let proofUrl = qual.proofUrl;
+          if (qual.proof) {
+            proofUrl = await uploadQualification(qual.proof);
+          }
+          return {
+            institution: qual.institution,
+            degree: qual.degree,
+            field: qual.field,
+            grade: qual.grade,
+            year: parseInt(qual.year),
+            proof: proofUrl,
+          };
+        })
+      );
+      
+      // Upload experience documents
+      const experiences = await Promise.all(
+        formData.experiences.map(async (exp) => {
+          let documentUrl = exp.documentUrl;
+          if (exp.document) {
+            documentUrl = await uploadQualification(exp.document);
+          }
+          return {
+            position: exp.position,
+            company: exp.company,
+            description: exp.description,
+            startDate: exp.startDate,
+            endDate: exp.endDate,
+            document: documentUrl,
+          };
+        })
+      );
+      
+      const signupData = {
+        email: formData.email,
+        password: formData.password,
+        displayName: formData.displayName,
+        userType: userType,
+        additionalData: {
+          title: formData.title,
+          specialities: formData.specialities,
+          address: formData.address,
+          contact_no: formData.contact_no,
+          license_no: formData.license_no,
+          idCard: formData.idCard,
+          isVolunteer: formData.isVolunteer,
+          isAvailable: formData.isAvailable,
+          description: formData.description,
+          rating: 0,
+          sessionFee: parseFloat(formData.sessionFee),
+          eduQualifications,
+          experiences,
+        },
+      };
+      
+      await signupCounselor(signupData);
       setShowSuccessOverlay(true);
-    } catch {
+    } catch (error) {
       setErrors({ general: 'An error occurred. Please try again later.' });
     } finally {
       setIsLoading(false);
@@ -193,11 +327,21 @@ const SignUp = () => {
         <Card className="p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <img 
-              src="/assets/images/Sona-logo.png" 
-              alt="Sona Logo" 
-              className="h-10 w-auto mx-auto mb-6"
-            />
+            <div className="flex items-center justify-between mb-6">
+              <button
+                onClick={() => navigate('/signup')}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-sm font-medium">Back</span>
+              </button>
+              <img 
+                src="/assets/images/Sona-logo.png" 
+                alt="Sona Logo" 
+                className="h-10 w-auto"
+              />
+              <div className="w-16"></div> {/* Spacer for centering */}
+            </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Join the Professional Community</h1>
             <p className="text-gray-600">Create your professional account and start making a difference</p>
           </div>
@@ -206,26 +350,26 @@ const SignUp = () => {
           <div className="flex items-center justify-center mb-8">
             <div className="relative bg-gray-100 rounded-full p-1 w-full max-w-sm">
               <div
-                className={`absolute top-1 left-1 h-10 bg-pink-500 rounded-full transition-all duration-300 ease-in-out ${
-                  userType === 'psychiatrist' ? 'w-1/2 transform translate-x-[calc(100%-0.5rem)]' : 'w-1/2'
+                className={`absolute top-1 left-1 h-10 bg-slate-500 rounded-full transition-all duration-300 ease-in-out ${
+                  userType === 'Psychiatrist' ? 'w-1/2 transform translate-x-[calc(100%-0.5rem)]' : 'w-1/2'
                 }`}
               />
               <div className="relative flex">
                 <button
                   type="button"
                   className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-full transition-colors duration-300 z-10 focus:outline-none ${
-                    userType === 'counsellor' ? 'text-white' : 'text-gray-600 hover:text-gray-800'
+                    userType === 'Counselor' ? 'text-white' : 'text-gray-600 hover:text-gray-800'
                   }`}
-                  onClick={() => setUserType('counsellor')}
+                  onClick={() => setUserType('Counselor')}
                 >
-                  Counsellor
+                  Counselor
                 </button>
                 <button
                   type="button"
                   className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-full transition-colors duration-300 z-10 focus:outline-none ${
-                    userType === 'psychiatrist' ? 'text-white' : 'text-gray-600 hover:text-gray-800'
+                    userType === 'Psychiatrist' ? 'text-white' : 'text-gray-600 hover:text-gray-800'
                   }`}
-                  onClick={() => setUserType('psychiatrist')}
+                  onClick={() => setUserType('Psychiatrist')}
                 >
                   Psychiatrist
                 </button>
@@ -244,16 +388,14 @@ const SignUp = () => {
                     type="text"
                     placeholder="Enter your full name"
                     label="Full Name"
-                name="fullName" 
-                value={formData.fullName} 
+                name="displayName" 
+                value={formData.displayName} 
                 onChange={handleChange}
-                onBlur={handleBlur}
               />
-              {getRequiredFieldMessage('fullName')}
-              {errors.fullName && (
+              {errors.displayName && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
-                      {errors.fullName}
+                      {errors.displayName}
                 </p>
               )}
             </div>
@@ -266,9 +408,7 @@ const SignUp = () => {
                   name="email" 
                   value={formData.email} 
                   onChange={handleChange}
-                  onBlur={handleBlur}
                 />
-                {getRequiredFieldMessage('email')}
                 {errors.email && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
@@ -278,20 +418,26 @@ const SignUp = () => {
               </div>
 
                 <div>
-                <Input 
-                    type="tel"
+                <PhoneInput
+                    label="Contact Number"
                     placeholder="+94 71 234 5678"
-                    label="Mobile Number"
-                  name="mobile" 
-                  value={formData.mobile} 
-                  onChange={handleChange}
-                  onBlur={handleBlur}
+                    value={formData.contact_no}
+                    onChange={(value, isValid) => {
+                      setFormData(prev => ({ ...prev, contact_no: value }));
+                      // Clear validation error if phone becomes valid
+                      if (isValid && errors.contact_no) {
+                        setErrors(prev => ({ ...prev, contact_no: '' }));
+                      }
+                    }}
+                    country="LK"
+                    required
+                    showValidation={true}
+                    autoFormat={true}
                 />
-                {getRequiredFieldMessage('mobile')}
-                {errors.mobile && (
+                {errors.contact_no && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
-                      {errors.mobile}
+                      {errors.contact_no}
                   </p>
                 )}
             </div>
@@ -304,7 +450,6 @@ const SignUp = () => {
                   name="password" 
                   value={formData.password} 
                   onChange={handleChange}
-                  onBlur={handleBlur}
                 />
                 {errors.password && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
@@ -322,7 +467,6 @@ const SignUp = () => {
                   name="confirmPassword" 
                   value={formData.confirmPassword} 
                   onChange={handleChange}
-                  onBlur={handleBlur}
                 />
                 {errors.confirmPassword && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
@@ -342,18 +486,16 @@ const SignUp = () => {
                 <div>
                 <Input 
                     type="text"
-                    placeholder="e.g., PhD in Psychology"
-                    label="Highest Qualification"
-                  name="qualification" 
-                  value={formData.qualification} 
+                    placeholder="e.g., Licensed Counselor"
+                    label="Title"
+                  name="title" 
+                  value={formData.title} 
                   onChange={handleChange}
-                  onBlur={handleBlur}
                 />
-                {getRequiredFieldMessage('qualification')}
-                {errors.qualification && (
+                {errors.title && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
-                      {errors.qualification}
+                      {errors.title}
                   </p>
                 )}
               </div>
@@ -362,17 +504,15 @@ const SignUp = () => {
                 <Input 
                     type="text"
                     placeholder="e.g., SLPSY001234"
-                    label="License / Registration Number"
-                  name="license" 
-                  value={formData.license} 
+                    label="License Number"
+                  name="license_no" 
+                  value={formData.license_no} 
                   onChange={handleChange}
-                  onBlur={handleBlur}
                 />
-                {getRequiredFieldMessage('license')}
-                {errors.license && (
+                {errors.license_no && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
-                      {errors.license}
+                      {errors.license_no}
                   </p>
                 )}
             </div>
@@ -380,37 +520,35 @@ const SignUp = () => {
                 <div>
                 <Input 
                     type="text"
-                    placeholder="e.g., 5 years"
-                    label="Years of Experience"
-                  name="experience" 
-                  value={formData.experience} 
+                    placeholder="e.g., ID123456"
+                    label="ID Card"
+                  name="idCard" 
+                  value={formData.idCard} 
                   onChange={handleChange}
-                  onBlur={handleBlur}
                 />
-                {getRequiredFieldMessage('experience')}
-                {errors.experience && (
+                {errors.idCard && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
-                      {errors.experience}
+                      {errors.idCard}
                   </p>
                 )}
               </div>
 
                 <div>
                 <Input 
-                    type="text"
-                    placeholder="e.g., Cognitive Behavioral Therapy"
-                    label="Area of Specialization"
-                  name="specialization" 
-                  value={formData.specialization} 
+                    type="number"
+                    placeholder={formData.isVolunteer ? "e.g., 0" : "e.g., 1000"}
+                    label="Session Fee (LKR)"
+                  name="sessionFee" 
+                  value={formData.sessionFee} 
                   onChange={handleChange}
-                  onBlur={handleBlur}
+                  min={formData.isVolunteer ? "0" : "1000"}
+                  step="100"
                 />
-                {getRequiredFieldMessage('specialization')}
-                {errors.specialization && (
+                {errors.sessionFee && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
-                      {errors.specialization}
+                      {errors.sessionFee}
                   </p>
                 )}
               </div>
@@ -418,105 +556,361 @@ const SignUp = () => {
               <div>
                 <Input 
                     type="text"
-                    placeholder="e.g., University of Colombo"
-                    label="Institution"
-                  name="institution" 
-                  value={formData.institution} 
+                    placeholder="Enter your address"
+                    label="Address"
+                  name="address" 
+                  value={formData.address} 
                   onChange={handleChange}
                 />
-                </div>
-
-                <div>
-                  <Input
-                    type="text"
-                    placeholder="e.g., 9:00 AM - 5:00 PM"
-                    label="Preferred Working Hours"
-                    name="hoursAvailable"
-                    value={formData.hoursAvailable}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  {getRequiredFieldMessage('hoursAvailable')}
-                  {errors.hoursAvailable && (
+                {errors.address && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
-                      {errors.hoursAvailable}
-                    </p>
-                  )}
-                </div>
+                      {errors.address}
+                  </p>
+                )}
+              </div>
               </div>
 
               <div>
                 <MultiSelectDropdown
-                  options={languageOptions}
-                  selected={formData.languages}
-                  onChange={handleLanguageChange}
-                  label="Languages Spoken"
+                  options={[
+                    { value: 'Anxiety', label: 'Anxiety' },
+                    { value: 'Depression', label: 'Depression' },
+                    { value: 'Stress', label: 'Stress' },
+                    { value: 'PTSD', label: 'PTSD' },
+                    { value: 'Relationship Issues', label: 'Relationship Issues' },
+                    { value: 'Addiction', label: 'Addiction' },
+                  ]}
+                  selected={formData.specialities}
+                  onChange={(selected) => setFormData(prev => ({ ...prev, specialities: selected }))}
+                  label="Specialities"
                   required
                 />
-                {errors.languages && (
+                {errors.specialities && (
                   <p className="text-red-600 text-sm mt-2 flex items-center">
                     <AlertCircle className="w-4 h-4 mr-2" />
-                    {errors.languages}
+                    {errors.specialities}
                   </p>
                 )}
               </div>
             
             <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Bio
+                  Description
                 </label>
               <textarea
-                name="bio"
-                value={formData.bio}
+                name="description"
+                value={formData.description}
                 onChange={handleChange}
                 rows={4}
                   className="w-full px-3 py-2 border border-gray-400 rounded-3xl shadow-sm bg-white text-gray-700
-                    hover:border-pink-500 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20
+                    hover:border-slate-500 focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20
                     focus:outline-none transition-all duration-150 ease-in-out
                     placeholder:text-gray-400 placeholder:font-normal"
-                  placeholder="Tell us about your experience and approach..."
+                  placeholder="Describe your experience and approach..."
               />
-            </div>
-
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Upload Documents
-              </label>
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                  className="w-full px-3 py-2 border border-gray-400 rounded-3xl shadow-sm bg-white text-gray-700
-                    hover:border-pink-500 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20
-                    focus:outline-none transition-all duration-150 ease-in-out
-                    file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
-                    file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700
-                    hover:file:bg-pink-100"
-                />
-              {errors.documents && (
+              {errors.description && (
                   <p className="text-red-600 text-sm mt-2 flex items-center">
                     <AlertCircle className="w-4 h-4 mr-2" />
-                    {errors.documents}
-                </p>
-              )}
+                    {errors.description}
+                  </p>
+                )}
             </div>
+
+              {/* <div className="flex items-center space-x-4">
+                <Checkbox
+                  label="Available for sessions"
+                  checked={formData.isAvailable}
+                  onChange={(e) => setFormData(prev => ({ ...prev, isAvailable: e.target.checked }))}
+                />
+                <Checkbox
+                  label="Volunteer"
+                  checked={formData.isVolunteer}
+                  onChange={(e) => setFormData(prev => ({ ...prev, isVolunteer: e.target.checked }))}
+                />
+              </div> */}
           </div>
 
-            {/* Terms and Conditions */}
-            <div className="space-y-4">
-                <Checkbox
-                label="I agree to the terms and conditions"
-                  checked={formData.agreed}
-                onChange={(e) => setFormData(prev => ({ ...prev, agreed: e.target.checked }))}
-                />
-              {errors.agreed && (
-                <p className="text-red-600 text-sm flex items-center">
-                  <AlertCircle className="w-4 h-4 mr-2" />
-                  {errors.agreed}
-                </p>
-              )}
-            </div>
+            {/* Education */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">Education</h3>
+                <button
+                  type="button"
+                  onClick={addQualification}
+                  className="flex items-center gap-2 px-3 py-1 text-sm bg-slate-500 text-white rounded-full hover:bg-slate-600 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Qualification
+                </button>
+              </div>
+              
+              {formData.eduQualifications.map((qual, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-md font-medium text-gray-900">Qualification {index + 1}</h4>
+                    {formData.eduQualifications.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeQualification(index)}
+                        className="flex items-center gap-1 px-2 py-1 text-sm text-red-600 hover:text-red-800 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Input 
+                        type="text"
+                        placeholder="e.g., University of Colombo"
+                        label="Institution"
+                        value={qual.institution} 
+                        onChange={(e) => handleQualificationChange(index, 'institution', e.target.value)}
+                      />
+                      {errors[`eduQualifications[${index}].institution`] && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {errors[`eduQualifications[${index}].institution`]}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input 
+                        type="text"
+                        placeholder="e.g., Master of Counseling"
+                        label="Degree"
+                        value={qual.degree} 
+                        onChange={(e) => handleQualificationChange(index, 'degree', e.target.value)}
+                      />
+                      {errors[`eduQualifications[${index}].degree`] && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {errors[`eduQualifications[${index}].degree`]}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Input 
+                        type="text"
+                        placeholder="e.g., Clinical Psychology"
+                        label="Field"
+                        value={qual.field} 
+                        onChange={(e) => handleQualificationChange(index, 'field', e.target.value)}
+                      />
+                      {errors[`eduQualifications[${index}].field`] && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {errors[`eduQualifications[${index}].field`]}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input 
+                        type="text"
+                        placeholder="e.g., A-"
+                        label="Grade"
+                        value={qual.grade} 
+                        onChange={(e) => handleQualificationChange(index, 'grade', e.target.value)}
+                      />
+                      {errors[`eduQualifications[${index}].grade`] && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {errors[`eduQualifications[${index}].grade`]}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input 
+                        type="number"
+                        placeholder="e.g., 2020"
+                        label="Year"
+                        value={qual.year} 
+                        onChange={(e) => handleQualificationChange(index, 'year', e.target.value)}
+                      />
+                      {errors[`eduQualifications[${index}].year`] && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {errors[`eduQualifications[${index}].year`]}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block mb-2 text-sm font-medium text-gray-700">
+                        Proof Document
+                      </label>
+                      <input
+                        type="file"
+                        onChange={(e) => handleQualificationFileChange(index, e.target.files?.[0] || null)}
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        className="w-full px-3 py-2 border border-gray-400 rounded-3xl shadow-sm bg-white text-gray-700
+                          hover:border-slate-500 focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20
+                          focus:outline-none transition-all duration-150 ease-in-out
+                          file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
+                          file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700
+                          hover:file:bg-slate-100"
+                      />
+                      {errors[`eduQualifications[${index}].proof`] && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {errors[`eduQualifications[${index}].proof`]}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+
+            {/* Experience */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">Experience</h3>
+                <button
+                  type="button"
+                  onClick={addExperience}
+                  className="flex items-center gap-2 px-3 py-1 text-sm bg-slate-500 text-white rounded-full hover:bg-slate-600 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Experience
+                </button>
+              </div>
+              
+              {formData.experiences.map((exp, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-md font-medium text-gray-900">Experience {index + 1}</h4>
+                    {formData.experiences.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeExperience(index)}
+                        className="flex items-center gap-1 px-2 py-1 text-sm text-red-600 hover:text-red-800 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Input 
+                        type="text"
+                        placeholder="e.g., Counselor"
+                        label="Position"
+                        value={exp.position} 
+                        onChange={(e) => handleExperienceChange(index, 'position', e.target.value)}
+                      />
+                      {errors[`experiences[${index}].position`] && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {errors[`experiences[${index}].position`]}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input 
+                        type="text"
+                        placeholder="e.g., Mental Health Center"
+                        label="Company"
+                        value={exp.company} 
+                        onChange={(e) => handleExperienceChange(index, 'company', e.target.value)}
+                      />
+                      {errors[`experiences[${index}].company`] && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {errors[`experiences[${index}].company`]}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Input 
+                        type="date"
+                        label="Start Date"
+                        value={exp.startDate} 
+                        onChange={(e) => handleExperienceChange(index, 'startDate', e.target.value)}
+                      />
+                      {errors[`experiences[${index}].startDate`] && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {errors[`experiences[${index}].startDate`]}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input 
+                        type="date"
+                        label="End Date"
+                        value={exp.endDate} 
+                        onChange={(e) => handleExperienceChange(index, 'endDate', e.target.value)}
+                        min={exp.startDate}
+                      />
+                      {errors[`experiences[${index}].endDate`] && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {errors[`experiences[${index}].endDate`]}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block mb-2 text-sm font-medium text-gray-700">
+                        Experience Description
+                      </label>
+                      <textarea
+                        value={exp.description}
+                        onChange={(e) => handleExperienceChange(index, 'description', e.target.value)}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-400 rounded-3xl shadow-sm bg-white text-gray-700
+                          hover:border-slate-500 focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20
+                          focus:outline-none transition-all duration-150 ease-in-out
+                          placeholder:text-gray-400 placeholder:font-normal"
+                        placeholder="Describe your role and responsibilities..."
+                      />
+                      {errors[`experiences[${index}].description`] && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {errors[`experiences[${index}].description`]}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block mb-2 text-sm font-medium text-gray-700">
+                        Supporting Document
+                      </label>
+                      <input
+                        type="file"
+                        onChange={(e) => handleExperienceFileChange(index, e.target.files?.[0] || null)}
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        className="w-full px-3 py-2 border border-gray-400 rounded-3xl shadow-sm bg-white text-gray-700
+                          hover:border-slate-500 focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20
+                          focus:outline-none transition-all duration-150 ease-in-out
+                          file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
+                          file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700
+                          hover:file:bg-slate-100"
+                      />
+                      {errors[`experiences[${index}].document`] && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {errors[`experiences[${index}].document`]}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
 
               {errors.general && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -542,7 +936,7 @@ const SignUp = () => {
             Already have an account?{' '}
             <button
               onClick={() => navigate('/signin')}
-                className="text-pink-500 font-medium hover:text-pink-600 hover:underline"
+                className="text-slate-500 font-medium hover:text-slate-600 hover:underline"
             >
                 Sign in here
             </button>
@@ -558,8 +952,8 @@ const SignUp = () => {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Account Created Successfully!</h3>
-            <p className="text-gray-600 mb-6">Your account has been created and is pending approval. You'll receive an email once your account is approved.</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Application Submitted!</h3>
+            <p className="text-gray-600 mb-6">Your application has been sent for verification. You will be notified once it is approved.</p>
             <Button onClick={handleOverlayClose} variant="primary" className="w-full">
                 Continue to Sign In
               </Button>

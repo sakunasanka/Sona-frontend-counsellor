@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Home, Calendar, Users, ThumbsUp, MessageCircle, FileText, DollarSign, LogOut } from 'lucide-react';
+import { ArrowLeft, Home, Calendar, Users, MessageCircle, FileText, DollarSign, LogOut } from 'lucide-react';
 import { Button } from '../ui';
+import { signoutCounselor } from '../../api/userAPI';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -23,13 +24,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   const navigate = useNavigate();
   
   const menuItems = [
-    { icon: Home, label: 'Home', href: '/counsellor-dashboard', id: 'home' },
-    { icon: Calendar, label: 'Sessions', href: '/counsellor-sessions', id: 'sessions' },
-    { icon: Users, label: 'Clients', href: '/counsellor-clients', id: 'clients' },
-    { icon: DollarSign, label: 'Earnings', href: '/counsellor/earnings', id: 'earnings' },
-    { icon: ThumbsUp, label: 'Feedbacks', href: '/counsellor-feedbacks', id: 'feedbacks' },
-    { icon: MessageCircle, label: 'Chats', href: '/counsellor/chats', id: 'chats' },
-    { icon: FileText, label: 'Blogs', href: '/counsellor-blogs', id: 'blogs' },
+    { icon: Home, label: 'Home', href: '/dashboard', id: 'home' },
+    { icon: Calendar, label: 'Sessions', href: '/sessions', id: 'sessions' },
+    { icon: Users, label: 'Clients', href: '/clients', id: 'clients' },
+    { icon: DollarSign, label: 'Earnings', href: '/earnings', id: 'earnings' },
+    { icon: MessageCircle, label: 'Chats', href: '/chats', id: 'chats' },
+    { icon: FileText, label: 'Blogs', href: '/blogs', id: 'blogs' },
   ];
 
   const handleItemClick = (item: any) => {
@@ -46,6 +46,22 @@ const Sidebar: React.FC<SidebarProps> = ({
           window.location.href = item.href;
         }
       }
+    }
+    
+    // Close sidebar on mobile
+    if (window.innerWidth < 1024) {
+      onClose();
+    }
+  };
+
+  const handleLogoClick = () => {
+    // Navigate to dashboard
+    if (isMinimized && onExpandBeforeNavigation) {
+      // Trigger expansion animation before navigation
+      onExpandBeforeNavigation('/dashboard');
+    } else {
+      // Direct navigation if not minimized
+      window.location.href = '/dashboard';
     }
     
     // Close sidebar on mobile
@@ -75,28 +91,54 @@ const Sidebar: React.FC<SidebarProps> = ({
         ${isOpen || isMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         
-        <div className="items-center justify-center max-w-xl mx-4 p-4 border-b lg:border-none mt-5">
-            <img src="/assets/images/Sona-logo-light.png" alt="SONA" className='w-32' />
-          </div>
-        {/* Sidebar Header - Only show on mobile when not minimized */}
-        {!isMinimized && (
-          <div className="flex items-center p-4 border-b lg:hidden">
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-            >
-              <ArrowLeft size={20} className="text-gray-600" />
-            </button>
-            <img
-              src="/assets/images/Sona-logo.png"
-              alt="Sona Logo"
-              className="h-8 w-auto ml-3"
+        {/* Logo Section - Left aligned for web, with back arrow for mobile */}
+        <div className="py-6 px-4">
+          {/* Desktop: Left-aligned logo with margin to align with menu icons */}
+          <div className="hidden lg:flex items-center">
+            <img 
+              src={isMinimized ? "/assets/images/Sona-flat.png" : "/assets/images/Sona-logo-light.png"}
+              alt="SONA" 
+              className={`${isMinimized ? 'w-8' : 'w-32'} transition-all duration-300 ${isMinimized ? '' : 'ml-4'} cursor-pointer hover:opacity-80`}
+              onClick={handleLogoClick}
             />
           </div>
-        )}
+          
+          {/* Mobile: Back arrow + logo on same level when not minimized */}
+          {!isMinimized && (
+            <div className="flex items-center lg:hidden">
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-slate-700 rounded-md transition-colors mr-3"
+              >
+                <ArrowLeft size={20} className="text-slate-300" />
+              </button>
+              <img 
+                src="/assets/images/Sona-logo-light.png" 
+                alt="SONA" 
+                className="w-32 cursor-pointer hover:opacity-80"
+                onClick={handleLogoClick}
+              />
+            </div>
+          )}
+          
+          {/* Mobile minimized: Just logo centered */}
+          {isMinimized && (
+            <div className="flex items-center justify-center lg:hidden">
+              <img 
+                src="/assets/images/Sona-flat.png"
+                alt="SONA" 
+                className="w-8 cursor-pointer hover:opacity-80"
+                onClick={handleLogoClick}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Subtle Divider */}
+        <div className="mx-4 border-t border-slate-600"></div>
 
         {/* Menu Items */}
-        <nav className={`py-6 ${isMinimized ? 'px-2' : 'px-4'} flex-1 flex flex-col transition-all duration-500 ease-in-out`}>
+        <nav className={`py-4 ${isMinimized ? 'px-2' : 'px-4'} flex-1 flex flex-col transition-all duration-500 ease-in-out`}>
           <ul className="space-y-2">
             {menuItems.map((item, index) => {
               const IconComponent = item.icon;
@@ -141,15 +183,21 @@ const Sidebar: React.FC<SidebarProps> = ({
           
           <div className="flex-1"></div>
           
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-6 pt-4 border-t border-slate-600">
             <Button
               variant="logout"
               isMinimized={isMinimized}
               title={isMinimized ? 'Log out' : undefined}
-              icon={<LogOut size={20} className="text-gray-600 group-hover:text-red-600 transition-colors duration-200" />}
-              onClick={() => {
+              icon={<LogOut size={20} className="text-white group-hover:text-red-600 transition-colors duration-200" />}
+              onClick={async () => {
                 console.log('Logout clicked');
-                navigate('/signin');
+                try {
+                  await signoutCounselor();
+                } catch (error) {
+                  console.error('Logout failed:', error);
+                  // Still redirect even if logout API fails
+                }
+                navigate('/');
                 onClose();
               }}
             >
