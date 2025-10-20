@@ -23,8 +23,9 @@ import {
   type Session,
   type AvailabilityRequest
 } from '../../api/calendarAPI';
-import { makeRequest } from '../../api/apiBase';
+//import { makeRequest } from '../../api/apiBase';
 import SessionFeeManager from './components/SessionFeeManager';
+import { useNavigate } from 'react-router-dom';
 
 const CounsellorCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -37,6 +38,7 @@ const CounsellorCalendar: React.FC = () => {
   const [monthlyTimeSlots, setMonthlyTimeSlots] = useState<{ [date: string]: TimeSlot[] }>({});
   const [monthlyLoading, setMonthlyLoading] = useState(false);
   // const [sessionsLoading, setSessionsLoading] = useState(false);
+  const navigate = useNavigate();
   
   const [flashMessage, setFlashMessage] = useState<{
     type: 'success' | 'error' | 'warning' | 'info';
@@ -98,22 +100,14 @@ const CounsellorCalendar: React.FC = () => {
   };
 
   // Helper function to join a session
-  const joinSession = async (sessionId: string) => {
-    try {
-      const response = await makeRequest<{success: boolean; data: {sessionLink: string}}>(`/sessions/${sessionId}/link`, 'GET');
-      if (response.success && response.data?.sessionLink) {
-        window.open(response.data.sessionLink, '_blank');
-      } else {
-        console.error('Failed to get session link');
-        showFlashMessage('error', 'Failed to get session link. Please try again.');
-      }
-    } catch (error: any) {
-      console.error('Error joining session:', error);
-      if (error.status === 404) {
-        showFlashMessage('error', 'Session not found. It may have been cancelled or rescheduled.');
-      } else {
-        showFlashMessage('error', 'Failed to join session. Please try again.');
-      }
+  const joinSession = async (sessionId: string, userId: number) => {
+    // No need to fetch the link here anymore, the MeetingPage will do it.
+    // Just navigate to the meeting page, passing the session and user IDs.
+    if (sessionId && userId) {
+      navigate(`/meeting/${sessionId}/${userId}`);
+    } else {
+      console.error('User ID is missing, cannot navigate to meeting.');
+      // Handle error appropriately, maybe show a flash message
     }
   };
 
@@ -712,7 +706,7 @@ const CounsellorCalendar: React.FC = () => {
                             </div>
                             {isSessionJoinable(session.date, session.time) && (session.status === 'scheduled' || session.status === 'ongoing') && (
                               <button
-                                onClick={() => joinSession(session.id)}
+                                onClick={() => joinSession(session.id, session.clientId)}
                                 className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2 transition-colors"
                               >
                                 <Video className="w-4 h-4" />

@@ -16,6 +16,7 @@ export interface TimeSlot {
 export interface Session {
   id: string;
   clientName: string;
+  clientId: number;
   date: string; // YYYY-MM-DD
   time: string; // HH:mm
   duration: number;
@@ -173,6 +174,7 @@ export const getCounselorSessions = async (counselorId: number): Promise<Session
       const mapped: Session[] = response.data.map((s) => ({
         id: String(s.id),
         clientName: s.user?.name || 'Unknown',
+        clientId: s.userId,
         date: s.date,
         time: s.timeSlot,
         duration: s.duration,
