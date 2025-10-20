@@ -1001,6 +1001,32 @@ export interface Achievement {
 }
 
 /**
+ * Get counsellor details by ID
+ */
+export const getCounselorById = async (counselorId: number): Promise<{ success: boolean; data: { counselor: any } }> => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response: ApiResponse<{ data: { counselor: any } }> = await apiClient.get(`/counselors/${counselorId}`, undefined, token, true);
+    
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    }
+    
+    throw new Error('Failed to fetch counselor details');
+  } catch (error) {
+    console.error('Get counselor by ID error:', error);
+    throw error;
+  }
+};
+
+/**
  * Get detailed counsellor profile
  */
 export const getCounsellorProfile = async (): Promise<CounsellorProfileData> => {

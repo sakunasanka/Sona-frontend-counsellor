@@ -7,6 +7,7 @@ import Input from '../../components/ui/Input';
 import Checkbox from '../../components/ui/Checkbox';
 import PasswordResetModal from '../../components/auth/PasswordResetModal';
 import { signinCounselor } from '../../api/userAPI';
+import { getCounselorById } from '../../api/counsellorAPI';
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -47,15 +48,68 @@ const SignIn = () => {
     setErrors({});
     
     try {
+      // First, attempt to sign in
       await signinCounselor({ email, password });
-      // Redirect based on user type
-      if (userType === 'counsellor') {
-        navigate('/dashboard');
-      } else {
-        navigate('/psychiatrist/dashboard');
+      
+      // Get counselor ID from JWT token
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('Authentication token not found');
       }
-    } catch {
-      setErrors({ general: 'An error occurred. Please try again later.' });
+      
+      // Decode JWT token to get counselor ID
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      
+      const payload = JSON.parse(jsonPayload);
+      const counselorId = payload?.id;
+      
+      if (!counselorId) {
+        throw new Error('Counselor ID not found in token');
+      }
+      
+      // Check counselor status using the API endpoint
+      const counselorResponse = await getCounselorById(counselorId);
+      
+      if (counselorResponse.success && counselorResponse.data?.counselor) {
+        const counselorStatus = counselorResponse.data.counselor.status;
+        
+        // Check counselor status
+        if (counselorStatus === 'pending') {
+          setErrors({ general: 'Your account is pending approval. Please wait for admin approval before accessing the system.' });
+          // Clear the stored token since they can't access the system
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('counsellor_id');
+          return;
+        }
+        
+        if (counselorStatus === 'rejected') {
+          setErrors({ general: 'Your account has been rejected. Please contact support for more information.' });
+          // Clear the stored token since they can't access the system
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('counsellor_id');
+          return;
+        }
+        
+        // If status is approved, proceed with navigation
+        if (userType === 'counsellor') {
+          navigate('/dashboard');
+        } else {
+          navigate('/psychiatrist/dashboard');
+        }
+      } else {
+        throw new Error('Failed to fetch counselor details');
+      }
+    } catch (error: any) {
+      // Handle other sign-in errors
+      setErrors({ general: 'Invalid email or password. Please try again.' });
+      
+      // Clear any stored tokens on error
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('counsellor_id');
     } finally {
       setIsLoading(false);
     }

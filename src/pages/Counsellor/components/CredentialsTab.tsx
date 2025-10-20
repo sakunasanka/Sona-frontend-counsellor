@@ -49,12 +49,12 @@ const CredentialsTab: React.FC<CredentialsTabProps> = ({
             <Award className="w-5 h-5 text-buttonBlue-500" />
             Educational Qualifications
           </h3>
-          <button
+          {/* <button
             onClick={() => setShowAddCredential(!showAddCredential)}
             className="bg-buttonBlue-500 hover:bg-buttonBlue-600 text-white px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1"
           >
             + Add Qualification
-          </button>
+          </button> */}
         </div>
         
         {/* Add new credential form */}
@@ -181,12 +181,12 @@ const CredentialsTab: React.FC<CredentialsTabProps> = ({
                   <h4 className="font-semibold text-gray-900">{credential.title}</h4>
                   <p className="text-gray-600">{credential.institution}</p>
                   <p className="text-sm text-gray-500">{credential.year}</p>
-                  <button
+                  {/* <button
                     onClick={() => onStartCredentialEdit(credential)}
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-80 hover:opacity-100 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs"
                   >
                     Edit
-                  </button>
+                  </button> */}
                 </>
               )}
             </div>
