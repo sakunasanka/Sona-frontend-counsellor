@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -11,13 +11,6 @@ import { getCounselorById } from '../../api/counsellorAPI';
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Get the selected role from navigation state if available
-  const passedRole = location.state?.selectedRole;
-  const userType = (passedRole === 'counsellor' || passedRole === 'psychiatrist') 
-    ? passedRole as 'counsellor' | 'psychiatrist'
-    : 'counsellor';
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -66,42 +59,46 @@ const SignIn = () => {
       
       const payload = JSON.parse(jsonPayload);
       const counselorId = payload?.id;
+      const userType = payload?.userType || payload?.role || 'counsellor'; // Default to counsellor if not specified
       
       if (!counselorId) {
-        throw new Error('Counselor ID not found in token');
+        throw new Error('User ID not found in token');
       }
       
-      // Check counselor status using the API endpoint
-      const counselorResponse = await getCounselorById(counselorId);
-      
-      if (counselorResponse.success && counselorResponse.data?.counselor) {
-        const counselorStatus = counselorResponse.data.counselor.status;
+      // Only check counselor status if the user is a counselor
+      if (userType === 'counsellor' || userType === 'counselor') {
+        // Check counselor status using the API endpoint
+        const counselorResponse = await getCounselorById(counselorId);
         
-        // Check counselor status
-        if (counselorStatus === 'pending') {
-          setErrors({ general: 'Your account is pending approval. Please wait for admin approval before accessing the system.' });
-          // Clear the stored token since they can't access the system
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('counsellor_id');
-          return;
-        }
-        
-        if (counselorStatus === 'rejected') {
-          setErrors({ general: 'Your account has been rejected. Please contact support for more information.' });
-          // Clear the stored token since they can't access the system
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('counsellor_id');
-          return;
-        }
-        
-        // If status is approved, proceed with navigation
-        if (userType === 'counsellor') {
-          navigate('/dashboard');
+        if (counselorResponse.success && counselorResponse.data?.counselor) {
+          const counselorStatus = counselorResponse.data.counselor.status;
+          
+          // Check counselor status
+          if (counselorStatus === 'pending') {
+            setErrors({ general: 'Your account is pending approval. Please wait for admin approval before accessing the system.' });
+            // Clear the stored token since they can't access the system
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('counsellor_id');
+            return;
+          }
+          
+          if (counselorStatus === 'rejected') {
+            setErrors({ general: 'Your account has been rejected. Please contact support for more information.' });
+            // Clear the stored token since they can't access the system
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('counsellor_id');
+            return;
+          }
         } else {
-          navigate('/psychiatrist/dashboard');
+          throw new Error('Failed to fetch counselor details');
         }
+      }
+      
+      // Navigate based on user type
+      if (userType === 'psychiatrist' || userType === 'psychiatrist') {
+        navigate('/dashboard');
       } else {
-        throw new Error('Failed to fetch counselor details');
+        navigate('/dashboard');
       }
     } catch (error: any) {
       // Handle other sign-in errors
