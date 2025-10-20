@@ -1,0 +1,39 @@
+# .github/workflows/deploy.yml
+name: Build and Deploy Frontend
+
+on:
+  push:
+    branches:
+      - Release
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Use the version you need
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Project
+        run: npm run build
+        # Make sure your admin app's package.json has "homepage": "/operation"
+        # This tells React the app will be served from a sub-directory.
+
+      - name: Deploy to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "build/*"
+          # IMPORTANT: Change the remote_path for each project!
+          # For 'councilor' repo:
+          remote_path: "/var/www/sona.org.lk/councilor_html"
