@@ -400,7 +400,10 @@ const CounsellorSessions = () => {
             // Redirect to login page after a delay
             setTimeout(() => navigate('/signin'), 3000);
           } else if (err.status === 404) {
-            setError('No sessions found for this counselor.');
+            // No sessions found - this is not an error, just an empty state
+            setSessions([]);
+          } else if (err.status === 500) {
+            // Backend may return 500 when no sessions exist - treat as empty state
             setSessions([]);
           } else {
             setError(`Error: ${err.message || 'Unknown error occurred'}`);
