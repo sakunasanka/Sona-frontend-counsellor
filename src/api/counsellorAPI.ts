@@ -143,11 +143,11 @@ export interface ClientDetails extends Client {
 export interface ClientNote {
   id: number;
   content: string;
-  createdAt: string;
-  createdBy: string;
-  isPrivate: boolean;
-  isDeleted: boolean;
-  counselorId: number;
+  created_at: string;
+  created_by: string;
+  is_private: boolean;
+  is_deleted: boolean;
+  counselor_id: number;
 }
 
 export interface ClientSession {
