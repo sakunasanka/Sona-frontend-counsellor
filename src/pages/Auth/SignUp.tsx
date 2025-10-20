@@ -7,6 +7,8 @@ import MultiSelectDropdown from '../../components/ui/MultiSelectDropdown';
 import Card from '../../components/ui/Card';
 import { signupCounselor } from '../../api/userAPI';
 import { uploadQualification } from '../../utils/cloudinaryUpload';
+import { validatePhoneNumber } from '../../utils/phoneValidation';
+import PhoneInput from '../../components/ui/PhoneInput';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -189,7 +191,15 @@ const SignUp = () => {
     if (!formData.title.trim()) newErrors.title = 'Title is required';
     if (formData.specialities.length === 0) newErrors.specialities = 'At least one speciality is required';
     if (!formData.address.trim()) newErrors.address = 'Address is required';
-    if (!formData.contact_no.trim()) newErrors.contact_no = 'Contact number is required';
+    // Validate phone number
+    if (!formData.contact_no.trim()) {
+      newErrors.contact_no = 'Contact number is required';
+    } else {
+      const phoneValidation = validatePhoneNumber(formData.contact_no, 'LK');
+      if (!phoneValidation.isValid) {
+        newErrors.contact_no = phoneValidation.error || 'Invalid phone number';
+      }
+    }
     if (!formData.license_no.trim()) newErrors.license_no = 'License number is required';
     if (!formData.idCard.trim()) newErrors.idCard = 'ID Card is required';
     if (!formData.description.trim()) newErrors.description = 'Description is required';
@@ -408,13 +418,21 @@ const SignUp = () => {
               </div>
 
                 <div>
-                <Input 
-                    type="tel"
-                    placeholder="+94 71 234 5678"
+                <PhoneInput
                     label="Contact Number"
-                  name="contact_no" 
-                  value={formData.contact_no} 
-                  onChange={handleChange}
+                    placeholder="+94 71 234 5678"
+                    value={formData.contact_no}
+                    onChange={(value, isValid) => {
+                      setFormData(prev => ({ ...prev, contact_no: value }));
+                      // Clear validation error if phone becomes valid
+                      if (isValid && errors.contact_no) {
+                        setErrors(prev => ({ ...prev, contact_no: '' }));
+                      }
+                    }}
+                    country="LK"
+                    required
+                    showValidation={true}
+                    autoFormat={true}
                 />
                 {errors.contact_no && (
                     <p className="text-red-600 text-sm mt-2 flex items-center">

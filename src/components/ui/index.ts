@@ -9,3 +9,4 @@ export { default as CardContent } from './CardContent';
 export { default as Checkbox } from './Checkbox';
 export { default as CustomSlider } from './CustomSlider';
 export { default as FlashMessage } from './FlashMessage';
+export { default as PhoneInput } from './PhoneInput';

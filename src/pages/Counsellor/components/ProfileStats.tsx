@@ -26,10 +26,10 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({ totalSessions, totalClients
         </div>
         <div className="text-sm text-gray-600">Rating</div>
       </div>
-      <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
+      {/* <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
         <div className="text-2xl font-bold text-gray-900">{experience}+</div>
         <div className="text-sm text-gray-600">Years</div>
-      </div>
+      </div> */}
     </div>
   );
 };

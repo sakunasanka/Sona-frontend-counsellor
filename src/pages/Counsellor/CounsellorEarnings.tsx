@@ -518,7 +518,7 @@ const CounsellorEarnings: React.FC = () => {
               <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
                 <div className="flex items-center justify-between mb-3 lg:mb-4">
                   <div className="p-2 lg:p-3 bg-buttonBlue-500/20 rounded-lg lg:rounded-xl">
-                    <Calendar className="w-4 h-4 lg:w-6 lg:h-6 text-buttonBlue-500" />
+                    <HandCoins className="w-4 h-4 lg:w-6 lg:h-6 text-buttonBlue-500" />
                   </div>
                   <div className="text-right">
                     <div className="text-xs lg:text-sm text-gray-600 mb-1">This Month</div>
@@ -536,7 +536,7 @@ const CounsellorEarnings: React.FC = () => {
               <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-gray-200">
                 <div className="flex items-center justify-between mb-3 lg:mb-4">
                   <div className="p-2 lg:p-3 bg-buttonGreen-500/20 rounded-lg lg:rounded-xl">
-                    <Users className="w-4 h-4 lg:w-6 lg:h-6 text-buttonGreen-500" />
+                    <Calendar className="w-4 h-4 lg:w-6 lg:h-6 text-buttonGreen-500" />
                   </div>
                   <div className="text-right">
                     <div className="text-xs lg:text-sm text-gray-600 mb-1">Total Sessions</div>
